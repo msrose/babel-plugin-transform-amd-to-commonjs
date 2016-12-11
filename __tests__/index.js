@@ -148,4 +148,20 @@ describe('Plugin', () => {
       })();
     `);
   });
+
+  it('transforms anonymous define blocks with no dependency list', () => {
+    expect(`
+      define(function() {
+        return {
+           llamas: 'donkeys'
+        };
+      });
+    `).toBeTransformedTo(`
+      module.exports = function() {
+        return {
+          llamas: 'donkeys'
+        };
+      }();
+    `);
+  });
 });
