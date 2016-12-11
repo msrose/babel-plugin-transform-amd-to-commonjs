@@ -77,6 +77,24 @@ describe('Plugin', () => {
     `);
   });
 
+  it('transforms anonymous define blocks with unused dependencies', () => {
+    expect(`
+      define(['stuff', 'here'], function(donkeys) {
+        return {
+           llamas: donkeys.version
+        };
+      });
+    `).toBeTransformedTo(`
+      var donkeys = require('stuff');
+      require('here');
+      module.exports = function() {
+        return {
+          llamas: donkeys.version
+        };
+      }();
+    `);
+  });
+
   it('only transforms define blocks at the top level', () => {
     const program = `
       if(someDumbCondition) {
@@ -95,6 +113,36 @@ describe('Plugin', () => {
       });
     `).toBeTransformedTo(`
       var llama = require('llamas');
+      (function() {
+        llama.doSomeStuff();
+      })();
+    `);
+  });
+
+  it('transforms require blocks with multiple dependencies', () => {
+    expect(`
+      require(['llamas', 'frogs'], function(llama, frog) {
+        llama.doSomeStuff();
+        frog.sayRibbit();
+      });
+    `).toBeTransformedTo(`
+      var llama = require('llamas');
+      var frog = require('frogs');
+      (function() {
+        llama.doSomeStuff();
+        frog.sayRibbit();
+      })();
+    `);
+  });
+
+  it('transforms require blocks with unused dependencies', () => {
+    expect(`
+      require(['llamas', 'frogs'], function(llama) {
+        llama.doSomeStuff();
+      });
+    `).toBeTransformedTo(`
+      var llama = require('llamas');
+      require('frogs');
       (function() {
         llama.doSomeStuff();
       })();
