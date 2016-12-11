@@ -263,4 +263,63 @@ describe('Plugin', () => {
       })();
     `);
   });
+
+  it('transforms the simplified commonjs wrapper', () => {
+    expect(`
+      define(function(require, exports, module) {
+        var stuff = require('hi');
+        exports.hey = stuff.boi;
+      });
+    `).toBeTransformedTo(`
+      (function() {
+        var stuff = require('hi');
+        exports.hey = stuff.boi;
+      })();
+    `);
+    expect(`
+      define(function(require, exports) {
+        var stuff = require('hi');
+        exports.hey = stuff.boi;
+      });
+    `).toBeTransformedTo(`
+      (function() {
+        var stuff = require('hi');
+        exports.hey = stuff.boi;
+      })();
+    `);
+  });
+
+  it("lets you declare a dependency as `module` even though that's crazy", () => {
+    expect(`
+      define(['notmodule'], function(module) {
+        return {
+          notmodule: module.notmodule
+        };
+      });
+    `).toBeTransformedTo(`
+      var module = require('notmodule');
+      module.exports = function() {
+        return {
+          notmodule: module.notmodule
+        };
+      }();
+    `);
+  });
+
+  it("lets you declare a dependency as `exports` even though that's crazy", () => {
+    expect(`
+      define(['notexports'], function(exports) {
+        return {
+          notexports: exports.notexports
+        };
+      });
+    `).toBeTransformedTo(`
+      var exports = require('notexports');
+      module.exports = function() {
+        return {
+          notexports: exports.notexports
+        };
+      }();
+    `);
+  });
 });
