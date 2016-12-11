@@ -4,7 +4,8 @@
   "description": "Transforms AMD code to CommonJS",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "lint": "eslint ."
   },
   "repository": {
     "type": "git",
