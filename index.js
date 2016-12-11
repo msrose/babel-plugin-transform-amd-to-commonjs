@@ -13,22 +13,37 @@ module.exports = ({ types: t }) => {
     }
   };
 
+  const decodeRequireArguments = (argNodes) => {
+    if(argNodes.length === 1) {
+      return { dependencyList: argNodes[0] };
+    } else {
+      return { dependencyList: argNodes[0], factory: argNodes[1] };
+    }
+  };
+
   return {
     visitor: {
       ExpressionStatement(path) {
         const { node, parent } = path;
         if(!t.isProgram(parent) || !t.isCallExpression(node.expression)) return;
 
-        const { name } = node.expression.callee;
-        if(name !== 'define' && name !== 'require') return;
+        const argumentDecoders = {
+          define: decodeDefineArguments,
+          require: decodeRequireArguments
+        };
 
-        const defineArgs = decodeDefineArguments(node.expression.arguments);
-        const { dependencyList, factory } = defineArgs;
-        if(name === 'require' && !t.isArrayExpression(dependencyList)) return;
+        const { name } = node.expression.callee;
+        const argumentDecoder = argumentDecoders[name];
+
+        if(!argumentDecoder) return;
+
+        const { dependencyList, factory } = argumentDecoder(node.expression.arguments);
+
+        if(!t.isArrayExpression(dependencyList) && !t.isFunctionExpression(factory)) return;
 
         if(dependencyList) {
           dependencyList.elements.forEach((el, i) => {
-            const paramName = factory.params[i];
+            const paramName = factory && factory.params[i];
             const requireCall = t.callExpression(t.identifier('require'), [el]);
             if(paramName) {
               path.insertBefore(t.variableDeclaration('var', [
@@ -40,19 +55,23 @@ module.exports = ({ types: t }) => {
           });
         }
 
-        const factoryReplacement = t.callExpression(t.functionExpression(null, [], factory.body), []);
-        if(name === 'define') {
-          path.replaceWith(
-            t.expressionStatement(
-              t.assignmentExpression(
-                '=',
-                t.memberExpression(t.identifier('module'), t.identifier('exports')),
-                factoryReplacement
+        if(factory) {
+          const factoryReplacement = t.callExpression(t.functionExpression(null, [], factory.body), []);
+          if(name === 'define') {
+            path.replaceWith(
+              t.expressionStatement(
+                t.assignmentExpression(
+                  '=',
+                  t.memberExpression(t.identifier('module'), t.identifier('exports')),
+                  factoryReplacement
+                )
               )
-            )
-          );
+            );
+          } else {
+            path.replaceWith(factoryReplacement);
+          }
         } else {
-          path.replaceWith(factoryReplacement);
+          path.remove();
         }
       }
     }

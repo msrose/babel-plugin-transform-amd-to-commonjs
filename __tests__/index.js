@@ -216,4 +216,15 @@ describe('Plugin', () => {
       }();
     `);
   });
+
+  it('transforms require blocks that have no factory function', () => {
+    expect(`
+      require(['here', 'are', 'some', 'deps']);
+    `).toBeTransformedTo(`
+      require('here');
+      require('are');
+      require('some');
+      require('deps');
+    `);
+  });
 });
