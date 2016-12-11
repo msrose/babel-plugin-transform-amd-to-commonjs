@@ -11,7 +11,7 @@ const customMatchers = {
     };
 
     const removeBlankLines = (string) => {
-      return string.split('\n').filter(line => !!line.length).join('\n');
+      return string.split('\n').filter(line => !!line.trim().length).join('\n');
     };
 
     return {
@@ -23,11 +23,11 @@ const customMatchers = {
           pass: removeBlankLines(transformed) === expected
         };
         if(result.pass) {
-          result.message = `Expected\n${actual}\n\nnot to be transformed ` +
-            `to\n${expected}\n\nbut instead they were the same.\n`;
+          result.message = `Expected\n\n${actual}\n\nnot to be transformed ` +
+            `to\n\n${expected}\n\nbut instead they were the same.\n`;
         } else {
-          result.message = `Expected\n${actual}\n\nto be transformed ` +
-            `to\n${expected}\n\nbut instead got\n\n${transformed}\n`;
+          result.message = `Expected\n\n${actual}\n\nto be transformed ` +
+            `to\n\n${expected}\n\nbut instead got\n\n${transformed}\n`;
         }
         return result;
       }
@@ -40,7 +40,7 @@ describe('Plugin', () => {
     jasmine.addMatchers(customMatchers);
   });
 
-  it('transforms anonymous define blocks with dependencies', () => {
+  it('transforms anonymous define blocks with one dependency', () => {
     expect(`
       define(['stuff'], function(donkeys) {
         return {
@@ -57,6 +57,26 @@ describe('Plugin', () => {
     `);
   });
 
+  it('transforms anonymous define blocks with multiple dependencies', () => {
+    expect(`
+      define(['stuff', 'here'], function(donkeys, aruba) {
+        return {
+           llamas: donkeys.version,
+           cows: aruba.hi
+        };
+      });
+    `).toBeTransformedTo(`
+      var donkeys = require('stuff');
+      var aruba = require('here');
+      module.exports = function() {
+        return {
+          llamas: donkeys.version,
+          cows: aruba.hi
+        };
+      }();
+    `);
+  });
+
   it('only transforms define blocks at the top level', () => {
     const program = `
       if(someDumbCondition) {
@@ -66,5 +86,18 @@ describe('Plugin', () => {
       }
     `;
     expect(program).toBeTransformedTo(program);
+  });
+
+  it('transforms require blocks with one dependency', () => {
+    expect(`
+      require(['llamas'], function(llama) {
+        llama.doSomeStuff();
+      });
+    `).toBeTransformedTo(`
+      var llama = require('llamas');
+      (function() {
+        llama.doSomeStuff();
+      })();
+    `);
   });
 });
