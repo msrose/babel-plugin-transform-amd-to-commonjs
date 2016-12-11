@@ -22,10 +22,7 @@ module.exports = ({ types: t }) => {
         if(dependencyList) {
           dependencyList.elements.forEach((el, i) => {
             const paramName = factory.params[i];
-            const requireCall = t.callExpression(
-              t.identifier('require'),
-              [t.stringLiteral(el.value)]
-            );
+            const requireCall = t.callExpression(t.identifier('require'), [el]);
             if(paramName) {
               path.insertBefore(t.variableDeclaration('var', [
                 t.variableDeclarator(paramName, requireCall)

@@ -164,4 +164,23 @@ describe('Plugin', () => {
       }();
     `);
   });
+
+  it('transforms dependencies listed as variables', () => {
+    expect(`
+      var dependency = 'hey';
+      define([dependency], function(here) {
+        return {
+           llamas: here.hi
+        };
+      });
+    `).toBeTransformedTo(`
+      var dependency = 'hey';
+      var here = require(dependency);
+      module.exports = function() {
+        return {
+          llamas: here.hi
+        };
+      }();
+    `);
+  });
 });
