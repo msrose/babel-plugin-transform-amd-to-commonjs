@@ -227,4 +227,40 @@ describe('Plugin', () => {
       require('deps');
     `);
   });
+
+  it('does not require a dependency name `require`', () => {
+    expect(`
+      define(['require'], function(require) {
+        var x = require('x');
+      });
+    `).toBeTransformedTo(`
+      module.exports = function() {
+        var x = require('x');
+      }();
+    `);
+  });
+
+  it('handles injection of dependency named `module`', () => {
+    expect(`
+      define(['module'], function(module) {
+        module.exports = { hey: 'boi' };
+      });
+    `).toBeTransformedTo(`
+      (function() {
+        module.exports = { hey: 'boi' };
+      })();
+    `);
+  });
+
+  it('handles injection of dependency name `exports`', () => {
+    expect(`
+      define(['exports'], function(exports) {
+        exports.hey = 'boi';
+      });
+    `).toBeTransformedTo(`
+      (function() {
+        exports.hey = 'boi';
+      })();
+    `);
+  });
 });

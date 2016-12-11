@@ -41,8 +41,20 @@ module.exports = ({ types: t }) => {
 
         if(!t.isArrayExpression(dependencyList) && !t.isFunctionExpression(factory)) return;
 
+        let injectsModuleOrExports = false;
+
         if(dependencyList) {
           dependencyList.elements.forEach((el, i) => {
+            if(t.isStringLiteral(el)) {
+              switch(el.value) {
+                case 'require':
+                  return;
+                case 'module':
+                case 'exports':
+                  injectsModuleOrExports = true;
+                  return;
+              }
+            }
             const paramName = factory && factory.params[i];
             const requireCall = t.callExpression(t.identifier('require'), [el]);
             if(paramName) {
@@ -57,7 +69,7 @@ module.exports = ({ types: t }) => {
 
         if(factory) {
           const factoryReplacement = t.callExpression(t.functionExpression(null, [], factory.body), []);
-          if(name === 'define') {
+          if(name === 'define' && !injectsModuleOrExports) {
             path.replaceWith(
               t.expressionStatement(
                 t.assignmentExpression(
