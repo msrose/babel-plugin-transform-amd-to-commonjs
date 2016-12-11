@@ -1,9 +1,16 @@
 module.exports = ({ types: t }) => {
-  const decodeDefineArguments = ([dependencyList, factory]) => {
-    if(t.isFunctionExpression(dependencyList)) {
-      return { factory: dependencyList };
+  const decodeDefineArguments = (argNodes) => {
+    if(argNodes.length === 1) {
+      return { factory: argNodes[0] };
+    } else if(argNodes.length === 2) {
+      const decodedArgs = { factory: argNodes[1] };
+      if(t.isArrayExpression(argNodes[0])) {
+        decodedArgs.dependencyList = argNodes[0];
+      }
+      return decodedArgs;
+    } else {
+      return { dependencyList: argNodes[1], factory: argNodes[2] };
     }
-    return { dependencyList, factory };
   };
 
   return {

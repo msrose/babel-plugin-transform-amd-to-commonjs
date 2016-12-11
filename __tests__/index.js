@@ -183,4 +183,37 @@ describe('Plugin', () => {
       }();
     `);
   });
+
+  it('transforms named define blocks with dependencies', () => {
+    expect(`
+      define('thismoduletho', ['hi'], function(here) {
+        return {
+           llamas: here.hi
+        };
+      });
+    `).toBeTransformedTo(`
+      var here = require('hi');
+      module.exports = function() {
+        return {
+          llamas: here.hi
+        };
+      }();
+    `);
+  });
+
+  it('transforms named define blocks with no dependency list', () => {
+    expect(`
+      define('thismoduletho', function() {
+        return {
+           llamas: 'they are fluffy'
+        };
+      });
+    `).toBeTransformedTo(`
+      module.exports = function() {
+        return {
+          llamas: 'they are fluffy'
+        };
+      }();
+    `);
+  });
 });
