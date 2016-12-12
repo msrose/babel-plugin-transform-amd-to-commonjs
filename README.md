@@ -1,5 +1,7 @@
 # babel-plugin-transform-amd-to-commonjs
 
+[![Build Status](https://travis-ci.org/msrose/babel-plugin-transform-amd-to-commonjs.svg?branch=master)](https://travis-ci.org/msrose/babel-plugin-transform-amd-to-commonjs)
+
 Babel plugin that transforms AMD to CommonJS.
 
 ## Usage
