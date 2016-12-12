@@ -7,6 +7,9 @@
     "test": "jest",
     "lint": "eslint ."
   },
+  "engines": {
+    "node": ">=6"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/msrose/babel-plugin-transform-amd-to-commonjs.git"
@@ -17,7 +20,7 @@
     "amd",
     "commonjs"
   ],
-  "author": "Michael Rose",
+  "author": "Michael Rose <michael_rose@outlook.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/msrose/babel-plugin-transform-amd-to-commonjs/issues"
