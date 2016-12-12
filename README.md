@@ -111,7 +111,7 @@ define(['one', 'two'], function(one, two) {
 
 ### Injecting `require`, `module`, or `exports` as dependencies
 
-- It is strongly advised to simply use return statements to define your AMD modules. That being said, the plugin takes into account the cases where
+It is strongly advised to simply use return statements to define your AMD module's exports. That being said, the plugin takes into account the cases where
 you may have injected them as dependencies. Beware of the following gotchas when using this pattern:
 
 - If you're injecting `module`, `exports`, and/or `require` as dependencies, they must be injected as string literals,
