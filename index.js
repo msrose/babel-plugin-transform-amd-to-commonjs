@@ -25,14 +25,17 @@ module.exports = ({ types: t }) => {
     visitor: {
       ExpressionStatement(path) {
         const { node, parent } = path;
-        if(!t.isProgram(parent) || !t.isCallExpression(node.expression)) return;
+
+        if(!t.isCallExpression(node.expression)) return;
+
+        const { name } = node.expression.callee;
+
+        if(name === 'define' && !t.isProgram(parent)) return;
 
         const argumentDecoders = {
           define: decodeDefineArguments,
           require: decodeRequireArguments
         };
-
-        const { name } = node.expression.callee;
         const argumentDecoder = argumentDecoders[name];
 
         if(!argumentDecoder) return;

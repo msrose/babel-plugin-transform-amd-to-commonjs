@@ -58,4 +58,71 @@ describe('Plugin for require blocks', () => {
       require('deps');
     `);
   });
+
+  it('transforms nested require blocks that have no factory function', () => {
+    expect(`
+      require(['here', 'is', 'i'], function(here) {
+        here.doStuff();
+        require(['yep', 'that', 'me']);
+      });
+    `).toBeTransformedTo(`
+      (function() {
+        var here = require('here');
+        require('is');
+        require('i');
+        here.doStuff();
+        require('yep');
+        require('that');
+        require('me');
+      })();
+    `);
+  });
+
+  it('transforms nested require blocks that have a factory function', () => {
+    expect(`
+      require(['here', 'is', 'i'], function(here) {
+        here.doStuff();
+        require(['yep', 'that', 'me'], function(yep) {
+          yep.doStuff();
+        });
+      });
+    `).toBeTransformedTo(`
+      (function() {
+        var here = require('here');
+        require('is');
+        require('i');
+        here.doStuff();
+        (function() {
+          var yep = require('yep');
+          require('that');
+          require('me');
+          yep.doStuff();
+        })();
+      })();
+    `);
+  });
+
+  it('transforms a require block that is within a define block', () => {
+    expect(`
+      define(['here', 'is', 'i'], function(here) {
+        here.doStuff();
+        require(['yep', 'that', 'me'], function(yep) {
+          yep.doStuff();
+        });
+      });
+    `).toBeTransformedTo(`
+      module.exports = (function() {
+        var here = require('here');
+        require('is');
+        require('i');
+        here.doStuff();
+        (function() {
+          var yep = require('yep');
+          require('that');
+          require('me');
+          yep.doStuff();
+        })();
+      })();
+    `);
+  });
 });
