@@ -42,6 +42,7 @@ module.exports = ({ types: t }) => {
         if(!t.isArrayExpression(dependencyList) && !t.isFunctionExpression(factory)) return;
 
         let injectsModuleOrExports = false;
+        const requireExpressions = [];
 
         if(dependencyList) {
           dependencyList.elements.forEach((el, i) => {
@@ -58,11 +59,11 @@ module.exports = ({ types: t }) => {
             const paramName = factory && factory.params[i];
             const requireCall = t.callExpression(t.identifier('require'), [el]);
             if(paramName) {
-              path.insertBefore(t.variableDeclaration('var', [
+              requireExpressions.push(t.variableDeclaration('var', [
                 t.variableDeclarator(paramName, requireCall)
               ]));
             } else {
-              path.insertBefore(t.expressionStatement(requireCall));
+              requireExpressions.push(t.expressionStatement(requireCall));
             }
           });
         }
@@ -73,7 +74,9 @@ module.exports = ({ types: t }) => {
               (node) => ['module', 'exports'].includes(node.name)
             ).length;
           const factoryReplacement = t.callExpression(
-            t.functionExpression(null, [], factory.body), []
+            t.functionExpression(null, [], t.blockStatement(
+              requireExpressions.concat(factory.body.body)
+            )), []
           );
           if(name === 'define' && !injectsModuleOrExports) {
             path.replaceWith(
@@ -91,7 +94,7 @@ module.exports = ({ types: t }) => {
             path.replaceWith(factoryReplacement);
           }
         } else {
-          path.remove();
+          path.replaceWithMultiple(requireExpressions);
         }
       }
     }

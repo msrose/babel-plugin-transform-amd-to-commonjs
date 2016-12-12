@@ -11,8 +11,8 @@ describe('Plugin for require blocks', () => {
         llama.doSomeStuff();
       });
     `).toBeTransformedTo(`
-      var llama = require('llamas');
       (function() {
+        var llama = require('llamas');
         llama.doSomeStuff();
       })();
     `);
@@ -25,9 +25,9 @@ describe('Plugin for require blocks', () => {
         frog.sayRibbit();
       });
     `).toBeTransformedTo(`
-      var llama = require('llamas');
-      var frog = require('frogs');
       (function() {
+        var llama = require('llamas');
+        var frog = require('frogs');
         llama.doSomeStuff();
         frog.sayRibbit();
       })();
@@ -40,9 +40,9 @@ describe('Plugin for require blocks', () => {
         llama.doSomeStuff();
       });
     `).toBeTransformedTo(`
-      var llama = require('llamas');
-      require('frogs');
       (function() {
+        var llama = require('llamas');
+        require('frogs');
         llama.doSomeStuff();
       })();
     `);

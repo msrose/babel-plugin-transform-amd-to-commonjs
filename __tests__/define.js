@@ -13,8 +13,8 @@ describe('Plugin for define blocks', () => {
         };
       });
     `).toBeTransformedTo(`
-      var donkeys = require('stuff');
       module.exports = function() {
+        var donkeys = require('stuff');
         return {
           llamas: donkeys.version
         };
@@ -31,9 +31,9 @@ describe('Plugin for define blocks', () => {
         };
       });
     `).toBeTransformedTo(`
-      var donkeys = require('stuff');
-      var aruba = require('here');
       module.exports = function() {
+        var donkeys = require('stuff');
+        var aruba = require('here');
         return {
           llamas: donkeys.version,
           cows: aruba.hi
@@ -50,9 +50,9 @@ describe('Plugin for define blocks', () => {
         };
       });
     `).toBeTransformedTo(`
-      var donkeys = require('stuff');
-      require('here');
       module.exports = function() {
+        var donkeys = require('stuff');
+        require('here');
         return {
           llamas: donkeys.version
         };
@@ -97,8 +97,8 @@ describe('Plugin for define blocks', () => {
       });
     `).toBeTransformedTo(`
       var dependency = 'hey';
-      var here = require(dependency);
       module.exports = function() {
+        var here = require(dependency);
         return {
           llamas: here.hi
         };
@@ -114,8 +114,8 @@ describe('Plugin for define blocks', () => {
         };
       });
     `).toBeTransformedTo(`
-      var here = require('hi');
       module.exports = function() {
+        var here = require('hi');
         return {
           llamas: here.hi
         };
@@ -139,7 +139,7 @@ describe('Plugin for define blocks', () => {
     `);
   });
 
-  it('does not require a dependency name `require`', () => {
+  it('does not require a dependency named `require`', () => {
     expect(`
       define(['require'], function(require) {
         var x = require('x');
@@ -151,7 +151,7 @@ describe('Plugin for define blocks', () => {
     `);
   });
 
-  it('handles injection of dependency named `module`', () => {
+  it('handles injection of a dependency named `module`', () => {
     expect(`
       define(['module'], function(module) {
         module.exports = { hey: 'boi' };
@@ -208,8 +208,8 @@ describe('Plugin for define blocks', () => {
         };
       });
     `).toBeTransformedTo(`
-      var module = require('notmodule');
       module.exports = function() {
+        var module = require('notmodule');
         return {
           notmodule: module.notmodule
         };
@@ -225,8 +225,8 @@ describe('Plugin for define blocks', () => {
         };
       });
     `).toBeTransformedTo(`
-      var exports = require('notexports');
       module.exports = function() {
+        var exports = require('notexports');
         return {
           notexports: exports.notexports
         };
