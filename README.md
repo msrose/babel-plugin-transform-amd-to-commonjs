@@ -83,6 +83,10 @@ AMD is interpreted as described and implemented by [RequireJS](http://requirejs.
 
 ## Caveats
 
+### Only Node.js version 6+ supported
+
+If you would like support for lower versions of node (4+), please submit an issue.
+
 ### One module per file
 
 Make sure that you have only one AMD module defined per file, otherwise you'll experience strange results once transformed to the CommonJS format.
