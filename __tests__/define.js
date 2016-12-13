@@ -198,6 +198,17 @@ describe('Plugin for define blocks', () => {
         exports.hey = stuff.boi;
       })(require, exports);
     `);
+    expect(`
+      define(function(require) {
+        var stuff = require('hi');
+        exports.hey = stuff.boi;
+      });
+    `).toBeTransformedTo(`
+      module.exports = function(require) {
+        var stuff = require('hi');
+        exports.hey = stuff.boi;
+      }(require);
+    `);
   });
 
   it('transforms the simplified commonjs wrapper with weird variable names', () => {
@@ -222,6 +233,17 @@ describe('Plugin for define blocks', () => {
         var stuff = llamas('hi');
         cows.hey = stuff.boi;
       })(require, exports);
+    `);
+    expect(`
+      define(function(donkeys) {
+        var stuff = donkeys('hi');
+        exports.hey = stuff.boi;
+      });
+    `).toBeTransformedTo(`
+      module.exports = function(donkeys) {
+        var stuff = donkeys('hi');
+        exports.hey = stuff.boi;
+      }(require);
     `);
   });
 
