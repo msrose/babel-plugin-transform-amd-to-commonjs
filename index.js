@@ -33,6 +33,15 @@ module.exports = ({ types: t }) => {
     );
   };
 
+  const createRequireExpression = (dependencyNode, variableName) => {
+    const requireCall = t.callExpression(t.identifier('require'), [dependencyNode]);
+    if(variableName) {
+      return t.variableDeclaration('var', [t.variableDeclarator(variableName, requireCall)]);
+    } else {
+      return t.expressionStatement(requireCall);
+    }
+  };
+
   return {
     visitor: {
       ExpressionStatement(path) {
@@ -72,14 +81,7 @@ module.exports = ({ types: t }) => {
               }
             }
             const paramName = factory && factory.params[i];
-            const requireCall = t.callExpression(t.identifier('require'), [el]);
-            if(paramName) {
-              requireExpressions.push(t.variableDeclaration('var', [
-                t.variableDeclarator(paramName, requireCall)
-              ]));
-            } else {
-              requireExpressions.push(t.expressionStatement(requireCall));
-            }
+            requireExpressions.push(createRequireExpression(el, paramName));
           });
         }
 
