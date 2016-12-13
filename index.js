@@ -72,15 +72,19 @@ module.exports = ({ types: t }) => {
         }
 
         if(factory) {
-          injectsModuleOrExports = injectsModuleOrExports ||
-            !dependencyList && factory.params.filter(
-              (node) => ['module', 'exports'].includes(node.name)
-            ).length;
-          const factoryReplacement = t.callExpression(
-            t.functionExpression(null, [], t.blockStatement(
+          const factoryArity = factory.params.length;
+          const hasParamsForInjection = !dependencyList && factoryArity > 0;
+          injectsModuleOrExports = injectsModuleOrExports || hasParamsForInjection;
+
+          const replacementFuncExpr = hasParamsForInjection ?
+            factory : t.functionExpression(null, [], t.blockStatement(
               requireExpressions.concat(factory.body.body)
-            )), []
-          );
+            ));
+          const replacementCallExprParams = hasParamsForInjection ?
+            ['require', 'exports', 'module'].slice(0, factoryArity).map(a => t.identifier(a)) : [];
+
+          const factoryReplacement = t.callExpression(replacementFuncExpr, replacementCallExprParams);
+
           if(name === 'define' && !injectsModuleOrExports) {
             path.replaceWith(
               t.expressionStatement(

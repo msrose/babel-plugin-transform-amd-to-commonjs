@@ -182,10 +182,10 @@ describe('Plugin for define blocks', () => {
         exports.hey = stuff.boi;
       });
     `).toBeTransformedTo(`
-      (function() {
+      (function(require, exports, module) {
         var stuff = require('hi');
         exports.hey = stuff.boi;
-      })();
+      })(require, exports, module);
     `);
     expect(`
       define(function(require, exports) {
@@ -193,10 +193,35 @@ describe('Plugin for define blocks', () => {
         exports.hey = stuff.boi;
       });
     `).toBeTransformedTo(`
-      (function() {
+      (function(require, exports) {
         var stuff = require('hi');
         exports.hey = stuff.boi;
-      })();
+      })(require, exports);
+    `);
+  });
+
+  it('transforms the simplified commonjs wrapper with weird variable names', () => {
+    expect(`
+      define(function(llamas, cows, bears) {
+        var stuff = llamas('hi');
+        cows.hey = stuff.boi;
+      });
+    `).toBeTransformedTo(`
+      (function(llamas, cows, bears) {
+        var stuff = llamas('hi');
+        cows.hey = stuff.boi;
+      })(require, exports, module);
+    `);
+    expect(`
+      define(function(llamas, cows) {
+        var stuff = llamas('hi');
+        cows.hey = stuff.boi;
+      });
+    `).toBeTransformedTo(`
+      (function(llamas, cows) {
+        var stuff = llamas('hi');
+        cows.hey = stuff.boi;
+      })(require, exports);
     `);
   });
 
