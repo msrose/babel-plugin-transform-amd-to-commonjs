@@ -21,6 +21,18 @@ module.exports = ({ types: t }) => {
     }
   };
 
+  const createModuleExportsAssignmentExpression = (value) => {
+    return t.expressionStatement(
+      t.assignmentExpression(
+        '=',
+        t.memberExpression(
+          t.identifier('module'), t.identifier('exports')
+        ),
+        value
+      )
+    );
+  };
+
   return {
     visitor: {
       ExpressionStatement(path) {
@@ -86,17 +98,7 @@ module.exports = ({ types: t }) => {
           const factoryReplacement = t.callExpression(replacementFuncExpr, replacementCallExprParams);
 
           if(name === 'define' && !injectsModuleOrExports) {
-            path.replaceWith(
-              t.expressionStatement(
-                t.assignmentExpression(
-                  '=',
-                  t.memberExpression(
-                    t.identifier('module'), t.identifier('exports')
-                  ),
-                  factoryReplacement
-                )
-              )
-            );
+            path.replaceWith(createModuleExportsAssignmentExpression(factoryReplacement));
           } else {
             path.replaceWith(factoryReplacement);
           }
