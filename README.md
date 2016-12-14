@@ -7,6 +7,8 @@ Babel plugin that transforms AMD to CommonJS.
 
 ## Usage
 
+[Check out the example project](https://github.com/msrose/transform-amd-to-commonjs-example) that has Jest tests synchronously `require`ing AMD modules.
+
 ```
 npm install --save-dev babel-plugin-transform-amd-to-commonjs
 ```
