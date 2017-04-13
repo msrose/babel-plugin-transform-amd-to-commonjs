@@ -92,8 +92,9 @@ module.exports = ({ types: t }) => {
           ));
           let replacementCallExprParams = [];
 
-          const hasParamsForInjection = !dependencyList && factoryArity > 0;
-          if(hasParamsForInjection) {
+          // https://github.com/requirejs/requirejs/wiki/differences-between-the-simplified-commonjs-wrapper-and-standard-amd-define
+          const isSimplifiedCommonJSWrapper = !dependencyList && factoryArity > 0;
+          if(isSimplifiedCommonJSWrapper) {
             replacementFuncExpr = factory;
             const identifiers = ['require', 'exports', 'module'];
             replacementCallExprParams = identifiers.slice(0, factoryArity).map(a => t.identifier(a));
