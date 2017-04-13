@@ -66,7 +66,7 @@ module.exports = ({ types: t }) => {
         if(!t.isArrayExpression(dependencyList) && !t.isFunctionExpression(factory)) return;
 
         let injectsModuleOrExports = false;
-        const requireExpressions = [];
+        const newNodes = [];
 
         if(dependencyList) {
           dependencyList.elements.forEach((el, i) => {
@@ -81,15 +81,13 @@ module.exports = ({ types: t }) => {
               }
             }
             const paramName = factory && factory.params[i];
-            requireExpressions.push(createRequireExpression(el, paramName));
+            newNodes.push(createRequireExpression(el, paramName));
           });
         }
 
         if(factory) {
           const factoryArity = factory.params.length;
-          let replacementFuncExpr = t.functionExpression(null, [], t.blockStatement(
-            requireExpressions.concat(factory.body.body)
-          ));
+          let replacementFuncExpr = t.functionExpression(null, [], t.blockStatement(factory.body.body));
           let replacementCallExprParams = [];
 
           // https://github.com/requirejs/requirejs/wiki/differences-between-the-simplified-commonjs-wrapper-and-standard-amd-define
@@ -104,12 +102,15 @@ module.exports = ({ types: t }) => {
 
           injectsModuleOrExports = injectsModuleOrExports || !dependencyList && factoryArity > 1;
           if(name === 'define' && !injectsModuleOrExports) {
-            path.replaceWith(createModuleExportsAssignmentExpression(factoryReplacement));
+            newNodes.push(createModuleExportsAssignmentExpression(factoryReplacement));
           } else {
-            path.replaceWith(factoryReplacement);
+            newNodes.push(t.expressionStatement(factoryReplacement));
           }
+        } 
+        if(newNodes.length > 1) {
+          path.replaceWithMultiple(newNodes);
         } else {
-          path.replaceWithMultiple(requireExpressions);
+          path.replaceWith(newNodes[0]);
         }
       }
     }

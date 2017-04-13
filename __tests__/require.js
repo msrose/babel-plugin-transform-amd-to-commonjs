@@ -11,8 +11,8 @@ describe('Plugin for require blocks', () => {
         llama.doSomeStuff();
       });
     `).toBeTransformedTo(`
+      var llama = require('llamas');
       (function() {
-        var llama = require('llamas');
         llama.doSomeStuff();
       })();
     `);
@@ -25,9 +25,9 @@ describe('Plugin for require blocks', () => {
         frog.sayRibbit();
       });
     `).toBeTransformedTo(`
+      var llama = require('llamas');
+      var frog = require('frogs');
       (function() {
-        var llama = require('llamas');
-        var frog = require('frogs');
         llama.doSomeStuff();
         frog.sayRibbit();
       })();
@@ -40,9 +40,9 @@ describe('Plugin for require blocks', () => {
         llama.doSomeStuff();
       });
     `).toBeTransformedTo(`
+      var llama = require('llamas');
+      require('frogs');
       (function() {
-        var llama = require('llamas');
-        require('frogs');
         llama.doSomeStuff();
       })();
     `);
@@ -66,10 +66,10 @@ describe('Plugin for require blocks', () => {
         require(['yep', 'that', 'me']);
       });
     `).toBeTransformedTo(`
+      var here = require('here');
+      require('is');
+      require('i');
       (function() {
-        var here = require('here');
-        require('is');
-        require('i');
         here.doStuff();
         require('yep');
         require('that');
@@ -87,15 +87,15 @@ describe('Plugin for require blocks', () => {
         });
       });
     `).toBeTransformedTo(`
+      var here = require('here');
+      require('is');
+      require('i');
       (function() {
-        var here = require('here');
-        require('is');
-        require('i');
         here.doStuff();
+        var yep = require('yep');
+        require('that');
+        require('me');
         (function() {
-          var yep = require('yep');
-          require('that');
-          require('me');
           yep.doStuff();
         })();
       })();
@@ -111,15 +111,15 @@ describe('Plugin for require blocks', () => {
         });
       });
     `).toBeTransformedTo(`
+      var here = require('here');
+      require('is');
+      require('i');
       module.exports = (function() {
-        var here = require('here');
-        require('is');
-        require('i');
         here.doStuff();
+        var yep = require('yep');
+        require('that');
+        require('me');
         (function() {
-          var yep = require('yep');
-          require('that');
-          require('me');
           yep.doStuff();
         })();
       })();

@@ -13,8 +13,8 @@ describe('Plugin for define blocks', () => {
         };
       });
     `).toBeTransformedTo(`
+      var donkeys = require('stuff');
       module.exports = function() {
-        var donkeys = require('stuff');
         return {
           llamas: donkeys.version
         };
@@ -31,9 +31,9 @@ describe('Plugin for define blocks', () => {
         };
       });
     `).toBeTransformedTo(`
+      var donkeys = require('stuff');
+      var aruba = require('here');
       module.exports = function() {
-        var donkeys = require('stuff');
-        var aruba = require('here');
         return {
           llamas: donkeys.version,
           cows: aruba.hi
@@ -50,9 +50,9 @@ describe('Plugin for define blocks', () => {
         };
       });
     `).toBeTransformedTo(`
+      var donkeys = require('stuff');
+      require('here');
       module.exports = function() {
-        var donkeys = require('stuff');
-        require('here');
         return {
           llamas: donkeys.version
         };
@@ -97,8 +97,8 @@ describe('Plugin for define blocks', () => {
       });
     `).toBeTransformedTo(`
       var dependency = 'hey';
+      var here = require(dependency);
       module.exports = function() {
-        var here = require(dependency);
         return {
           llamas: here.hi
         };
@@ -114,8 +114,8 @@ describe('Plugin for define blocks', () => {
         };
       });
     `).toBeTransformedTo(`
+      var here = require('hi');
       module.exports = function() {
-        var here = require('hi');
         return {
           llamas: here.hi
         };
@@ -255,8 +255,8 @@ describe('Plugin for define blocks', () => {
         };
       });
     `).toBeTransformedTo(`
+      var module = require('notmodule');
       module.exports = function() {
-        var module = require('notmodule');
         return {
           notmodule: module.notmodule
         };
@@ -272,8 +272,8 @@ describe('Plugin for define blocks', () => {
         };
       });
     `).toBeTransformedTo(`
+      var exports = require('notexports');
       module.exports = function() {
-        var exports = require('notexports');
         return {
           notexports: exports.notexports
         };
