@@ -87,7 +87,7 @@ module.exports = ({ types: t }) => {
 
         if(factory) {
           const factoryArity = factory.params.length;
-          let replacementFuncExpr = t.functionExpression(null, [], t.blockStatement(factory.body.body));
+          let replacementFuncExpr = t.functionExpression(null, [], factory.body);
           let replacementCallExprParams = [];
 
           // https://github.com/requirejs/requirejs/wiki/differences-between-the-simplified-commonjs-wrapper-and-standard-amd-define
