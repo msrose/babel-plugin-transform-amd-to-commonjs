@@ -107,11 +107,7 @@ module.exports = ({ types: t }) => {
             newNodes.push(t.expressionStatement(factoryReplacement));
           }
         } 
-        if(newNodes.length > 1) {
-          path.replaceWithMultiple(newNodes);
-        } else {
-          path.replaceWith(newNodes[0]);
-        }
+        path.replaceWithMultiple(newNodes);
       }
     }
   };
