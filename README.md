@@ -2,6 +2,7 @@
 
 [![npm version](https://badge.fury.io/js/babel-plugin-transform-amd-to-commonjs.svg)](https://badge.fury.io/js/babel-plugin-transform-amd-to-commonjs)
 [![Build Status](https://travis-ci.org/msrose/babel-plugin-transform-amd-to-commonjs.svg?branch=master)](https://travis-ci.org/msrose/babel-plugin-transform-amd-to-commonjs)
+[![devDependencies Status](https://david-dm.org/msrose/babel-plugin-transform-amd-to-commonjs/dev-status.svg)](https://david-dm.org/msrose/babel-plugin-transform-amd-to-commonjs?type=dev)
 
 Babel plugin that transforms AMD to CommonJS.
 
@@ -87,10 +88,6 @@ AMD is interpreted as described and implemented by [RequireJS](http://requirejs.
 - The module name (optional first argument to `define`) is ignored, since the module ID in CommonJS is determined by the resolved filename.
 
 ## Caveats
-
-### Only Node.js version 6+ supported
-
-If you would like support for lower versions of node (4+), please submit an issue.
 
 ### One module per file
 
