@@ -2,13 +2,14 @@
   "name": "babel-plugin-transform-amd-to-commonjs",
   "version": "0.2.0",
   "description": "Transforms AMD code to CommonJS",
-  "main": "index.js",
+  "main": "build.js",
   "scripts": {
     "test": "jest",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "prepublish": "babel index.js --out-file build.js"
   },
   "engines": {
-    "node": ">=6"
+    "node": ">=4"
   },
   "repository": {
     "type": "git",
@@ -29,9 +30,12 @@
   "devDependencies": {
     "babel-cli": "^6.18.0",
     "babel-core": "^6.20.0",
+    "babel-jest": "^20.0.3",
+    "babel-preset-es2015": "^6.24.1",
     "eslint": "^3.12.0",
     "eslint-config-msrose": "^0.1.0",
-    "jest": "^19.0.2"
+    "jest": "^20.0.4",
+    "regenerator-runtime": "^0.10.5"
   },
   "jest": {
     "testPathIgnorePatterns": [
