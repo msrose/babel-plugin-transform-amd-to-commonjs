@@ -38,10 +38,10 @@ define(['jquery', 'underscore', 'myModule'], function($, _) {
 Output (define):
 
 ```javascript
+var $ = require('jquery');
+var _ = require('underscore');
+require('myModule');
 module.exports = function() {
-  var $ = require('jquery');
-  var _ = require('underscore');
-  require('myModule');
   return {
     divs: _.filter($divs, function(div) {
       return div.hasChildNodes();
@@ -64,13 +64,13 @@ require(['jquery', 'underscore', 'myModule'], function($, _) {
 Output (require):
 
 ```javascript
+var $ = require('jquery');
+var _ = require('underscore');
+require('myModule');
 (function() {
-  var $ = require('jquery');
-  var _ = require('underscore');
-  require('myModule');
   $(document).append($('<div>').text(_.random(10)));
+  var anotherModule = require('anotherModule');
   (function() {
-    var anotherModule = require('anotherModule');
     anotherModule.doSomeStuff(_.random(10));
   })();
 })();
