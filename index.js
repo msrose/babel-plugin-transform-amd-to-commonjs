@@ -50,8 +50,9 @@ module.exports = ({ types: t }) => {
         if(!t.isCallExpression(node.expression)) return;
 
         const { name } = node.expression.callee;
+        const isDefineCall = name === 'define';
 
-        if(name === 'define' && !t.isProgram(parent)) return;
+        if(isDefineCall && !t.isProgram(parent)) return;
 
         const argumentDecoders = {
           define: decodeDefineArguments,
@@ -63,9 +64,10 @@ module.exports = ({ types: t }) => {
 
         const { dependencyList, factory } = argumentDecoder(node.expression.arguments);
 
-        if(!t.isArrayExpression(dependencyList) && !t.isFunctionExpression(factory)) return;
+        if(!t.isArrayExpression(dependencyList) && !factory) return;
 
         let injectsModuleOrExports = false;
+        const isFunctionFactory = t.isFunctionExpression(factory);
         const requireExpressions = [];
 
         if(dependencyList) {
@@ -80,12 +82,12 @@ module.exports = ({ types: t }) => {
                   return;
               }
             }
-            const paramName = factory && factory.params[i];
+            const paramName = isFunctionFactory && factory.params[i];
             requireExpressions.push(createRequireExpression(el, paramName));
           });
         }
 
-        if(factory) {
+        if(isFunctionFactory) {
           const factoryArity = factory.params.length;
           let replacementFuncExpr = t.functionExpression(null, [], t.blockStatement(
             requireExpressions.concat(factory.body.body)
@@ -103,11 +105,15 @@ module.exports = ({ types: t }) => {
           const factoryReplacement = t.callExpression(replacementFuncExpr, replacementCallExprParams);
 
           injectsModuleOrExports = injectsModuleOrExports || !dependencyList && factoryArity > 1;
-          if(name === 'define' && !injectsModuleOrExports) {
+          if(isDefineCall && !injectsModuleOrExports) {
             path.replaceWith(createModuleExportsAssignmentExpression(factoryReplacement));
           } else {
             path.replaceWith(factoryReplacement);
           }
+        } else if(factory && isDefineCall) {
+          const exportExpression = createModuleExportsAssignmentExpression(factory);
+          const nodes = requireExpressions.concat(exportExpression);
+          path.replaceWithMultiple(nodes);
         } else {
           path.replaceWithMultiple(requireExpressions);
         }
