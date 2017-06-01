@@ -368,6 +368,11 @@ describe('Plugin for define blocks', () => {
     `).toBeTransformedTo(`
       module.exports = { thismodule: 'is an object' };
     `);
+    expect(`
+      define('auselessname', ['an', 'array', 'factory']);
+    `).toBeTransformedTo(`
+      module.exports = ['an', 'array', 'factory'];
+    `);
   });
 
   it('transforms named non-function modules with dependencies', () => {
@@ -376,6 +381,12 @@ describe('Plugin for define blocks', () => {
     `).toBeTransformedTo(`
       require('side-effect');
       module.exports = { thismodule: 'is an object' };
+    `);
+    expect(`
+      define('auselessname', ['side-effect'], ['an', 'array', 'factory']);
+    `).toBeTransformedTo(`
+      require('side-effect');
+      module.exports = ['an', 'array', 'factory'];
     `);
   });
 });
