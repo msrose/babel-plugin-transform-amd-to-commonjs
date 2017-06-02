@@ -280,4 +280,113 @@ describe('Plugin for define blocks', () => {
       }();
     `);
   });
+
+  it('transforms non-function modules exporting objects with no dependencies', () => {
+    expect(`
+      define({ thismodule: 'is an object' });
+    `).toBeTransformedTo(`
+      module.exports = { thismodule: 'is an object' };
+    `);
+  });
+
+  it('transforms non-function modules exporting objects with dependencies', () => {
+    expect(`
+      define(['side-effect'], { thismodule: 'is an object' });
+    `).toBeTransformedTo(`
+      require('side-effect');
+      module.exports = { thismodule: 'is an object' };
+    `);
+  });
+
+  it('transforms non-function modules exporting arrays with no dependencies', () => {
+    expect(`
+      define(['this', 'module', 'is', 'an', 'array']);
+    `).toBeTransformedTo(`
+      module.exports = ['this', 'module', 'is', 'an', 'array'];
+    `);
+  });
+
+  it('transforms non-function modules exporting arrays with dependencies', () => {
+    expect(`
+      define(['side-effect'], ['this', 'module', 'is', 'an', 'array']);
+    `).toBeTransformedTo(`
+      require('side-effect');
+      module.exports = ['this', 'module', 'is', 'an', 'array'];
+    `);
+  });
+
+  it('transforms non-function modules exporting primitives with no dependencies', () => {
+    const primitives = ["'a string'", '33', 'true', 'false', 'null', 'undefined'];
+    primitives.forEach((primitive) => {
+      expect(`
+        define(${primitive});
+      `).toBeTransformedTo(`
+        module.exports = ${primitive};
+      `);
+    });
+  });
+
+  it('handles non-function modules exporting primitives with dependencies', () => {
+    const primitives = ["'a string'", '33', 'true', 'false', 'null', 'undefined'];
+    primitives.forEach((primitive) => {
+      expect(`
+        define(['side-effect'], ${primitive});
+      `).toBeTransformedTo(`
+        require('side-effect');
+        module.exports = ${primitive};
+      `);
+    });
+  });
+
+  it('transforms non-function modules requiring `require` for some reason', () => {
+    expect(`
+      define(['require'], { some: 'stuff' });
+    `).toBeTransformedTo(`
+      module.exports = { some: 'stuff' };
+    `);
+  });
+
+  it('transforms non-function modules requiring `exports` for some reason', () => {
+    expect(`
+      define(['exports'], { some: 'stuff' });
+    `).toBeTransformedTo(`
+      module.exports = { some: 'stuff' };
+    `);
+  });
+
+  it('transforms non-function modules requiring `module` for some reason', () => {
+    expect(`
+      define(['module'], { some: 'stuff' });
+    `).toBeTransformedTo(`
+      module.exports = { some: 'stuff' };
+    `);
+  });
+
+  it('transforms named non-function modules with no dependencies', () => {
+    expect(`
+      define('auselessname', { thismodule: 'is an object' });
+    `).toBeTransformedTo(`
+      module.exports = { thismodule: 'is an object' };
+    `);
+    expect(`
+      define('auselessname', ['an', 'array', 'factory']);
+    `).toBeTransformedTo(`
+      module.exports = ['an', 'array', 'factory'];
+    `);
+  });
+
+  it('transforms named non-function modules with dependencies', () => {
+    expect(`
+      define('auselessname', ['side-effect'], { thismodule: 'is an object' });
+    `).toBeTransformedTo(`
+      require('side-effect');
+      module.exports = { thismodule: 'is an object' };
+    `);
+    expect(`
+      define('auselessname', ['side-effect'], ['an', 'array', 'factory']);
+    `).toBeTransformedTo(`
+      require('side-effect');
+      module.exports = ['an', 'array', 'factory'];
+    `);
+  });
 });
