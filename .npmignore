@@ -1,4 +1,5 @@
 __tests__
+.babelrc
 .eslintrc.js
 .eslintignore
 .gitignore
