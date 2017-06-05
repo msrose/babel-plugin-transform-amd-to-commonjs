@@ -3,5 +3,6 @@ __tests__
 .eslintrc.js
 .eslintignore
 .gitignore
+.nvmrc
 .travis.yml
 index.js
