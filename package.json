@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jest",
     "lint": "eslint .",
-    "prepublish": "babel index.js --out-file build.js"
+    "prepare": "babel index.js --out-file build.js"
   },
   "engines": {
     "node": ">=4"
