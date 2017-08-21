@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = ({ types: t }) => {
   const decodeDefineArguments = (argNodes) => {
     if(argNodes.length === 1) {

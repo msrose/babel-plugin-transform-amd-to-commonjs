@@ -1,8 +1,12 @@
 language: node_js
 node_js:
-  - "4"
-  - "6"
   - "8"
+  - "6"
+  - "4"
+before_install:
+  - npm install -g greenkeeper-lockfile@1
+before_script: greenkeeper-lockfile-update
 script:
   - npm run lint
   - npm test
+after_script: greenkeeper-lockfile-upload

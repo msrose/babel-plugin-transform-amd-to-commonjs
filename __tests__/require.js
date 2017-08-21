@@ -1,3 +1,5 @@
+'use strict';
+
 const customMatchers = require('./custom-matchers');
 
 describe('Plugin for require blocks', () => {
