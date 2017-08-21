@@ -1,6 +1,9 @@
+'use strict';
+
 module.exports = {
   env: {
-    jest: true,
-    jasmine: true
-  }
+    jest: true
+  },
+  plugins: ['jest'],
+  extends: 'msrose/jest',
 };
