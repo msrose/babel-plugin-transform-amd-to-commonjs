@@ -39,6 +39,7 @@
     "regenerator-runtime": "^0.11.0"
   },
   "jest": {
-    "setupTestFrameworkScriptFile": "<rootDir>/tests/setup.js"
+    "setupTestFrameworkScriptFile": "<rootDir>/tests/setup.js",
+    "collectCoverageFrom": ["index.js"]
   }
 }
