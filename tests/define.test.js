@@ -1,12 +1,6 @@
 'use strict';
 
-const customMatchers = require('./custom-matchers');
-
 describe('Plugin for define blocks', () => {
-  beforeEach(() => {
-    jasmine.addMatchers(customMatchers);
-  });
-
   it('transforms anonymous define blocks with one dependency', () => {
     expect(`
       define(['stuff'], function(donkeys) {

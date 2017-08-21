@@ -1,10 +1,8 @@
+'use strict';
+
 module.exports = {
-    "env": {
-        "es6": true,
-        "node": true
-    },
-    "parserOptions": {
-      "ecmaVersion": 6
-    },
-    "extends": "msrose"
+  env: {
+    node: true
+  },
+  extends: 'msrose'
 };
