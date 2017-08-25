@@ -58,6 +58,7 @@ module.exports = function() {
 Input:
 
 ```javascript
+// Nested requires
 require(['jquery', 'underscore', 'myModule'], function($, _) {
   // ...
   require(['anotherModule'], function(anotherModule) {
