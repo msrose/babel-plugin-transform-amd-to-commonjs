@@ -24,56 +24,60 @@ Add the transform to your .babelrc:
 }
 ```
 
-Input (define):
+## Examples
+
+### Define
+
+Input:
 
 ```javascript
 define(['jquery', 'underscore', 'myModule'], function($, _) {
-  var $divs = $('div');
+  // ...
   return {
-    divs: _.filter($divs, function(div) {
-      return div.hasChildNodes();
-    });
+    // ...
   };
 });
 ```
 
-Output (define):
+Output:
 
 ```javascript
 module.exports = function() {
   var $ = require('jquery');
   var _ = require('underscore');
   require('myModule');
+  // ...
   return {
-    divs: _.filter($divs, function(div) {
-      return div.hasChildNodes();
-    });
+    // ...
   };
 }();
 ```
 
-Input (require):
+### Require
+
+Input:
 
 ```javascript
+// Nested requires
 require(['jquery', 'underscore', 'myModule'], function($, _) {
-  $(document).append($('<div>').text(_.random(10)));
+  // ...
   require(['anotherModule'], function(anotherModule) {
-    anotherModule.doSomeStuff(_.random(10));
+    // ...
   });
 });
 ```
 
-Output (require):
+Output:
 
 ```javascript
 (function() {
   var $ = require('jquery');
   var _ = require('underscore');
   require('myModule');
-  $(document).append($('<div>').text(_.random(10)));
+  // ...
   (function() {
     var anotherModule = require('anotherModule');
-    anotherModule.doSomeStuff(_.random(10));
+    // ...
   })();
 })();
 ```
