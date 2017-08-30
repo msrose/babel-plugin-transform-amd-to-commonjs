@@ -40,6 +40,7 @@
   },
   "jest": {
     "setupTestFrameworkScriptFile": "<rootDir>/tests/setup.js",
-    "collectCoverageFrom": ["index.js"]
+    "collectCoverageFrom": ["index.js"],
+    "testEnvironment": "node"
   }
 }
