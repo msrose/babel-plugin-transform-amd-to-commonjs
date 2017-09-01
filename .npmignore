@@ -1,8 +1,0 @@
-__tests__
-.babelrc
-.eslintrc.js
-.eslintignore
-.gitignore
-.nvmrc
-.travis.yml
-index.js

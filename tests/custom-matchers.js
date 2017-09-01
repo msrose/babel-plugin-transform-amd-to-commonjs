@@ -3,7 +3,7 @@
 const babel = require('babel-core');
 
 const transformAmdToCommonJS = code => {
-  return babel.transform(code, { plugins: ['./index'], babelrc: false }).code;
+  return babel.transform(code, { plugins: ['./src/index'], babelrc: false }).code;
 };
 
 const transformTrivial = code => {
