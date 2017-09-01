@@ -52,6 +52,32 @@ module.exports = ({ types: t }) => {
     }
   };
 
+  const isModuleOrExportsInDependencyList = dependencyList => {
+    return (
+      dependencyList &&
+      dependencyList.elements.some(
+        element =>
+          t.isStringLiteral(element) && (element.value === MODULE || element.value === EXPORTS)
+      )
+    );
+  };
+
+  const isSimplifiedCommonJSWrapperWithModuleOrExports = (dependencyList, factoryArity) => {
+    return !dependencyList && factoryArity > 1;
+  };
+
+  const isModuleOrExportsInjected = (dependencyList, factoryArity) => {
+    return (
+      isModuleOrExportsInDependencyList(dependencyList) ||
+      isSimplifiedCommonJSWrapperWithModuleOrExports(dependencyList, factoryArity)
+    );
+  };
+
+  // Simple version of zip that only pairs elements until the end of the first array
+  const zip = (array1, array2) => {
+    return array1.map((element, index) => [element, array2[index]]);
+  };
+
   return {
     visitor: {
       ExpressionStatement(path) {
@@ -72,25 +98,26 @@ module.exports = ({ types: t }) => {
 
         if (!t.isArrayExpression(dependencyList) && !factory) return;
 
-        let injectsModuleOrExports = false;
         const isFunctionFactory = t.isFunctionExpression(factory);
         const requireExpressions = [];
+        // Order is important here for the simplified commonjs wrapper
+        const keywords = [REQUIRE, EXPORTS, MODULE];
 
         if (dependencyList) {
-          dependencyList.elements.forEach((el, i) => {
-            if (t.isStringLiteral(el)) {
-              switch (el.value) {
-                case REQUIRE:
-                  return;
-                case MODULE:
-                case EXPORTS:
-                  injectsModuleOrExports = true;
-                  return;
-              }
-            }
-            const paramName = isFunctionFactory && factory.params[i];
-            requireExpressions.push(createRequireExpression(el, paramName));
-          });
+          const dependencyParameterPairs = zip(
+            dependencyList.elements,
+            isFunctionFactory ? factory.params : []
+          );
+
+          const explicitRequires = dependencyParameterPairs
+            .filter(([dependency]) => {
+              return !t.isStringLiteral(dependency) || keywords.indexOf(dependency.value) === -1;
+            })
+            .map(([dependency, paramName]) => {
+              return createRequireExpression(dependency, paramName);
+            });
+
+          requireExpressions.push(...explicitRequires);
         }
 
         if (isFunctionFactory) {
@@ -106,10 +133,7 @@ module.exports = ({ types: t }) => {
           const isSimplifiedCommonJSWrapper = !dependencyList && factoryArity > 0;
           if (isSimplifiedCommonJSWrapper) {
             replacementFuncExpr = factory;
-            const identifiers = [REQUIRE, EXPORTS, MODULE];
-            replacementCallExprParams = identifiers
-              .slice(0, factoryArity)
-              .map(a => t.identifier(a));
+            replacementCallExprParams = keywords.slice(0, factoryArity).map(a => t.identifier(a));
           }
 
           const factoryReplacement = t.callExpression(
@@ -117,8 +141,7 @@ module.exports = ({ types: t }) => {
             replacementCallExprParams
           );
 
-          injectsModuleOrExports = injectsModuleOrExports || (!dependencyList && factoryArity > 1);
-          if (isDefineCall && !injectsModuleOrExports) {
+          if (isDefineCall && !isModuleOrExportsInjected(dependencyList, factoryArity)) {
             path.replaceWith(createModuleExportsAssignmentExpression(factoryReplacement));
           } else {
             path.replaceWith(factoryReplacement);
