@@ -28,6 +28,11 @@ module.exports = ({ types: t }) => {
     }
   };
 
+  const argumentDecoders = {
+    [DEFINE]: decodeDefineArguments,
+    [REQUIRE]: decodeRequireArguments
+  };
+
   const createModuleExportsAssignmentExpression = (value) => {
     return t.expressionStatement(
       t.assignmentExpression(
@@ -61,10 +66,6 @@ module.exports = ({ types: t }) => {
 
         if(isDefineCall && !t.isProgram(parent)) return;
 
-        const argumentDecoders = {
-          [DEFINE]: decodeDefineArguments,
-          [REQUIRE]: decodeRequireArguments
-        };
         const argumentDecoder = argumentDecoders[name];
 
         if(!argumentDecoder) return;
