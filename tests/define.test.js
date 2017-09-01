@@ -1,7 +1,7 @@
-'use strict';
+"use strict";
 
-describe('Plugin for define blocks', () => {
-  it('transforms anonymous define blocks with one dependency', () => {
+describe("Plugin for define blocks", () => {
+  it("transforms anonymous define blocks with one dependency", () => {
     expect(`
       define(['stuff'], function(donkeys) {
         return {
@@ -18,7 +18,7 @@ describe('Plugin for define blocks', () => {
     `);
   });
 
-  it('transforms anonymous define blocks with multiple dependencies', () => {
+  it("transforms anonymous define blocks with multiple dependencies", () => {
     expect(`
       define(['stuff', 'here'], function(donkeys, aruba) {
         return {
@@ -38,7 +38,7 @@ describe('Plugin for define blocks', () => {
     `);
   });
 
-  it('transforms anonymous define blocks with unused dependencies', () => {
+  it("transforms anonymous define blocks with unused dependencies", () => {
     expect(`
       define(['stuff', 'here'], function(donkeys) {
         return {
@@ -56,7 +56,7 @@ describe('Plugin for define blocks', () => {
     `);
   });
 
-  it('only transforms define blocks at the top level', () => {
+  it("only transforms define blocks at the top level", () => {
     const program = `
       if(someDumbCondition) {
         define(['stuff'], function(stuff) {
@@ -67,7 +67,7 @@ describe('Plugin for define blocks', () => {
     expect(program).toBeTransformedTo(program);
   });
 
-  it('transforms anonymous define blocks with no dependency list', () => {
+  it("transforms anonymous define blocks with no dependency list", () => {
     expect(`
       define(function() {
         return {
@@ -83,7 +83,7 @@ describe('Plugin for define blocks', () => {
     `);
   });
 
-  it('transforms dependencies listed as variables', () => {
+  it("transforms dependencies listed as variables", () => {
     expect(`
       var dependency = 'hey';
       define([dependency], function(here) {
@@ -102,7 +102,7 @@ describe('Plugin for define blocks', () => {
     `);
   });
 
-  it('transforms named define blocks with dependencies', () => {
+  it("transforms named define blocks with dependencies", () => {
     expect(`
       define('thismoduletho', ['hi'], function(here) {
         return {
@@ -119,7 +119,7 @@ describe('Plugin for define blocks', () => {
     `);
   });
 
-  it('transforms named define blocks with no dependency list', () => {
+  it("transforms named define blocks with no dependency list", () => {
     expect(`
       define('thismoduletho', function() {
         return {
@@ -135,7 +135,7 @@ describe('Plugin for define blocks', () => {
     `);
   });
 
-  it('does not require a dependency named `require`', () => {
+  it("does not require a dependency named `require`", () => {
     expect(`
       define(['require'], function(require) {
         var x = require('x');
@@ -147,7 +147,7 @@ describe('Plugin for define blocks', () => {
     `);
   });
 
-  it('handles injection of a dependency named `module`', () => {
+  it("handles injection of a dependency named `module`", () => {
     expect(`
       define(['module'], function(module) {
         module.exports = { hey: 'boi' };
@@ -159,7 +159,7 @@ describe('Plugin for define blocks', () => {
     `);
   });
 
-  it('handles injection of dependency name `exports`', () => {
+  it("handles injection of dependency name `exports`", () => {
     expect(`
       define(['exports'], function(exports) {
         exports.hey = 'boi';
@@ -171,7 +171,7 @@ describe('Plugin for define blocks', () => {
     `);
   });
 
-  it('transforms the simplified commonjs wrapper', () => {
+  it("transforms the simplified commonjs wrapper", () => {
     expect(`
       define(function(require, exports, module) {
         var stuff = require('hi');
@@ -207,7 +207,7 @@ describe('Plugin for define blocks', () => {
     `);
   });
 
-  it('transforms the simplified commonjs wrapper with weird variable names', () => {
+  it("transforms the simplified commonjs wrapper with weird variable names", () => {
     expect(`
       define(function(llamas, cows, bears) {
         var stuff = llamas('hi');
@@ -277,7 +277,7 @@ describe('Plugin for define blocks', () => {
     `);
   });
 
-  it('transforms non-function modules exporting objects with no dependencies', () => {
+  it("transforms non-function modules exporting objects with no dependencies", () => {
     expect(`
       define({ thismodule: 'is an object' });
     `).toBeTransformedTo(`
@@ -285,7 +285,7 @@ describe('Plugin for define blocks', () => {
     `);
   });
 
-  it('transforms non-function modules exporting objects with dependencies', () => {
+  it("transforms non-function modules exporting objects with dependencies", () => {
     expect(`
       define(['side-effect'], { thismodule: 'is an object' });
     `).toBeTransformedTo(`
@@ -294,7 +294,7 @@ describe('Plugin for define blocks', () => {
     `);
   });
 
-  it('transforms non-function modules exporting arrays with no dependencies', () => {
+  it("transforms non-function modules exporting arrays with no dependencies", () => {
     expect(`
       define(['this', 'module', 'is', 'an', 'array']);
     `).toBeTransformedTo(`
@@ -302,7 +302,7 @@ describe('Plugin for define blocks', () => {
     `);
   });
 
-  it('transforms non-function modules exporting arrays with dependencies', () => {
+  it("transforms non-function modules exporting arrays with dependencies", () => {
     expect(`
       define(['side-effect'], ['this', 'module', 'is', 'an', 'array']);
     `).toBeTransformedTo(`
@@ -311,9 +311,9 @@ describe('Plugin for define blocks', () => {
     `);
   });
 
-  it('transforms non-function modules exporting primitives with no dependencies', () => {
-    const primitives = ["'a string'", '33', 'true', 'false', 'null', 'undefined'];
-    primitives.forEach((primitive) => {
+  it("transforms non-function modules exporting primitives with no dependencies", () => {
+    const primitives = ["'a string'", "33", "true", "false", "null", "undefined"];
+    primitives.forEach(primitive => {
       expect(`
         define(${primitive});
       `).toBeTransformedTo(`
@@ -322,9 +322,9 @@ describe('Plugin for define blocks', () => {
     });
   });
 
-  it('handles non-function modules exporting primitives with dependencies', () => {
-    const primitives = ["'a string'", '33', 'true', 'false', 'null', 'undefined'];
-    primitives.forEach((primitive) => {
+  it("handles non-function modules exporting primitives with dependencies", () => {
+    const primitives = ["'a string'", "33", "true", "false", "null", "undefined"];
+    primitives.forEach(primitive => {
       expect(`
         define(['side-effect'], ${primitive});
       `).toBeTransformedTo(`
@@ -334,7 +334,7 @@ describe('Plugin for define blocks', () => {
     });
   });
 
-  it('transforms non-function modules requiring `require` for some reason', () => {
+  it("transforms non-function modules requiring `require` for some reason", () => {
     expect(`
       define(['require'], { some: 'stuff' });
     `).toBeTransformedTo(`
@@ -342,7 +342,7 @@ describe('Plugin for define blocks', () => {
     `);
   });
 
-  it('transforms non-function modules requiring `exports` for some reason', () => {
+  it("transforms non-function modules requiring `exports` for some reason", () => {
     expect(`
       define(['exports'], { some: 'stuff' });
     `).toBeTransformedTo(`
@@ -350,7 +350,7 @@ describe('Plugin for define blocks', () => {
     `);
   });
 
-  it('transforms non-function modules requiring `module` for some reason', () => {
+  it("transforms non-function modules requiring `module` for some reason", () => {
     expect(`
       define(['module'], { some: 'stuff' });
     `).toBeTransformedTo(`
@@ -358,7 +358,7 @@ describe('Plugin for define blocks', () => {
     `);
   });
 
-  it('transforms named non-function modules with no dependencies', () => {
+  it("transforms named non-function modules with no dependencies", () => {
     expect(`
       define('auselessname', { thismodule: 'is an object' });
     `).toBeTransformedTo(`
@@ -371,7 +371,7 @@ describe('Plugin for define blocks', () => {
     `);
   });
 
-  it('transforms named non-function modules with dependencies', () => {
+  it("transforms named non-function modules with dependencies", () => {
     expect(`
       define('auselessname', ['side-effect'], { thismodule: 'is an object' });
     `).toBeTransformedTo(`

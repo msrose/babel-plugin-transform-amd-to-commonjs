@@ -4,5 +4,11 @@ module.exports = {
   env: {
     node: true
   },
-  extends: 'msrose'
+  plugins: [
+    'prettier'
+  ],
+  extends: ['msrose', 'prettier'],
+  rules: {
+    'prettier/prettier': ['error', {printWidth: 100}]
+  }
 };

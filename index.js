@@ -1,17 +1,17 @@
-'use strict';
+"use strict";
 
-const REQUIRE = 'require';
-const MODULE = 'module';
-const EXPORTS = 'exports';
-const DEFINE = 'define';
+const REQUIRE = "require";
+const MODULE = "module";
+const EXPORTS = "exports";
+const DEFINE = "define";
 
 module.exports = ({ types: t }) => {
-  const decodeDefineArguments = (argNodes) => {
-    if(argNodes.length === 1) {
+  const decodeDefineArguments = argNodes => {
+    if (argNodes.length === 1) {
       return { factory: argNodes[0] };
-    } else if(argNodes.length === 2) {
+    } else if (argNodes.length === 2) {
       const decodedArgs = { factory: argNodes[1] };
-      if(t.isArrayExpression(argNodes[0])) {
+      if (t.isArrayExpression(argNodes[0])) {
         decodedArgs.dependencyList = argNodes[0];
       }
       return decodedArgs;
@@ -20,8 +20,8 @@ module.exports = ({ types: t }) => {
     }
   };
 
-  const decodeRequireArguments = (argNodes) => {
-    if(argNodes.length === 1) {
+  const decodeRequireArguments = argNodes => {
+    if (argNodes.length === 1) {
       return { dependencyList: argNodes[0] };
     } else {
       return { dependencyList: argNodes[0], factory: argNodes[1] };
@@ -33,13 +33,11 @@ module.exports = ({ types: t }) => {
     [REQUIRE]: decodeRequireArguments
   };
 
-  const createModuleExportsAssignmentExpression = (value) => {
+  const createModuleExportsAssignmentExpression = value => {
     return t.expressionStatement(
       t.assignmentExpression(
-        '=',
-        t.memberExpression(
-          t.identifier(MODULE), t.identifier(EXPORTS)
-        ),
+        "=",
+        t.memberExpression(t.identifier(MODULE), t.identifier(EXPORTS)),
         value
       )
     );
@@ -47,8 +45,8 @@ module.exports = ({ types: t }) => {
 
   const createRequireExpression = (dependencyNode, variableName) => {
     const requireCall = t.callExpression(t.identifier(REQUIRE), [dependencyNode]);
-    if(variableName) {
-      return t.variableDeclaration('var', [t.variableDeclarator(variableName, requireCall)]);
+    if (variableName) {
+      return t.variableDeclaration("var", [t.variableDeclarator(variableName, requireCall)]);
     } else {
       return t.expressionStatement(requireCall);
     }
@@ -59,29 +57,29 @@ module.exports = ({ types: t }) => {
       ExpressionStatement(path) {
         const { node, parent } = path;
 
-        if(!t.isCallExpression(node.expression)) return;
+        if (!t.isCallExpression(node.expression)) return;
 
         const { name } = node.expression.callee;
         const isDefineCall = name === DEFINE;
 
-        if(isDefineCall && !t.isProgram(parent)) return;
+        if (isDefineCall && !t.isProgram(parent)) return;
 
         const argumentDecoder = argumentDecoders[name];
 
-        if(!argumentDecoder) return;
+        if (!argumentDecoder) return;
 
         const { dependencyList, factory } = argumentDecoder(node.expression.arguments);
 
-        if(!t.isArrayExpression(dependencyList) && !factory) return;
+        if (!t.isArrayExpression(dependencyList) && !factory) return;
 
         let injectsModuleOrExports = false;
         const isFunctionFactory = t.isFunctionExpression(factory);
         const requireExpressions = [];
 
-        if(dependencyList) {
+        if (dependencyList) {
           dependencyList.elements.forEach((el, i) => {
-            if(t.isStringLiteral(el)) {
-              switch(el.value) {
+            if (t.isStringLiteral(el)) {
+              switch (el.value) {
                 case REQUIRE:
                   return;
                 case MODULE:
@@ -95,30 +93,37 @@ module.exports = ({ types: t }) => {
           });
         }
 
-        if(isFunctionFactory) {
+        if (isFunctionFactory) {
           const factoryArity = factory.params.length;
-          let replacementFuncExpr = t.functionExpression(null, [], t.blockStatement(
-            requireExpressions.concat(factory.body.body)
-          ));
+          let replacementFuncExpr = t.functionExpression(
+            null,
+            [],
+            t.blockStatement(requireExpressions.concat(factory.body.body))
+          );
           let replacementCallExprParams = [];
 
           // https://github.com/requirejs/requirejs/wiki/differences-between-the-simplified-commonjs-wrapper-and-standard-amd-define
           const isSimplifiedCommonJSWrapper = !dependencyList && factoryArity > 0;
-          if(isSimplifiedCommonJSWrapper) {
+          if (isSimplifiedCommonJSWrapper) {
             replacementFuncExpr = factory;
             const identifiers = [REQUIRE, EXPORTS, MODULE];
-            replacementCallExprParams = identifiers.slice(0, factoryArity).map(a => t.identifier(a));
+            replacementCallExprParams = identifiers
+              .slice(0, factoryArity)
+              .map(a => t.identifier(a));
           }
 
-          const factoryReplacement = t.callExpression(replacementFuncExpr, replacementCallExprParams);
+          const factoryReplacement = t.callExpression(
+            replacementFuncExpr,
+            replacementCallExprParams
+          );
 
-          injectsModuleOrExports = injectsModuleOrExports || !dependencyList && factoryArity > 1;
-          if(isDefineCall && !injectsModuleOrExports) {
+          injectsModuleOrExports = injectsModuleOrExports || (!dependencyList && factoryArity > 1);
+          if (isDefineCall && !injectsModuleOrExports) {
             path.replaceWith(createModuleExportsAssignmentExpression(factoryReplacement));
           } else {
             path.replaceWith(factoryReplacement);
           }
-        } else if(factory && isDefineCall) {
+        } else if (factory && isDefineCall) {
           const exportExpression = createModuleExportsAssignmentExpression(factory);
           const nodes = requireExpressions.concat(exportExpression);
           path.replaceWithMultiple(nodes);
