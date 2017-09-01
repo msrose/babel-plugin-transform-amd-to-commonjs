@@ -1,9 +1,9 @@
-"use strict";
+'use strict';
 
-const babel = require("babel-core");
+const babel = require('babel-core');
 
 const transformAmdToCommonJS = code => {
-  return babel.transform(code, { plugins: ["./index"], babelrc: false }).code;
+  return babel.transform(code, { plugins: ['./index'], babelrc: false }).code;
 };
 
 const transformTrivial = code => {
@@ -12,9 +12,9 @@ const transformTrivial = code => {
 
 const removeBlankLines = string => {
   return string
-    .split("\n")
+    .split('\n')
     .filter(line => !!line.trim().length)
-    .join("\n");
+    .join('\n');
 };
 
 const customMatchers = {

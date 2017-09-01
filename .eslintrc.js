@@ -9,6 +9,6 @@ module.exports = {
   ],
   extends: ['msrose', 'prettier'],
   rules: {
-    'prettier/prettier': ['error', {printWidth: 100}]
+    'prettier/prettier': ['error', { printWidth: 100, singleQuote: true }]
   }
 };

@@ -1,7 +1,7 @@
-"use strict";
+'use strict';
 
-describe("Plugin for require blocks", () => {
-  it("transforms require blocks with one dependency", () => {
+describe('Plugin for require blocks', () => {
+  it('transforms require blocks with one dependency', () => {
     expect(`
       require(['llamas'], function(llama) {
         llama.doSomeStuff();
@@ -14,7 +14,7 @@ describe("Plugin for require blocks", () => {
     `);
   });
 
-  it("transforms require blocks with multiple dependencies", () => {
+  it('transforms require blocks with multiple dependencies', () => {
     expect(`
       require(['llamas', 'frogs'], function(llama, frog) {
         llama.doSomeStuff();
@@ -30,7 +30,7 @@ describe("Plugin for require blocks", () => {
     `);
   });
 
-  it("transforms require blocks with unused dependencies", () => {
+  it('transforms require blocks with unused dependencies', () => {
     expect(`
       require(['llamas', 'frogs'], function(llama) {
         llama.doSomeStuff();
@@ -44,7 +44,7 @@ describe("Plugin for require blocks", () => {
     `);
   });
 
-  it("transforms require blocks that have no factory function", () => {
+  it('transforms require blocks that have no factory function', () => {
     expect(`
       require(['here', 'are', 'some', 'deps']);
     `).toBeTransformedTo(`
@@ -55,7 +55,7 @@ describe("Plugin for require blocks", () => {
     `);
   });
 
-  it("transforms nested require blocks that have no factory function", () => {
+  it('transforms nested require blocks that have no factory function', () => {
     expect(`
       require(['here', 'is', 'i'], function(here) {
         here.doStuff();
@@ -74,7 +74,7 @@ describe("Plugin for require blocks", () => {
     `);
   });
 
-  it("transforms nested require blocks that have a factory function", () => {
+  it('transforms nested require blocks that have a factory function', () => {
     expect(`
       require(['here', 'is', 'i'], function(here) {
         here.doStuff();
@@ -98,7 +98,7 @@ describe("Plugin for require blocks", () => {
     `);
   });
 
-  it("transforms a require block that is within a define block", () => {
+  it('transforms a require block that is within a define block', () => {
     expect(`
       define(['here', 'is', 'i'], function(here) {
         here.doStuff();

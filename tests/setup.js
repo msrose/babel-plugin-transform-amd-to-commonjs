@@ -1,5 +1,5 @@
-"use strict";
+'use strict';
 
-const customMatchers = require("./custom-matchers");
+const customMatchers = require('./custom-matchers');
 
 expect.extend(customMatchers);

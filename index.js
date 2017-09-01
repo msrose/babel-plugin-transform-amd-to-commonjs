@@ -1,9 +1,9 @@
-"use strict";
+'use strict';
 
-const REQUIRE = "require";
-const MODULE = "module";
-const EXPORTS = "exports";
-const DEFINE = "define";
+const REQUIRE = 'require';
+const MODULE = 'module';
+const EXPORTS = 'exports';
+const DEFINE = 'define';
 
 module.exports = ({ types: t }) => {
   const decodeDefineArguments = argNodes => {
@@ -36,7 +36,7 @@ module.exports = ({ types: t }) => {
   const createModuleExportsAssignmentExpression = value => {
     return t.expressionStatement(
       t.assignmentExpression(
-        "=",
+        '=',
         t.memberExpression(t.identifier(MODULE), t.identifier(EXPORTS)),
         value
       )
@@ -46,7 +46,7 @@ module.exports = ({ types: t }) => {
   const createRequireExpression = (dependencyNode, variableName) => {
     const requireCall = t.callExpression(t.identifier(REQUIRE), [dependencyNode]);
     if (variableName) {
-      return t.variableDeclaration("var", [t.variableDeclarator(variableName, requireCall)]);
+      return t.variableDeclaration('var', [t.variableDeclarator(variableName, requireCall)]);
     } else {
       return t.expressionStatement(requireCall);
     }
