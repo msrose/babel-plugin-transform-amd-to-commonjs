@@ -54,15 +54,19 @@ module.exports = ({ types: t }) => {
     }
   };
 
+  const isModuleOrExportsInDependencyList = (dependencyList) => {
+    return dependencyList && dependencyList.elements.some(element =>
+      t.isStringLiteral(element) && (element.value === MODULE || element.value === EXPORTS)
+    );
+  };
+
+  const isSimplifiedCommonJSWrapperWithModuleOrExports = (dependencyList, factoryArity) => {
+    return !dependencyList && factoryArity > 1;
+  };
+
   const isModuleOrExportsInjected = (dependencyList, factoryArity) => {
-    if(dependencyList) {
-      return dependencyList.elements.some(element =>
-        t.isStringLiteral(element) && (element.value === MODULE || element.value === EXPORTS)
-      );
-    } else {
-      // Check if we have the simplified commonjs wrapper with more than just 'require' injected
-      return factoryArity > 1;
-    }
+    return isModuleOrExportsInDependencyList(dependencyList) ||
+      isSimplifiedCommonJSWrapperWithModuleOrExports(dependencyList, factoryArity);
   };
 
   // Simple version of zip that only pairs elements until the end of the first array
