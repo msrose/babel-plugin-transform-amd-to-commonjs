@@ -313,7 +313,7 @@ describe('Plugin for define blocks', () => {
 
   it('transforms non-function modules exporting primitives with no dependencies', () => {
     const primitives = ["'a string'", '33', 'true', 'false', 'null', 'undefined'];
-    primitives.forEach((primitive) => {
+    primitives.forEach(primitive => {
       expect(`
         define(${primitive});
       `).toBeTransformedTo(`
@@ -324,7 +324,7 @@ describe('Plugin for define blocks', () => {
 
   it('handles non-function modules exporting primitives with dependencies', () => {
     const primitives = ["'a string'", '33', 'true', 'false', 'null', 'undefined'];
-    primitives.forEach((primitive) => {
+    primitives.forEach(primitive => {
       expect(`
         define(['side-effect'], ${primitive});
       `).toBeTransformedTo(`

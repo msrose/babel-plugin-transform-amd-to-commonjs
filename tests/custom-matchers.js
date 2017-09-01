@@ -2,16 +2,19 @@
 
 const babel = require('babel-core');
 
-const transformAmdToCommonJS = (code) => {
+const transformAmdToCommonJS = code => {
   return babel.transform(code, { plugins: ['./index'], babelrc: false }).code;
 };
 
-const transformTrivial = (code) => {
+const transformTrivial = code => {
   return babel.transform(code).code;
 };
 
-const removeBlankLines = (string) => {
-  return string.split('\n').filter(line => !!line.trim().length).join('\n');
+const removeBlankLines = string => {
+  return string
+    .split('\n')
+    .filter(line => !!line.trim().length)
+    .join('\n');
 };
 
 const customMatchers = {
@@ -22,11 +25,13 @@ const customMatchers = {
     const result = {
       pass: removeBlankLines(transformed) === expected
     };
-    if(result.pass) {
-      result.message = `Expected\n\n${actual}\n\nnot to be transformed ` +
+    if (result.pass) {
+      result.message =
+        `Expected\n\n${actual}\n\nnot to be transformed ` +
         `to\n\n${expected}\n\nbut instead they were the same.\n`;
     } else {
-      result.message = `Expected\n\n${actual}\n\nto be transformed ` +
+      result.message =
+        `Expected\n\n${actual}\n\nto be transformed ` +
         `to\n\n${expected}\n\nbut instead got\n\n${transformed}\n`;
     }
     return result;
