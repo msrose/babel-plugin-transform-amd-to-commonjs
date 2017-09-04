@@ -1,6 +1,7 @@
 'use strict';
 
 const babel = require('babel-core');
+const diff = require('jest-diff');
 
 const transformAmdToCommonJS = code => {
   return babel.transform(code, { plugins: ['./index'], babelrc: false }).code;
@@ -19,21 +20,30 @@ const removeBlankLines = string => {
 
 const customMatchers = {
   toBeTransformedTo(actual, expected) {
-    const transformed = transformAmdToCommonJS(actual);
+    const transformed = removeBlankLines(transformAmdToCommonJS(actual));
     actual = removeBlankLines(transformTrivial(actual));
     expected = removeBlankLines(transformTrivial(expected));
+
     const result = {
-      pass: removeBlankLines(transformed) === expected
+      pass: transformed === expected
     };
+
     if (result.pass) {
-      result.message =
-        `Expected\n\n${actual}\n\nnot to be transformed ` +
-        `to\n\n${expected}\n\nbut instead they were the same.\n`;
+      result.message = () =>
+        `Expected\n\n` +
+        `${actual}\n\n` +
+        `not to be transformed to\n\n` +
+        `${this.utils.printExpected(expected)}\n\n` +
+        `but it was transformed to exactly that\n`;
     } else {
-      result.message =
-        `Expected\n\n${actual}\n\nto be transformed ` +
-        `to\n\n${expected}\n\nbut instead got\n\n${transformed}\n`;
+      result.message = () =>
+        `Expected\n\n${actual}\n\nto be transformed to\n\n` +
+        `${this.utils.printExpected(expected)}\n\n` +
+        `but instead got\n\n` +
+        `${this.utils.printReceived(transformed)}\n\n` +
+        `Difference:\n\n${diff(expected, transformed)}\n`;
     }
+
     return result;
   }
 };
