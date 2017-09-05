@@ -2,12 +2,16 @@
   "name": "babel-plugin-transform-amd-to-commonjs",
   "version": "0.2.2",
   "description": "Transforms AMD code to CommonJS",
-  "main": "build.js",
+  "main": "build/index.js",
   "scripts": {
     "test": "jest",
     "lint": "eslint .",
-    "prepare": "babel index.js --out-file build.js"
+    "build": "babel src --out-dir build",
+    "prepack": "npm run build"
   },
+  "files": [
+    "build"
+  ],
   "engines": {
     "node": ">=4"
   },
@@ -45,7 +49,7 @@
   "jest": {
     "setupTestFrameworkScriptFile": "<rootDir>/tests/setup.js",
     "collectCoverageFrom": [
-      "index.js"
+      "src/**/*.js"
     ],
     "testEnvironment": "node"
   }
