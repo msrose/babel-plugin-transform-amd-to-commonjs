@@ -2,6 +2,8 @@
 
 const { MODULE, EXPORTS, REQUIRE } = require('./constants');
 
+// A factory function is exported in order to inject the same babel-types object
+// being used by the plugin itself
 module.exports = ({ types: t }) => {
   const decodeDefineArguments = argNodes => {
     if (argNodes.length === 1) {
