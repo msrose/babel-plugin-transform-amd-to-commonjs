@@ -4,5 +4,6 @@ module.exports = {
   REQUIRE: 'require',
   MODULE: 'module',
   EXPORTS: 'exports',
-  DEFINE: 'define'
+  DEFINE: 'define',
+  AMD_DEFINE_RESULT: 'amdDefineResult'
 };

@@ -1,5 +1,7 @@
 'use strict';
 
+const { AMD_DEFINE_RESULT } = require('../src/constants');
+
 describe('Plugin for define blocks', () => {
   it('transforms anonymous define blocks with one dependency', () => {
     expect(`
@@ -147,9 +149,9 @@ describe('Plugin for define blocks', () => {
     `);
   });
 
-  const checkAmdDefineResult = value => `
-    var amdDefineResult = ${value};
-    typeof amdDefineResult !== 'undefined' && (module.exports = amdDefineResult);
+  const checkAmdDefineResult = (value, identifier = AMD_DEFINE_RESULT) => `
+    var ${identifier} = ${value};
+    typeof ${identifier} !== 'undefined' && (module.exports = ${identifier});
   `;
 
   it('handles injection of a dependency named `module`', () => {
@@ -258,6 +260,27 @@ describe('Plugin for define blocks', () => {
         exports.hey = stuff.boi;
       }(require);
     `);
+  });
+
+  it('accounts for variable name conflicts when checking the result of `define`', () => {
+    expect(`
+      var amdDefineResult = 'for some reason I have this variable declared already';
+      define(function(require, exports, module) {
+        var stuff = require('hi');
+        exports.hey = stuff.boi;
+      });
+    `).toBeTransformedTo(
+      `var amdDefineResult = 'for some reason I have this variable declared already';` +
+        checkAmdDefineResult(
+          `
+            (function(require, exports, module) {
+              var stuff = require('hi');
+              exports.hey = stuff.boi;
+            })(require, exports, module)
+          `,
+          `_${AMD_DEFINE_RESULT}`
+        )
+    );
   });
 
   it("lets you declare a dependency as `module` even though that's crazy", () => {

@@ -37,22 +37,20 @@ module.exports = ({ types: t }) => {
     );
   };
 
-  const RESULT_CHECK = t.expressionStatement(
-    t.logicalExpression(
-      '&&',
-      t.binaryExpression(
-        '!==',
-        t.unaryExpression('typeof', t.identifier('amdDefineResult')),
-        t.stringLiteral('undefined')
-      ),
-      createModuleExportsAssignmentExpression(t.identifier('amdDefineResult')).expression
-    )
-  );
-
-  const createModuleExportsResultCheckExpression = value => {
+  const createModuleExportsResultCheck = (value, identifier) => {
     return [
-      t.variableDeclaration('var', [t.variableDeclarator(t.identifier('amdDefineResult'), value)]),
-      RESULT_CHECK
+      t.variableDeclaration('var', [t.variableDeclarator(identifier, value)]),
+      t.expressionStatement(
+        t.logicalExpression(
+          '&&',
+          t.binaryExpression(
+            '!==',
+            t.unaryExpression('typeof', identifier),
+            t.stringLiteral('undefined')
+          ),
+          createModuleExportsAssignmentExpression(identifier).expression
+        )
+      )
     ];
   };
 
@@ -90,7 +88,7 @@ module.exports = ({ types: t }) => {
     decodeDefineArguments,
     decodeRequireArguments,
     createModuleExportsAssignmentExpression,
-    createModuleExportsResultCheckExpression,
+    createModuleExportsResultCheck,
     createRequireExpression,
     isModuleOrExportsInjected
   };

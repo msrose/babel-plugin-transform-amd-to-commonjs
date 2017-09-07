@@ -1,6 +1,6 @@
 'use strict';
 
-const { REQUIRE, MODULE, EXPORTS, DEFINE } = require('./constants');
+const { REQUIRE, MODULE, EXPORTS, DEFINE, AMD_DEFINE_RESULT } = require('./constants');
 const createHelpers = require('./helpers');
 
 module.exports = ({ types: t }) => {
@@ -10,7 +10,7 @@ module.exports = ({ types: t }) => {
     isModuleOrExportsInjected,
     createRequireExpression,
     createModuleExportsAssignmentExpression,
-    createModuleExportsResultCheckExpression
+    createModuleExportsResultCheck
   } = createHelpers({ types: t });
 
   const argumentDecoders = {
@@ -85,7 +85,14 @@ module.exports = ({ types: t }) => {
         if (!isModuleOrExportsInjected(dependencyList, factoryArity)) {
           path.replaceWith(createModuleExportsAssignmentExpression(factoryReplacement));
         } else {
-          path.replaceWithMultiple(createModuleExportsResultCheckExpression(factoryReplacement));
+          path.replaceWithMultiple(
+            createModuleExportsResultCheck(
+              factoryReplacement,
+              path.scope.hasOwnBinding(AMD_DEFINE_RESULT)
+                ? path.scope.generateUidIdentifier(AMD_DEFINE_RESULT)
+                : t.identifier(AMD_DEFINE_RESULT)
+            )
+          );
         }
       } else {
         path.replaceWith(factoryReplacement);
