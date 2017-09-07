@@ -130,50 +130,24 @@ you may have injected them as dependencies. Beware of the following gotchas when
 
 - If you're injecting `module`, `exports`, and/or `require` as dependencies, they must be injected as string literals,
 otherwise you'll end up with things like `require('module')`.
-
-- If you inject `module` or `exports` as a dependency in your AMD module, the plugin assumes that you are using them to set the exports of your module.
-Therefore, a return value of the IIFE that wraps your module will not be assigned to `module.exports`,
-
-That means if you're using AMD in a funky way, some strange things can happen.
-For example, you can require `exports`, set some values on it, but then override them with a return value (you really shouldn't do this though):
+- Returning any value other than `undefined` from a factory function will override anything you assign to `module` or `exports`. This behaviour is in accordance with the AMD specification. Unless you're doing something really weird in your modules, you don't have to worry about this case, but the plugin handles it by performing a check as needed on the return value of the factory function:
 
 ```javascript
-define(['exports'], function(exports) {
-  exports.stuff = 'hi';
-  return {
-    override: 'lol no stuff for you';
-  };
+// Input (AMD):
+define(['module'], function(module) {
+  module.exports = { hey: 'boi' };
+  return { value: 22 };
 });
-// exported: { override: 'lol no stuff for you' };
+
+// Output (CommonJS):
+var amdDefineResult = function() {
+  module.exports = { hey: 'boi' };
+  return { value: 22 };
+}();
+typeof amdDefineResult !== 'undefined' && (module.exports = amdDefineResult);
+
+// { value: 22 } is correctly exported in both cases
+// without the given check in place, { hey: 'boi' } would have been erroneously exported in CommonJS
 ```
 
-This transforms to the following IIFE (with the return value not assigned to `module.exports` because you've injected `exports` as a dependency):
-
-```javascript
-(function() {
-  exports.stuff = 'hi';
-  return {
-    override: 'lol no stuff for you';
-  };
-})();
-// exported: { stuff: 'hi' }
-```
-
-In order to account for this possible error, it would have to be transformed to something disgusting like this instead:
-
-```javascript
-(function() {
-  var returnValue = (function() {
-    exports.stuff = 'hi';
-    return {
-      override: 'lol no stuff for you';
-    };
-  })();
-  if(typeof returnValue !== 'undefined') {
-    module.exports = returnValue;
-  }
-})();
-```
-
-Doing this transform for this specific case introduces relatively significant complexity into the code for almost no gain.
-If you want this edge case to be accounted for, please submit an issue.
+This pattern is only used if necessary. The variable `amdDefineResult` is generated to be unique in its scope.
