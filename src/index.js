@@ -9,7 +9,8 @@ module.exports = ({ types: t }) => {
     decodeRequireArguments,
     isModuleOrExportsInjected,
     createRequireExpression,
-    createModuleExportsAssignmentExpression
+    createModuleExportsAssignmentExpression,
+    createModuleExportsResultCheckExpression
   } = createHelpers({ types: t });
 
   const argumentDecoders = {
@@ -80,8 +81,12 @@ module.exports = ({ types: t }) => {
 
       const factoryReplacement = t.callExpression(replacementFuncExpr, replacementCallExprParams);
 
-      if (isDefineCall && !isModuleOrExportsInjected(dependencyList, factoryArity)) {
-        path.replaceWith(createModuleExportsAssignmentExpression(factoryReplacement));
+      if (isDefineCall) {
+        if (!isModuleOrExportsInjected(dependencyList, factoryArity)) {
+          path.replaceWith(createModuleExportsAssignmentExpression(factoryReplacement));
+        } else {
+          path.replaceWithMultiple(createModuleExportsResultCheckExpression(factoryReplacement));
+        }
       } else {
         path.replaceWith(factoryReplacement);
       }
