@@ -41,7 +41,7 @@
     "eslint-config-prettier": "^2.3.0",
     "eslint-plugin-jest": "^21.0.0",
     "eslint-plugin-prettier": "^2.2.0",
-    "jest": "^21.0.1",
+    "jest": "^22.0.0",
     "jest-diff": "^21.0.0",
     "prettier": "^1.6.1",
     "regenerator-runtime": "^0.11.0"
