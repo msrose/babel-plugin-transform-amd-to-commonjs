@@ -8,10 +8,9 @@
 [![Greenkeeper badge](https://badges.greenkeeper.io/msrose/babel-plugin-transform-amd-to-commonjs.svg)](https://greenkeeper.io/)
 
 Babel plugin that transforms AMD to CommonJS.
+[Check out the example project](https://github.com/msrose/transform-amd-to-commonjs-example), which uses this plugin to allow [jest](https://facebook.github.io/jest/) to synchronously `require` AMD modules.
 
 ## Usage
-
-[Check out the example project](https://github.com/msrose/transform-amd-to-commonjs-example) that has Jest tests synchronously `require`ing AMD modules.
 
 ```
 npm install --save-dev babel-plugin-transform-amd-to-commonjs
@@ -111,13 +110,13 @@ Make sure that you have only one AMD module defined per file, otherwise you'll e
 The following will _not_ be transformed, since the plugin does not traverse the arguments to define or require:
 
 ```javascript
-var deps = ['one', 'two'];
+// DON'T DO THIS! It won't be transformed.
+var dependencies = ['one', 'two'];
 var factory = function(one, two) {
   one.doStuff();
   return two.doStuff();
 };
-// DON'T DO THIS! It won't be transformed.
-define(deps, factory);
+define(dependencies, factory);
 ```
 
 If you want to be able to define your modules as above, please submit an issue. Otherwise, please define your modules as:
