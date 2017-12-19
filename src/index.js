@@ -85,13 +85,11 @@ module.exports = ({ types: t }) => {
         if (!isModuleOrExportsInjected(dependencyList, factoryArity)) {
           path.replaceWith(createModuleExportsAssignmentExpression(factoryReplacement));
         } else {
+          const resultCheckIdentifier = path.scope.hasOwnBinding(AMD_DEFINE_RESULT)
+            ? path.scope.generateUidIdentifier(AMD_DEFINE_RESULT)
+            : t.identifier(AMD_DEFINE_RESULT);
           path.replaceWithMultiple(
-            createModuleExportsResultCheck(
-              factoryReplacement,
-              path.scope.hasOwnBinding(AMD_DEFINE_RESULT)
-                ? path.scope.generateUidIdentifier(AMD_DEFINE_RESULT)
-                : t.identifier(AMD_DEFINE_RESULT)
-            )
+            createModuleExportsResultCheck(factoryReplacement, resultCheckIdentifier)
           );
         }
       } else {
