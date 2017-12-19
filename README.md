@@ -1,6 +1,7 @@
 # babel-plugin-transform-amd-to-commonjs
 
-[![npm version](https://badge.fury.io/js/babel-plugin-transform-amd-to-commonjs.svg)](https://badge.fury.io/js/babel-plugin-transform-amd-to-commonjs)
+[![npm version](https://img.shields.io/npm/v/babel-plugin-transform-amd-to-commonjs.svg)](https://www.npmjs.com/package/babel-plugin-transform-amd-to-commonjs)
+[![npm downloads](https://img.shields.io/npm/dm/babel-plugin-transform-amd-to-commonjs.svg)](https://npm-stat.com/charts.html?package=babel-plugin-transform-amd-to-commonjs)
 [![Build Status](https://travis-ci.org/msrose/babel-plugin-transform-amd-to-commonjs.svg?branch=master)](https://travis-ci.org/msrose/babel-plugin-transform-amd-to-commonjs)
 [![codecov](https://codecov.io/gh/msrose/babel-plugin-transform-amd-to-commonjs/branch/master/graph/badge.svg)](https://codecov.io/gh/msrose/babel-plugin-transform-amd-to-commonjs)
 [![devDependencies Status](https://david-dm.org/msrose/babel-plugin-transform-amd-to-commonjs/dev-status.svg)](https://david-dm.org/msrose/babel-plugin-transform-amd-to-commonjs?type=dev)
