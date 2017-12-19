@@ -84,20 +84,36 @@ Output:
 
 ## Details
 
+### Supported Versions
+
 Only Node.js >= 6 is supported. For Node.js 4, please use version 0.2.2:
 
 ```
 npm install --save-dev babel-plugin-transform-amd-to-commonjs@0.2.2
 ```
 
-AMD is interpreted as described and implemented by [RequireJS](http://requirejs.org/).
+### AMD
+
+AMD is interpreted as described by the [AMD specification](https://github.com/amdjs/amdjs-api/blob/master/AMD.md).
 
 - Only _top-level_ calls to a `define` function will be transformed.
 - _All_ calls to `require` where it is given an array of dependencies as its first argument will be transformed.
-  - If you would like the option to only transform top-level require calls, please file an issue.
 - Explicitly requiring `require`, `module`, and `exports` in an AMD module will not generate a call to require, but instead defer to the global require, module, and exports assumed to be in the CommonJS environment you are transforming to.
   - The same is true for the [simplified CommonJS wrapper](http://requirejs.org/docs/api.html#cjsmodule).
 - The module name (optional first argument to `define`) is ignored, since the module ID in CommonJS is determined by the resolved filename.
+
+### Upgrading Versions
+
+#### 1.0.0
+
+- Versions >= 0.2.1 and &lt; 1.0.0 support Node.js 4.
+  1.0.0 and above only support Node.js >= 6.
+  To upgrade to 1.0.0, first upgrade to Node.js >= 6.
+- If everything works fine with &lt; 1.0.0, you should just be able to drop in >= 1.0.0 after upgrading Node.js.
+  If you have any issues, there is one more edge-case breaking change that _might_ be affecting you (but probably is not):
+  - 1.0.0 accounts for the case where you're using a combination of return statements and module/exports to define the exports of your AMD modules.
+    Earlier versions don't account for this case, so if you're upgrading, make sure that each AMD module only uses either return statements _or_ module/exports to define its exports.
+    See [#26](https://github.com/msrose/babel-plugin-transform-amd-to-commonjs/pull/26) and the [caveats](#caveats) section of the README for more details.
 
 ## Caveats
 
