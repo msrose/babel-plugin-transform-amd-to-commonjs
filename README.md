@@ -84,6 +84,8 @@ Output:
 
 ## Details
 
+Only Node.js >= 6 is supported. For Node.js 4, please use version 0.2.2: `npm install --save-dev babel-plugin-transform-amd-to-common-js@0.2.2`.
+
 AMD is interpreted as described and implemented by [RequireJS](http://requirejs.org/).
 
 - Only **top-level** calls to a `define` function will be transformed.
