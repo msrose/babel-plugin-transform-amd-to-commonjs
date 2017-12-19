@@ -113,7 +113,7 @@ AMD is interpreted as described by the [AMD specification](https://github.com/am
   If you have any issues, there is one more edge-case breaking change that _might_ be affecting you (but probably is not):
   - 1.0.0 accounts for the case where you're using a combination of return statements and module/exports to define the exports of your AMD modules.
     Earlier versions don't account for this case, so if you're upgrading, make sure that each AMD module only uses either return statements _or_ module/exports to define its exports.
-    See [#26](https://github.com/msrose/babel-plugin-transform-amd-to-commonjs/pull/26) and the [caveats](#caveats) section of the README for more details.
+    See [#26](https://github.com/msrose/babel-plugin-transform-amd-to-commonjs/pull/26) and the [caveats](#injecting-require-module-or-exports-as-dependencies) section of the README for more details.
 
 ## Caveats
 
