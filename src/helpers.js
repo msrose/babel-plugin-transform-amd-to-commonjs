@@ -37,6 +37,23 @@ module.exports = ({ types: t }) => {
     );
   };
 
+  const createModuleExportsResultCheck = (value, identifier) => {
+    return [
+      t.variableDeclaration('var', [t.variableDeclarator(identifier, value)]),
+      t.expressionStatement(
+        t.logicalExpression(
+          '&&',
+          t.binaryExpression(
+            '!==',
+            t.unaryExpression('typeof', identifier),
+            t.stringLiteral('undefined')
+          ),
+          createModuleExportsAssignmentExpression(identifier).expression
+        )
+      )
+    ];
+  };
+
   const createRequireExpression = (dependencyNode, variableName) => {
     const requireCall = t.callExpression(t.identifier(REQUIRE), [dependencyNode]);
     if (variableName) {
@@ -71,6 +88,7 @@ module.exports = ({ types: t }) => {
     decodeDefineArguments,
     decodeRequireArguments,
     createModuleExportsAssignmentExpression,
+    createModuleExportsResultCheck,
     createRequireExpression,
     isModuleOrExportsInjected
   };
