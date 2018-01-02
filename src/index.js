@@ -33,16 +33,17 @@ module.exports = ({ types: t }) => {
 
     getFactory() {}
 
+    hasFunctionFactory() {
+      return t.isFunctionExpression(this.getFactory());
+    }
+
     getRequireExpressions() {
       const dependencyList = this.getDependencyList();
-      const factory = this.getFactory();
-
-      const isFunctionFactory = t.isFunctionExpression(factory);
 
       if (dependencyList) {
         const dependencyParameterPairs = zip(
           dependencyList.elements,
-          isFunctionFactory ? factory.params : []
+          this.hasFunctionFactory() ? this.getFactory().params : []
         );
 
         return dependencyParameterPairs
@@ -83,13 +84,10 @@ module.exports = ({ types: t }) => {
     getNonFunctionFactoryReplacement() {}
 
     getTransformationToCommonJS() {
-      const factory = this.getFactory();
-
-      if (t.isFunctionExpression(factory)) {
+      if (this.hasFunctionFactory()) {
         return this.getFunctionFactoryReplacement();
-      } else if (factory) {
-        const nonFunctionFactoryReplacement = this.getNonFunctionFactoryReplacement();
-        return nonFunctionFactoryReplacement;
+      } else if (this.getFactory()) {
+        return this.getNonFunctionFactoryReplacement();
       } else {
         return this.getRequireExpressions();
       }
