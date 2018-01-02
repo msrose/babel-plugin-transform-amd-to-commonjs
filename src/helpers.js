@@ -69,8 +69,13 @@ module.exports = ({ types: t }) => {
     );
   };
 
+  // https://github.com/requirejs/requirejs/wiki/differences-between-the-simplified-commonjs-wrapper-and-standard-amd-define
+  const isSimplifiedCommonJSWrapper = (dependencyList, factoryArity) => {
+    return !dependencyList && factoryArity > 0;
+  };
+
   const isSimplifiedCommonJSWrapperWithModuleOrExports = (dependencyList, factoryArity) => {
-    return !dependencyList && factoryArity > 1;
+    return isSimplifiedCommonJSWrapper(dependencyList, factoryArity) && factoryArity > 1;
   };
 
   const isModuleOrExportsInjected = (dependencyList, factoryArity) => {
@@ -86,6 +91,7 @@ module.exports = ({ types: t }) => {
     createModuleExportsAssignmentExpression,
     createModuleExportsResultCheck,
     createRequireExpression,
+    isSimplifiedCommonJSWrapper,
     isModuleOrExportsInjected
   };
 };

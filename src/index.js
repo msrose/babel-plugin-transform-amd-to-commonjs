@@ -8,6 +8,7 @@ module.exports = ({ types: t }) => {
     decodeDefineArguments,
     decodeRequireArguments,
     isModuleOrExportsInjected,
+    isSimplifiedCommonJSWrapper,
     createRequireExpression,
     createModuleExportsAssignmentExpression,
     createModuleExportsResultCheck
@@ -72,9 +73,7 @@ module.exports = ({ types: t }) => {
       );
       let replacementCallExprParams = [];
 
-      // https://github.com/requirejs/requirejs/wiki/differences-between-the-simplified-commonjs-wrapper-and-standard-amd-define
-      const isSimplifiedCommonJSWrapper = !dependencyList && factoryArity > 0;
-      if (isSimplifiedCommonJSWrapper) {
+      if (isSimplifiedCommonJSWrapper(dependencyList, factoryArity)) {
         replacementFuncExpr = factory;
         replacementCallExprParams = keywords.slice(0, factoryArity).map(a => t.identifier(a));
       }
