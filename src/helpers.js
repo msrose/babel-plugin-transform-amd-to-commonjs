@@ -20,11 +20,7 @@ module.exports = ({ types: t }) => {
   };
 
   const decodeRequireArguments = argNodes => {
-    if (argNodes.length === 1) {
-      return { dependencyList: argNodes[0] };
-    } else {
-      return { dependencyList: argNodes[0], factory: argNodes[1] };
-    }
+    return { dependencyList: argNodes[0], factory: argNodes[1] };
   };
 
   const createModuleExportsAssignmentExpression = value => {
