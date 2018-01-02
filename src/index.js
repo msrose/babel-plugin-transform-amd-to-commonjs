@@ -33,11 +33,34 @@ module.exports = ({ types: t }) => {
 
     getFactory() {}
 
+    getRequireExpressions() {
+      const dependencyList = this.getDependencyList();
+      const factory = this.getFactory();
+
+      const isFunctionFactory = t.isFunctionExpression(factory);
+
+      if (dependencyList) {
+        const dependencyParameterPairs = zip(
+          dependencyList.elements,
+          isFunctionFactory ? factory.params : []
+        );
+
+        return dependencyParameterPairs
+          .filter(([dependency]) => {
+            return !t.isStringLiteral(dependency) || !keywords.includes(dependency.value);
+          })
+          .map(([dependency, paramName]) => {
+            return createRequireExpression(dependency, paramName);
+          });
+      }
+
+      return [];
+    }
+
     // eslint-disable-next-line no-unused-vars
     processFunctionFactoryReplacement(scope, factoryReplacement) {}
 
-    // eslint-disable-next-line no-unused-vars
-    processNonFunctionFactoryReplacement(factory, requireExpressions) {}
+    getNonFunctionFactoryReplacement() {}
 
     static createExpressionDecoder(path) {
       const decoders = {
@@ -62,8 +85,8 @@ module.exports = ({ types: t }) => {
       return [t.expressionStatement(factoryReplacement)];
     }
 
-    processNonFunctionFactoryReplacement(factory, requireExpressions) {
-      return requireExpressions;
+    getNonFunctionFactoryReplacement() {
+      return this.getRequireExpressions();
     }
   }
 
@@ -103,9 +126,9 @@ module.exports = ({ types: t }) => {
       }
     }
 
-    processNonFunctionFactoryReplacement(factory, requireExpressions) {
-      const exportExpression = createModuleExportsAssignmentExpression(factory);
-      return requireExpressions.concat(exportExpression);
+    getNonFunctionFactoryReplacement() {
+      const exportExpression = createModuleExportsAssignmentExpression(this.getFactory());
+      return this.getRequireExpressions().concat(exportExpression);
     }
   }
 
@@ -129,24 +152,7 @@ module.exports = ({ types: t }) => {
     const factory = decoder.getFactory();
 
     const isFunctionFactory = t.isFunctionExpression(factory);
-    const requireExpressions = [];
-
-    if (dependencyList) {
-      const dependencyParameterPairs = zip(
-        dependencyList.elements,
-        isFunctionFactory ? factory.params : []
-      );
-
-      const explicitRequires = dependencyParameterPairs
-        .filter(([dependency]) => {
-          return !t.isStringLiteral(dependency) || !keywords.includes(dependency.value);
-        })
-        .map(([dependency, paramName]) => {
-          return createRequireExpression(dependency, paramName);
-        });
-
-      requireExpressions.push(...explicitRequires);
-    }
+    const requireExpressions = decoder.getRequireExpressions();
 
     if (isFunctionFactory) {
       const factoryArity = factory.params.length;
@@ -168,10 +174,7 @@ module.exports = ({ types: t }) => {
         decoder.processFunctionFactoryReplacement(path.scope, factoryReplacement)
       );
     } else if (factory) {
-      const nonFunctionFactoryReplacement = decoder.processNonFunctionFactoryReplacement(
-        factory,
-        requireExpressions
-      );
+      const nonFunctionFactoryReplacement = decoder.getNonFunctionFactoryReplacement();
       path.replaceWithMultiple(nonFunctionFactoryReplacement);
     } else {
       path.replaceWithMultiple(requireExpressions);
