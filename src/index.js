@@ -60,6 +60,27 @@ module.exports = ({ types: t }) => {
     // eslint-disable-next-line no-unused-vars
     processFunctionFactoryReplacement(scope, factoryReplacement) {}
 
+    getFunctionFactoryReplacement(scope) {
+      const factory = this.getFactory();
+      const factoryArity = factory.params.length;
+      let replacementFuncExpr = t.functionExpression(
+        null,
+        [],
+        t.blockStatement(this.getRequireExpressions().concat(factory.body.body))
+      );
+      let replacementCallExprParams = [];
+
+      if (isSimplifiedCommonJSWrapper(this.getDependencyList(), factoryArity)) {
+        replacementFuncExpr = factory;
+        replacementCallExprParams = keywords.slice(0, factoryArity).map(a => t.identifier(a));
+      }
+
+      return this.processFunctionFactoryReplacement(
+        scope,
+        t.callExpression(replacementFuncExpr, replacementCallExprParams)
+      );
+    }
+
     getNonFunctionFactoryReplacement() {}
 
     static createExpressionDecoder(path) {
@@ -148,36 +169,15 @@ module.exports = ({ types: t }) => {
 
     if (!decoder.isAMDExpression()) return;
 
-    const dependencyList = decoder.getDependencyList();
     const factory = decoder.getFactory();
 
-    const isFunctionFactory = t.isFunctionExpression(factory);
-    const requireExpressions = decoder.getRequireExpressions();
-
-    if (isFunctionFactory) {
-      const factoryArity = factory.params.length;
-      let replacementFuncExpr = t.functionExpression(
-        null,
-        [],
-        t.blockStatement(requireExpressions.concat(factory.body.body))
-      );
-      let replacementCallExprParams = [];
-
-      if (isSimplifiedCommonJSWrapper(dependencyList, factoryArity)) {
-        replacementFuncExpr = factory;
-        replacementCallExprParams = keywords.slice(0, factoryArity).map(a => t.identifier(a));
-      }
-
-      const factoryReplacement = t.callExpression(replacementFuncExpr, replacementCallExprParams);
-
-      path.replaceWithMultiple(
-        decoder.processFunctionFactoryReplacement(path.scope, factoryReplacement)
-      );
+    if (t.isFunctionExpression(factory)) {
+      path.replaceWithMultiple(decoder.getFunctionFactoryReplacement(path.scope));
     } else if (factory) {
       const nonFunctionFactoryReplacement = decoder.getNonFunctionFactoryReplacement();
       path.replaceWithMultiple(nonFunctionFactoryReplacement);
     } else {
-      path.replaceWithMultiple(requireExpressions);
+      path.replaceWithMultiple(decoder.getRequireExpressions());
     }
   };
 
