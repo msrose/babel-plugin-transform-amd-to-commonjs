@@ -6,7 +6,6 @@ const createHelpers = require('./helpers');
 module.exports = ({ types: t }) => {
   const {
     decodeDefineArguments,
-    decodeRequireArguments,
     isModuleOrExportsInjected,
     isSimplifiedCommonJSWrapper,
     createRequireExpression,
@@ -44,11 +43,11 @@ module.exports = ({ types: t }) => {
 
   class RequireExpressionDecoder extends AMDExpressionDecoder {
     getDependencyList() {
-      return decodeRequireArguments(this.path.node.expression.arguments).dependencyList;
+      return this.path.node.expression.arguments[0];
     }
 
     getFactory() {
-      return decodeRequireArguments(this.path.node.expression.arguments).factory;
+      return this.path.node.expression.arguments[1];
     }
   }
 

@@ -19,10 +19,6 @@ module.exports = ({ types: t }) => {
     }
   };
 
-  const decodeRequireArguments = argNodes => {
-    return { dependencyList: argNodes[0], factory: argNodes[1] };
-  };
-
   const createModuleExportsAssignmentExpression = value => {
     return t.expressionStatement(
       t.assignmentExpression(
@@ -91,7 +87,6 @@ module.exports = ({ types: t }) => {
 
   return {
     decodeDefineArguments,
-    decodeRequireArguments,
     createModuleExportsAssignmentExpression,
     createModuleExportsResultCheck,
     createRequireExpression,
