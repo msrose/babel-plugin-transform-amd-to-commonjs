@@ -5,8 +5,6 @@ const createHelpers = require('./helpers');
 
 module.exports = ({ types: t }) => {
   const {
-    isModuleOrExportsInjected,
-    isSimplifiedCommonJSWrapper,
     createRequireExpression,
     createModuleExportsAssignmentExpression,
     createModuleExportsResultCheck,
@@ -61,9 +59,13 @@ module.exports = ({ types: t }) => {
     // eslint-disable-next-line no-unused-vars
     processFunctionFactoryReplacement(factoryReplacement) {}
 
+    getFactoryArity() {
+      return this.getFactory().params.length;
+    }
+
     getFunctionFactoryReplacement() {
       const factory = this.getFactory();
-      const factoryArity = factory.params.length;
+      const factoryArity = this.getFactoryArity();
       let replacementFuncExpr = t.functionExpression(
         null,
         [],
@@ -71,7 +73,7 @@ module.exports = ({ types: t }) => {
       );
       let replacementCallExprParams = [];
 
-      if (isSimplifiedCommonJSWrapper(this.getDependencyList(), factoryArity)) {
+      if (this.isSimplifiedCommonJSWrapper()) {
         replacementFuncExpr = factory;
         replacementCallExprParams = keywords.slice(0, factoryArity).map(a => t.identifier(a));
       }
@@ -91,6 +93,32 @@ module.exports = ({ types: t }) => {
       } else {
         return this.getCommonJSRequireExpressions();
       }
+    }
+
+    isModuleOrExportsInDependencyList() {
+      const dependencyList = this.getDependencyList();
+      return (
+        dependencyList &&
+        dependencyList.elements.some(
+          element =>
+            t.isStringLiteral(element) && (element.value === MODULE || element.value === EXPORTS)
+        )
+      );
+    }
+
+    isSimplifiedCommonJSWrapper() {
+      return !this.getDependencyList() && this.getFactoryArity() > 0;
+    }
+
+    isSimplifiedCommonJSWrapperWithModuleOrExports() {
+      return this.isSimplifiedCommonJSWrapper() && this.getFactoryArity() > 1;
+    }
+
+    isModuleOrExportsInjected() {
+      return (
+        this.isModuleOrExportsInDependencyList() ||
+        this.isSimplifiedCommonJSWrapperWithModuleOrExports()
+      );
     }
 
     static createExpressionDecoder(path) {
@@ -149,7 +177,7 @@ module.exports = ({ types: t }) => {
     }
 
     processFunctionFactoryReplacement(factoryReplacement) {
-      if (!isModuleOrExportsInjected(this.getDependencyList(), this.getFactory().params.length)) {
+      if (!this.isModuleOrExportsInjected()) {
         return [createModuleExportsAssignmentExpression(factoryReplacement)];
       } else {
         const resultCheckIdentifier = getUniqueIdentifier(this.path.scope, AMD_DEFINE_RESULT);
