@@ -37,7 +37,7 @@ module.exports = ({ types: t }) => {
       return t.isFunctionExpression(this.getFactory());
     }
 
-    getRequireExpressions() {
+    getCommonJSRequireExpressions() {
       const dependencyList = this.getDependencyList();
 
       if (dependencyList) {
@@ -67,7 +67,7 @@ module.exports = ({ types: t }) => {
       let replacementFuncExpr = t.functionExpression(
         null,
         [],
-        t.blockStatement(this.getRequireExpressions().concat(factory.body.body))
+        t.blockStatement(this.getCommonJSRequireExpressions().concat(factory.body.body))
       );
       let replacementCallExprParams = [];
 
@@ -89,7 +89,7 @@ module.exports = ({ types: t }) => {
       } else if (this.getFactory()) {
         return this.getNonFunctionFactoryReplacement();
       } else {
-        return this.getRequireExpressions();
+        return this.getCommonJSRequireExpressions();
       }
     }
 
@@ -117,7 +117,7 @@ module.exports = ({ types: t }) => {
     }
 
     getNonFunctionFactoryReplacement() {
-      return this.getRequireExpressions();
+      return this.getCommonJSRequireExpressions();
     }
   }
 
@@ -159,7 +159,7 @@ module.exports = ({ types: t }) => {
 
     getNonFunctionFactoryReplacement() {
       const exportExpression = createModuleExportsAssignmentExpression(this.getFactory());
-      return this.getRequireExpressions().concat(exportExpression);
+      return this.getCommonJSRequireExpressions().concat(exportExpression);
     }
   }
 
