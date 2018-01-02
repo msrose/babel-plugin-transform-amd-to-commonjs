@@ -11,15 +11,20 @@ module.exports = ({ types: t }) => {
     getUniqueIdentifier
   } = createHelpers({ types: t });
 
+  // Simple version of zip that only pairs elements until the end of the first array
+  const zip = (array1, array2) => {
+    return array1.map((element, index) => [element, array2[index]]);
+  };
+
   // Order is important here for the simplified commonjs wrapper
   const keywords = [REQUIRE, EXPORTS, MODULE];
 
-  class AMDExpressionDecoder {
+  class AMDExpressionTransformer {
     constructor(path) {
       this.path = path;
     }
 
-    isAMDExpression() {
+    isTransformableAMDExpression() {
       return t.isArrayExpression(this.getDependencyList()) || this.getFactory();
     }
 
@@ -121,17 +126,17 @@ module.exports = ({ types: t }) => {
       );
     }
 
-    static createExpressionDecoder(path) {
+    static createExpressionTransformer(path) {
       const decoders = {
-        [DEFINE]: DefineExpressionDecoder,
-        [REQUIRE]: RequireExpressionDecoder
+        [DEFINE]: DefineExpressionTransformer,
+        [REQUIRE]: RequireExpressionTransformer
       };
       const name = t.isCallExpression(path.node.expression) && path.node.expression.callee.name;
-      return new (decoders[name] || InvalidAMDExpressionDecoder)(path);
+      return new (decoders[name] || InvalidAMDExpressionTransformer)(path);
     }
   }
 
-  class RequireExpressionDecoder extends AMDExpressionDecoder {
+  class RequireExpressionTransformer extends AMDExpressionTransformer {
     getDependencyList() {
       return this.getArguments()[0];
     }
@@ -149,9 +154,9 @@ module.exports = ({ types: t }) => {
     }
   }
 
-  class DefineExpressionDecoder extends AMDExpressionDecoder {
-    isAMDExpression() {
-      return super.isAMDExpression() && t.isProgram(this.path.parent);
+  class DefineExpressionTransformer extends AMDExpressionTransformer {
+    isTransformableAMDExpression() {
+      return super.isTransformableAMDExpression() && t.isProgram(this.path.parent);
     }
 
     getDependencyList() {
@@ -191,23 +196,18 @@ module.exports = ({ types: t }) => {
     }
   }
 
-  class InvalidAMDExpressionDecoder extends AMDExpressionDecoder {
-    isAMDExpression() {
+  class InvalidAMDExpressionTransformer extends AMDExpressionTransformer {
+    isTransformableAMDExpression() {
       return false;
     }
   }
 
-  // Simple version of zip that only pairs elements until the end of the first array
-  const zip = (array1, array2) => {
-    return array1.map((element, index) => [element, array2[index]]);
-  };
-
   const ExpressionStatement = path => {
-    const decoder = AMDExpressionDecoder.createExpressionDecoder(path);
+    const transformer = AMDExpressionTransformer.createExpressionTransformer(path);
 
-    if (!decoder.isAMDExpression()) return;
+    if (!transformer.isTransformableAMDExpression()) return;
 
-    path.replaceWithMultiple(decoder.getTransformationToCommonJS());
+    path.replaceWithMultiple(transformer.getTransformationToCommonJS());
   };
 
   return {
