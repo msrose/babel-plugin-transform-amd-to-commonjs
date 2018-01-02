@@ -5,7 +5,6 @@ const createHelpers = require('./helpers');
 
 module.exports = ({ types: t }) => {
   const {
-    decodeDefineArguments,
     isModuleOrExportsInjected,
     isSimplifiedCommonJSWrapper,
     createRequireExpression,
@@ -26,12 +25,18 @@ module.exports = ({ types: t }) => {
       return t.isArrayExpression(this.getDependencyList()) || this.getFactory();
     }
 
+    getArguments() {
+      return this.path.node.expression.arguments;
+    }
+
     getDependencyList() {}
 
     getFactory() {}
 
+    // eslint-disable-next-line no-unused-vars
     processFunctionFactoryReplacement(scope, factoryReplacement) {}
 
+    // eslint-disable-next-line no-unused-vars
     processNonFunctionFactoryReplacement(factory, requireExpressions) {}
 
     static createExpressionDecoder(path) {
@@ -46,11 +51,11 @@ module.exports = ({ types: t }) => {
 
   class RequireExpressionDecoder extends AMDExpressionDecoder {
     getDependencyList() {
-      return this.path.node.expression.arguments[0];
+      return this.getArguments()[0];
     }
 
     getFactory() {
-      return this.path.node.expression.arguments[1];
+      return this.getArguments()[1];
     }
 
     processFunctionFactoryReplacement(scope, factoryReplacement) {
@@ -68,11 +73,25 @@ module.exports = ({ types: t }) => {
     }
 
     getDependencyList() {
-      return decodeDefineArguments(this.path.node.expression.arguments).dependencyList;
+      const args = this.getArguments();
+      if (args.length === 2) {
+        if (t.isArrayExpression(args[0])) {
+          return args[0];
+        }
+      } else if (args.length !== 1) {
+        return args[1];
+      }
     }
 
     getFactory() {
-      return decodeDefineArguments(this.path.node.expression.arguments).factory;
+      const args = this.getArguments();
+      if (args.length === 1) {
+        return args[0];
+      } else if (args.length === 2) {
+        return args[1];
+      } else {
+        return args[2];
+      }
     }
 
     processFunctionFactoryReplacement(scope, factoryReplacement) {

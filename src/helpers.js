@@ -5,20 +5,6 @@ const { MODULE, EXPORTS, REQUIRE } = require('./constants');
 // A factory function is exported in order to inject the same babel-types object
 // being used by the plugin itself
 module.exports = ({ types: t }) => {
-  const decodeDefineArguments = argNodes => {
-    if (argNodes.length === 1) {
-      return { factory: argNodes[0] };
-    } else if (argNodes.length === 2) {
-      const decodedArgs = { factory: argNodes[1] };
-      if (t.isArrayExpression(argNodes[0])) {
-        decodedArgs.dependencyList = argNodes[0];
-      }
-      return decodedArgs;
-    } else {
-      return { dependencyList: argNodes[1], factory: argNodes[2] };
-    }
-  };
-
   const createModuleExportsAssignmentExpression = value => {
     return t.expressionStatement(
       t.assignmentExpression(
@@ -86,7 +72,6 @@ module.exports = ({ types: t }) => {
   };
 
   return {
-    decodeDefineArguments,
     createModuleExportsAssignmentExpression,
     createModuleExportsResultCheck,
     createRequireExpression,
