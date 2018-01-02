@@ -11,7 +11,8 @@ module.exports = ({ types: t }) => {
     isSimplifiedCommonJSWrapper,
     createRequireExpression,
     createModuleExportsAssignmentExpression,
-    createModuleExportsResultCheck
+    createModuleExportsResultCheck,
+    getUniqueIdentifier
   } = createHelpers({ types: t });
 
   const argumentDecoders = {
@@ -84,9 +85,7 @@ module.exports = ({ types: t }) => {
         if (!isModuleOrExportsInjected(dependencyList, factoryArity)) {
           path.replaceWith(createModuleExportsAssignmentExpression(factoryReplacement));
         } else {
-          const resultCheckIdentifier = path.scope.hasOwnBinding(AMD_DEFINE_RESULT)
-            ? path.scope.generateUidIdentifier(AMD_DEFINE_RESULT)
-            : t.identifier(AMD_DEFINE_RESULT);
+          const resultCheckIdentifier = getUniqueIdentifier(path.scope, AMD_DEFINE_RESULT);
           path.replaceWithMultiple(
             createModuleExportsResultCheck(factoryReplacement, resultCheckIdentifier)
           );

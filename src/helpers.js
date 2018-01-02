@@ -85,6 +85,10 @@ module.exports = ({ types: t }) => {
     );
   };
 
+  const getUniqueIdentifier = (scope, name) => {
+    return scope.hasOwnBinding(name) ? scope.generateUidIdentifier(name) : t.identifier(name);
+  };
+
   return {
     decodeDefineArguments,
     decodeRequireArguments,
@@ -92,6 +96,7 @@ module.exports = ({ types: t }) => {
     createModuleExportsResultCheck,
     createRequireExpression,
     isSimplifiedCommonJSWrapper,
-    isModuleOrExportsInjected
+    isModuleOrExportsInjected,
+    getUniqueIdentifier
   };
 };
