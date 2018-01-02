@@ -58,9 +58,9 @@ module.exports = ({ types: t }) => {
     }
 
     // eslint-disable-next-line no-unused-vars
-    processFunctionFactoryReplacement(scope, factoryReplacement) {}
+    processFunctionFactoryReplacement(factoryReplacement) {}
 
-    getFunctionFactoryReplacement(scope) {
+    getFunctionFactoryReplacement() {
       const factory = this.getFactory();
       const factoryArity = factory.params.length;
       let replacementFuncExpr = t.functionExpression(
@@ -76,12 +76,24 @@ module.exports = ({ types: t }) => {
       }
 
       return this.processFunctionFactoryReplacement(
-        scope,
         t.callExpression(replacementFuncExpr, replacementCallExprParams)
       );
     }
 
     getNonFunctionFactoryReplacement() {}
+
+    getTransformationToCommonJS() {
+      const factory = this.getFactory();
+
+      if (t.isFunctionExpression(factory)) {
+        return this.getFunctionFactoryReplacement();
+      } else if (factory) {
+        const nonFunctionFactoryReplacement = this.getNonFunctionFactoryReplacement();
+        return nonFunctionFactoryReplacement;
+      } else {
+        return this.getRequireExpressions();
+      }
+    }
 
     static createExpressionDecoder(path) {
       const decoders = {
@@ -102,7 +114,7 @@ module.exports = ({ types: t }) => {
       return this.getArguments()[1];
     }
 
-    processFunctionFactoryReplacement(scope, factoryReplacement) {
+    processFunctionFactoryReplacement(factoryReplacement) {
       return [t.expressionStatement(factoryReplacement)];
     }
 
@@ -138,11 +150,11 @@ module.exports = ({ types: t }) => {
       }
     }
 
-    processFunctionFactoryReplacement(scope, factoryReplacement) {
+    processFunctionFactoryReplacement(factoryReplacement) {
       if (!isModuleOrExportsInjected(this.getDependencyList(), this.getFactory().params.length)) {
         return [createModuleExportsAssignmentExpression(factoryReplacement)];
       } else {
-        const resultCheckIdentifier = getUniqueIdentifier(scope, AMD_DEFINE_RESULT);
+        const resultCheckIdentifier = getUniqueIdentifier(this.path.scope, AMD_DEFINE_RESULT);
         return createModuleExportsResultCheck(factoryReplacement, resultCheckIdentifier);
       }
     }
@@ -169,16 +181,7 @@ module.exports = ({ types: t }) => {
 
     if (!decoder.isAMDExpression()) return;
 
-    const factory = decoder.getFactory();
-
-    if (t.isFunctionExpression(factory)) {
-      path.replaceWithMultiple(decoder.getFunctionFactoryReplacement(path.scope));
-    } else if (factory) {
-      const nonFunctionFactoryReplacement = decoder.getNonFunctionFactoryReplacement();
-      path.replaceWithMultiple(nonFunctionFactoryReplacement);
-    } else {
-      path.replaceWithMultiple(decoder.getRequireExpressions());
-    }
+    path.replaceWithMultiple(decoder.getTransformationToCommonJS());
   };
 
   return {
