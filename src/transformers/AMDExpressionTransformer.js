@@ -58,6 +58,7 @@ class AMDExpressionTransformer {
     return [];
   }
 
+  // https://github.com/requirejs/requirejs/wiki/differences-between-the-simplified-commonjs-wrapper-and-standard-amd-define
   isSimplifiedCommonJSWrapper() {
     return !this.getDependencyList() && this.getFactoryArity() > 0;
   }

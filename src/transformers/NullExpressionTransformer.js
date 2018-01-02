@@ -2,10 +2,10 @@
 
 const AMDExpressionTransformer = require('./AMDExpressionTransformer');
 
-class NullAMDExpressionTransformer extends AMDExpressionTransformer {
+class NullExpressionTransformer extends AMDExpressionTransformer {
   isTransformableAMDExpression() {
     return false;
   }
 }
 
-module.exports = NullAMDExpressionTransformer;
+module.exports = NullExpressionTransformer;

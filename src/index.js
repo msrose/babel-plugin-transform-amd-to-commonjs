@@ -2,20 +2,18 @@
 
 const getExpressionTransformerClass = require('./transformers');
 
-module.exports = ({ types: t }) => {
-  const ExpressionStatement = path => {
-    const name = t.isCallExpression(path.node.expression) && path.node.expression.callee.name;
-    const AMDExpressionTransformer = getExpressionTransformerClass(name);
-    const transformer = new AMDExpressionTransformer(t, path);
+module.exports = ({ types: t }) => ({
+  visitor: {
+    ExpressionStatement: path => {
+      const functionName =
+        t.isCallExpression(path.node.expression) && path.node.expression.callee.name;
 
-    if (!transformer.isTransformableAMDExpression()) return;
+      const AMDExpressionTransformer = getExpressionTransformerClass(functionName);
+      const transformer = new AMDExpressionTransformer(t, path);
 
-    path.replaceWithMultiple(transformer.getTransformationToCommonJS());
-  };
+      if (!transformer.isTransformableAMDExpression()) return;
 
-  return {
-    visitor: {
-      ExpressionStatement
+      path.replaceWithMultiple(transformer.getTransformationToCommonJS());
     }
-  };
-};
+  }
+});
