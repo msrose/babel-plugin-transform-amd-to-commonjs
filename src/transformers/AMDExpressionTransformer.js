@@ -29,6 +29,10 @@ class AMDExpressionTransformer {
 
   getFactory() {}
 
+  getFactoryArity() {
+    return this.getFactory().params.length;
+  }
+
   hasFunctionFactory() {
     return this.t.isFunctionExpression(this.getFactory());
   }
@@ -54,12 +58,12 @@ class AMDExpressionTransformer {
     return [];
   }
 
+  isSimplifiedCommonJSWrapper() {
+    return !this.getDependencyList() && this.getFactoryArity() > 0;
+  }
+
   // eslint-disable-next-line no-unused-vars
   processFunctionFactoryReplacement(factoryReplacement) {}
-
-  getFactoryArity() {
-    return this.getFactory().params.length;
-  }
 
   getFunctionFactoryReplacement() {
     const factory = this.getFactory();
@@ -91,32 +95,6 @@ class AMDExpressionTransformer {
     } else {
       return this.getCommonJSRequireExpressions();
     }
-  }
-
-  isModuleOrExportsInDependencyList() {
-    const dependencyList = this.getDependencyList();
-    return (
-      dependencyList &&
-      dependencyList.elements.some(
-        element =>
-          this.t.isStringLiteral(element) && (element.value === MODULE || element.value === EXPORTS)
-      )
-    );
-  }
-
-  isSimplifiedCommonJSWrapper() {
-    return !this.getDependencyList() && this.getFactoryArity() > 0;
-  }
-
-  isSimplifiedCommonJSWrapperWithModuleOrExports() {
-    return this.isSimplifiedCommonJSWrapper() && this.getFactoryArity() > 1;
-  }
-
-  isModuleOrExportsInjected() {
-    return (
-      this.isModuleOrExportsInDependencyList() ||
-      this.isSimplifiedCommonJSWrapperWithModuleOrExports()
-    );
   }
 }
 

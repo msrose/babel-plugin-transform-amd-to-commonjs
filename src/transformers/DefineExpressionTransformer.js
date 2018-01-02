@@ -1,12 +1,12 @@
 'use strict';
 
-const AMDExpressionTransformer = require('./AMDExpressionTransformer');
+const { MODULE, EXPORTS, AMD_DEFINE_RESULT } = require('../constants');
 const {
   createModuleExportsAssignmentExpression,
   createModuleExportsResultCheck,
   getUniqueIdentifier
 } = require('../helpers');
-const { AMD_DEFINE_RESULT } = require('../constants');
+const AMDExpressionTransformer = require('./AMDExpressionTransformer');
 
 class DefineExpressionTransformer extends AMDExpressionTransformer {
   isTransformableAMDExpression() {
@@ -35,8 +35,30 @@ class DefineExpressionTransformer extends AMDExpressionTransformer {
     }
   }
 
+  _isModuleOrExportsInDependencyList() {
+    const dependencyList = this.getDependencyList();
+    return (
+      dependencyList &&
+      dependencyList.elements.some(
+        element =>
+          this.t.isStringLiteral(element) && (element.value === MODULE || element.value === EXPORTS)
+      )
+    );
+  }
+
+  _isSimplifiedCommonJSWrapperWithModuleOrExports() {
+    return this.isSimplifiedCommonJSWrapper() && this.getFactoryArity() > 1;
+  }
+
+  _isModuleOrExportsInjected() {
+    return (
+      this._isModuleOrExportsInDependencyList() ||
+      this._isSimplifiedCommonJSWrapperWithModuleOrExports()
+    );
+  }
+
   processFunctionFactoryReplacement(factoryReplacement) {
-    if (!this.isModuleOrExportsInjected()) {
+    if (!this._isModuleOrExportsInjected()) {
       return [createModuleExportsAssignmentExpression(this.t, factoryReplacement)];
     } else {
       const resultCheckIdentifier = getUniqueIdentifier(this.t, this.path.scope, AMD_DEFINE_RESULT);
