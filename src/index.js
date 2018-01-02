@@ -1,6 +1,6 @@
 'use strict';
 
-const getExpressionTransformerClass = require('./transformers');
+const getExpressionClass = require('./expressions');
 
 module.exports = ({ types: t }) => ({
   visitor: {
@@ -8,12 +8,12 @@ module.exports = ({ types: t }) => ({
       const functionName =
         t.isCallExpression(path.node.expression) && path.node.expression.callee.name;
 
-      const AMDExpressionTransformer = getExpressionTransformerClass(functionName);
-      const transformer = new AMDExpressionTransformer(t, path);
+      const AMDExpression = getExpressionClass(functionName);
+      const expression = new AMDExpression(t, path);
 
-      if (!transformer.isTransformableAMDExpression()) return;
+      if (!expression.isTransformable()) return;
 
-      path.replaceWithMultiple(transformer.getTransformationToCommonJS());
+      path.replaceWithMultiple(expression.transformToCommonJS());
     }
   }
 });

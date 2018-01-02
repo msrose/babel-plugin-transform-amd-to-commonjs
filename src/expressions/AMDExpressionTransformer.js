@@ -12,38 +12,18 @@ const zip = (array1, array2) => {
 const keywords = [REQUIRE, EXPORTS, MODULE];
 
 class AMDExpressionTransformer {
-  constructor(t, path) {
+  constructor(t, amdExpression) {
     this.t = t;
-    this.path = path;
-  }
-
-  isTransformableAMDExpression() {
-    return this.t.isArrayExpression(this.getDependencyList()) || this.getFactory();
-  }
-
-  getArguments() {
-    return this.path.node.expression.arguments;
-  }
-
-  getDependencyList() {}
-
-  getFactory() {}
-
-  getFactoryArity() {
-    return this.getFactory().params.length;
-  }
-
-  hasFunctionFactory() {
-    return this.t.isFunctionExpression(this.getFactory());
+    this.amdExpression = amdExpression;
   }
 
   getCommonJSRequireExpressions() {
-    const dependencyList = this.getDependencyList();
+    const dependencyList = this.amdExpression.getDependencyList();
 
     if (dependencyList) {
       const dependencyParameterPairs = zip(
         dependencyList.elements,
-        this.hasFunctionFactory() ? this.getFactory().params : []
+        this.amdExpression.hasFunctionFactory() ? this.amdExpression.getFactory().params : []
       );
 
       return dependencyParameterPairs
@@ -58,17 +38,12 @@ class AMDExpressionTransformer {
     return [];
   }
 
-  // https://github.com/requirejs/requirejs/wiki/differences-between-the-simplified-commonjs-wrapper-and-standard-amd-define
-  isSimplifiedCommonJSWrapper() {
-    return !this.getDependencyList() && this.getFactoryArity() > 0;
-  }
-
   // eslint-disable-next-line no-unused-vars
   processFunctionFactoryReplacement(factoryReplacement) {}
 
   getFunctionFactoryReplacement() {
-    const factory = this.getFactory();
-    const factoryArity = this.getFactoryArity();
+    const factory = this.amdExpression.getFactory();
+    const factoryArity = this.amdExpression.getFactoryArity();
     let replacementFuncExpr = this.t.functionExpression(
       null,
       [],
@@ -76,7 +51,7 @@ class AMDExpressionTransformer {
     );
     let replacementCallExprParams = [];
 
-    if (this.isSimplifiedCommonJSWrapper()) {
+    if (this.amdExpression.isSimplifiedCommonJSWrapper()) {
       replacementFuncExpr = factory;
       replacementCallExprParams = keywords.slice(0, factoryArity).map(a => this.t.identifier(a));
     }
@@ -89,9 +64,9 @@ class AMDExpressionTransformer {
   getNonFunctionFactoryReplacement() {}
 
   getTransformationToCommonJS() {
-    if (this.hasFunctionFactory()) {
+    if (this.amdExpression.hasFunctionFactory()) {
       return this.getFunctionFactoryReplacement();
-    } else if (this.getFactory()) {
+    } else if (this.amdExpression.getFactory()) {
       return this.getNonFunctionFactoryReplacement();
     } else {
       return this.getCommonJSRequireExpressions();
