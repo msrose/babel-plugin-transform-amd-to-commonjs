@@ -30,13 +30,9 @@ module.exports = ({ types: t }) => {
 
     getFactory() {}
 
-    processFactoryReplacement(scope, factoryReplacement) {
-      return [t.expressionStatement(factoryReplacement)];
-    }
+    processFunctionFactoryReplacement(scope, factoryReplacement) {}
 
-    isDefineCall() {
-      return this.path.node.expression.callee.name === DEFINE;
-    }
+    processNonFunctionFactoryReplacement(factory, requireExpressions) {}
 
     static createExpressionDecoder(path) {
       const decoders = {
@@ -56,6 +52,14 @@ module.exports = ({ types: t }) => {
     getFactory() {
       return this.path.node.expression.arguments[1];
     }
+
+    processFunctionFactoryReplacement(scope, factoryReplacement) {
+      return [t.expressionStatement(factoryReplacement)];
+    }
+
+    processNonFunctionFactoryReplacement(factory, requireExpressions) {
+      return requireExpressions;
+    }
   }
 
   class DefineExpressionDecoder extends AMDExpressionDecoder {
@@ -71,13 +75,18 @@ module.exports = ({ types: t }) => {
       return decodeDefineArguments(this.path.node.expression.arguments).factory;
     }
 
-    processFactoryReplacement(scope, factoryReplacement) {
+    processFunctionFactoryReplacement(scope, factoryReplacement) {
       if (!isModuleOrExportsInjected(this.getDependencyList(), this.getFactory().params.length)) {
         return [createModuleExportsAssignmentExpression(factoryReplacement)];
       } else {
         const resultCheckIdentifier = getUniqueIdentifier(scope, AMD_DEFINE_RESULT);
         return createModuleExportsResultCheck(factoryReplacement, resultCheckIdentifier);
       }
+    }
+
+    processNonFunctionFactoryReplacement(factory, requireExpressions) {
+      const exportExpression = createModuleExportsAssignmentExpression(factory);
+      return requireExpressions.concat(exportExpression);
     }
   }
 
@@ -99,7 +108,6 @@ module.exports = ({ types: t }) => {
 
     const dependencyList = decoder.getDependencyList();
     const factory = decoder.getFactory();
-    const isDefineCall = decoder.isDefineCall();
 
     const isFunctionFactory = t.isFunctionExpression(factory);
     const requireExpressions = [];
@@ -137,11 +145,15 @@ module.exports = ({ types: t }) => {
 
       const factoryReplacement = t.callExpression(replacementFuncExpr, replacementCallExprParams);
 
-      path.replaceWithMultiple(decoder.processFactoryReplacement(path.scope, factoryReplacement));
-    } else if (factory && isDefineCall) {
-      const exportExpression = createModuleExportsAssignmentExpression(factory);
-      const nodes = requireExpressions.concat(exportExpression);
-      path.replaceWithMultiple(nodes);
+      path.replaceWithMultiple(
+        decoder.processFunctionFactoryReplacement(path.scope, factoryReplacement)
+      );
+    } else if (factory) {
+      const nonFunctionFactoryReplacement = decoder.processNonFunctionFactoryReplacement(
+        factory,
+        requireExpressions
+      );
+      path.replaceWithMultiple(nonFunctionFactoryReplacement);
     } else {
       path.replaceWithMultiple(requireExpressions);
     }
