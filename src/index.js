@@ -15,10 +15,62 @@ module.exports = ({ types: t }) => {
     getUniqueIdentifier
   } = createHelpers({ types: t });
 
-  const argumentDecoders = {
-    [DEFINE]: decodeDefineArguments,
-    [REQUIRE]: decodeRequireArguments
-  };
+  class AMDExpressionDecoder {
+    constructor(path) {
+      this.path = path;
+    }
+
+    isAMDExpression() {
+      return t.isArrayExpression(this.getDependencyList()) || this.getFactory();
+    }
+
+    getDependencyList() {}
+
+    getFactory() {}
+
+    isDefineCall() {
+      return this.path.node.expression.callee.name === DEFINE;
+    }
+
+    static createExpressionDecoder(path) {
+      const decoders = {
+        [DEFINE]: DefineExpressionDecoder,
+        [REQUIRE]: RequireExpressionDecoder
+      };
+      const name = t.isCallExpression(path.node.expression) && path.node.expression.callee.name;
+      return new (decoders[name] || InvalidAMDExpressionDecoder)(path);
+    }
+  }
+
+  class RequireExpressionDecoder extends AMDExpressionDecoder {
+    getDependencyList() {
+      return decodeRequireArguments(this.path.node.expression.arguments).dependencyList;
+    }
+
+    getFactory() {
+      return decodeRequireArguments(this.path.node.expression.arguments).factory;
+    }
+  }
+
+  class DefineExpressionDecoder extends AMDExpressionDecoder {
+    isAMDExpression() {
+      return super.isAMDExpression() && t.isProgram(this.path.parent);
+    }
+
+    getDependencyList() {
+      return decodeDefineArguments(this.path.node.expression.arguments).dependencyList;
+    }
+
+    getFactory() {
+      return decodeDefineArguments(this.path.node.expression.arguments).factory;
+    }
+  }
+
+  class InvalidAMDExpressionDecoder extends AMDExpressionDecoder {
+    isAMDExpression() {
+      return false;
+    }
+  }
 
   // Simple version of zip that only pairs elements until the end of the first array
   const zip = (array1, array2) => {
@@ -26,22 +78,13 @@ module.exports = ({ types: t }) => {
   };
 
   const ExpressionStatement = path => {
-    const { node, parent } = path;
+    const decoder = AMDExpressionDecoder.createExpressionDecoder(path);
 
-    if (!t.isCallExpression(node.expression)) return;
+    if (!decoder.isAMDExpression()) return;
 
-    const { name } = node.expression.callee;
-    const isDefineCall = name === DEFINE;
-
-    if (isDefineCall && !t.isProgram(parent)) return;
-
-    const argumentDecoder = argumentDecoders[name];
-
-    if (!argumentDecoder) return;
-
-    const { dependencyList, factory } = argumentDecoder(node.expression.arguments);
-
-    if (!t.isArrayExpression(dependencyList) && !factory) return;
+    const dependencyList = decoder.getDependencyList();
+    const factory = decoder.getFactory();
+    const isDefineCall = decoder.isDefineCall();
 
     const isFunctionFactory = t.isFunctionExpression(factory);
     const requireExpressions = [];
