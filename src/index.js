@@ -14,6 +14,9 @@ module.exports = ({ types: t }) => {
     getUniqueIdentifier
   } = createHelpers({ types: t });
 
+  // Order is important here for the simplified commonjs wrapper
+  const keywords = [REQUIRE, EXPORTS, MODULE];
+
   class AMDExpressionDecoder {
     constructor(path) {
       this.path = path;
@@ -26,6 +29,10 @@ module.exports = ({ types: t }) => {
     getDependencyList() {}
 
     getFactory() {}
+
+    processFactoryReplacement(scope, factoryReplacement) {
+      return [t.expressionStatement(factoryReplacement)];
+    }
 
     isDefineCall() {
       return this.path.node.expression.callee.name === DEFINE;
@@ -63,6 +70,15 @@ module.exports = ({ types: t }) => {
     getFactory() {
       return decodeDefineArguments(this.path.node.expression.arguments).factory;
     }
+
+    processFactoryReplacement(scope, factoryReplacement) {
+      if (!isModuleOrExportsInjected(this.getDependencyList(), this.getFactory().params.length)) {
+        return [createModuleExportsAssignmentExpression(factoryReplacement)];
+      } else {
+        const resultCheckIdentifier = getUniqueIdentifier(scope, AMD_DEFINE_RESULT);
+        return createModuleExportsResultCheck(factoryReplacement, resultCheckIdentifier);
+      }
+    }
   }
 
   class InvalidAMDExpressionDecoder extends AMDExpressionDecoder {
@@ -87,8 +103,6 @@ module.exports = ({ types: t }) => {
 
     const isFunctionFactory = t.isFunctionExpression(factory);
     const requireExpressions = [];
-    // Order is important here for the simplified commonjs wrapper
-    const keywords = [REQUIRE, EXPORTS, MODULE];
 
     if (dependencyList) {
       const dependencyParameterPairs = zip(
@@ -123,18 +137,7 @@ module.exports = ({ types: t }) => {
 
       const factoryReplacement = t.callExpression(replacementFuncExpr, replacementCallExprParams);
 
-      if (isDefineCall) {
-        if (!isModuleOrExportsInjected(dependencyList, factoryArity)) {
-          path.replaceWith(createModuleExportsAssignmentExpression(factoryReplacement));
-        } else {
-          const resultCheckIdentifier = getUniqueIdentifier(path.scope, AMD_DEFINE_RESULT);
-          path.replaceWithMultiple(
-            createModuleExportsResultCheck(factoryReplacement, resultCheckIdentifier)
-          );
-        }
-      } else {
-        path.replaceWith(factoryReplacement);
-      }
+      path.replaceWithMultiple(decoder.processFactoryReplacement(path.scope, factoryReplacement));
     } else if (factory && isDefineCall) {
       const exportExpression = createModuleExportsAssignmentExpression(factory);
       const nodes = requireExpressions.concat(exportExpression);
