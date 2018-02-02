@@ -20,11 +20,7 @@ module.exports = ({ types: t }) => {
   };
 
   const decodeRequireArguments = argNodes => {
-    if (argNodes.length === 1) {
-      return { dependencyList: argNodes[0] };
-    } else {
-      return { dependencyList: argNodes[0], factory: argNodes[1] };
-    }
+    return { dependencyList: argNodes[0], factory: argNodes[1] };
   };
 
   const createModuleExportsAssignmentExpression = value => {
@@ -73,8 +69,13 @@ module.exports = ({ types: t }) => {
     );
   };
 
+  // https://github.com/requirejs/requirejs/wiki/differences-between-the-simplified-commonjs-wrapper-and-standard-amd-define
+  const isSimplifiedCommonJSWrapper = (dependencyList, factoryArity) => {
+    return !dependencyList && factoryArity > 0;
+  };
+
   const isSimplifiedCommonJSWrapperWithModuleOrExports = (dependencyList, factoryArity) => {
-    return !dependencyList && factoryArity > 1;
+    return isSimplifiedCommonJSWrapper(dependencyList, factoryArity) && factoryArity > 1;
   };
 
   const isModuleOrExportsInjected = (dependencyList, factoryArity) => {
@@ -84,12 +85,18 @@ module.exports = ({ types: t }) => {
     );
   };
 
+  const getUniqueIdentifier = (scope, name) => {
+    return scope.hasOwnBinding(name) ? scope.generateUidIdentifier(name) : t.identifier(name);
+  };
+
   return {
     decodeDefineArguments,
     decodeRequireArguments,
     createModuleExportsAssignmentExpression,
     createModuleExportsResultCheck,
     createRequireExpression,
-    isModuleOrExportsInjected
+    isSimplifiedCommonJSWrapper,
+    isModuleOrExportsInjected,
+    getUniqueIdentifier
   };
 };
