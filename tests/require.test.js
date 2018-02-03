@@ -121,4 +121,14 @@ describe('Plugin for require blocks', () => {
       })();
     `);
   });
+
+  it('ignores non-function factories', () => {
+    expect(`
+      require(['sup', 'dawg', 'hi'], { nonFunction: 'factory' });
+    `).toBeTransformedTo(`
+      require('sup');
+      require('dawg');
+      require('hi');
+    `);
+  });
 });
