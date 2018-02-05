@@ -89,6 +89,10 @@ module.exports = ({ types: t }) => {
     return scope.hasOwnBinding(name) ? scope.generateUidIdentifier(name) : t.identifier(name);
   };
 
+  const isFunctionExpression = factory => {
+    return t.isFunctionExpression(factory) || t.isArrowFunctionExpression(factory);
+  };
+
   return {
     decodeDefineArguments,
     decodeRequireArguments,
@@ -97,6 +101,7 @@ module.exports = ({ types: t }) => {
     createRequireExpression,
     isSimplifiedCommonJSWrapper,
     isModuleOrExportsInjected,
-    getUniqueIdentifier
+    getUniqueIdentifier,
+    isFunctionExpression
   };
 };

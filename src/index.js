@@ -12,7 +12,8 @@ module.exports = ({ types: t }) => {
     createRequireExpression,
     createModuleExportsAssignmentExpression,
     createModuleExportsResultCheck,
-    getUniqueIdentifier
+    getUniqueIdentifier,
+    isFunctionExpression
   } = createHelpers({ types: t });
 
   const argumentDecoders = {
@@ -43,7 +44,7 @@ module.exports = ({ types: t }) => {
 
     if (!t.isArrayExpression(dependencyList) && !factory) return;
 
-    const isFunctionFactory = t.isFunctionExpression(factory);
+    const isFunctionFactory = isFunctionExpression(factory);
     const requireExpressions = [];
     // Order is important here for the simplified commonjs wrapper
     const keywords = [REQUIRE, EXPORTS, MODULE];
