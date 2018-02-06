@@ -14,7 +14,7 @@ module.exports = ({ types: t }) => {
     createModuleExportsResultCheck,
     getUniqueIdentifier,
     isFunctionExpression,
-    createFunctionExpression
+    createFactoryReplacementExpression
   } = createHelpers({ types: t });
 
   const argumentDecoders = {
@@ -69,7 +69,7 @@ module.exports = ({ types: t }) => {
 
     if (isFunctionFactory) {
       const factoryArity = factory.params.length;
-      let replacementFuncExpr = createFunctionExpression(factory, requireExpressions);
+      let replacementFuncExpr = createFactoryReplacementExpression(factory, requireExpressions);
       let replacementCallExprParams = [];
 
       if (isSimplifiedCommonJSWrapper(dependencyList, factoryArity)) {

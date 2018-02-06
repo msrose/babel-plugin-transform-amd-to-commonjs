@@ -2,7 +2,7 @@
 
 const { AMD_DEFINE_RESULT } = require('../src/constants');
 
-describe('Plugin for define blocks', () => {
+describe('Plugin for define blocks with arrow function factories', () => {
   it('transforms anonymous define blocks with one dependency', () => {
     expect(`
       define(['stuff'], donkeys => {

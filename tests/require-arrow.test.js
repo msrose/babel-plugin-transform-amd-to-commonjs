@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Plugin for require blocks', () => {
+describe('Plugin for require blocks with arrow function callbacks', () => {
   it('transforms require blocks with one dependency', () => {
     expect(`
       require(['llamas'], (llama) => {
@@ -43,12 +43,12 @@ describe('Plugin for require blocks', () => {
 
   it('transforms require blocks with multiple dependencies and implicit return', () => {
     expect(`
-      require(['llamas', 'frogs'], (llama, frog) => llama.doSomeStuff(frogs));
+      require(['llamas', 'frogs'], (llama, frog) => llama.doSomeStuff(frog));
     `).toBeTransformedTo(`
       (() => {
             var llama = require('llamas');
             var frog = require('frogs');
-            return llama.doSomeStuff(frogs);
+            return llama.doSomeStuff(frog);
       })();
     `);
   });

@@ -93,7 +93,7 @@ module.exports = ({ types: t }) => {
     return t.isFunctionExpression(factory) || t.isArrowFunctionExpression(factory);
   };
 
-  const createFunctionExpression = (factory, requireExpressions) => {
+  const createFactoryReplacementExpression = (factory, requireExpressions) => {
     if (t.isFunctionExpression(factory)) {
       return t.functionExpression(
         null,
@@ -110,8 +110,7 @@ module.exports = ({ types: t }) => {
     }
     return t.arrowFunctionExpression(
       [],
-      t.blockStatement(requireExpressions.concat(bodyStatement)),
-      false
+      t.blockStatement(requireExpressions.concat(bodyStatement))
     );
   };
 
@@ -125,6 +124,6 @@ module.exports = ({ types: t }) => {
     isModuleOrExportsInjected,
     getUniqueIdentifier,
     isFunctionExpression,
-    createFunctionExpression
+    createFactoryReplacementExpression
   };
 };
