@@ -13,7 +13,8 @@ module.exports = ({ types: t }) => {
     createModuleExportsAssignmentExpression,
     createModuleExportsResultCheck,
     getUniqueIdentifier,
-    isFunctionExpression
+    isFunctionExpression,
+    createFunctionExpression
   } = createHelpers({ types: t });
 
   const argumentDecoders = {
@@ -68,11 +69,7 @@ module.exports = ({ types: t }) => {
 
     if (isFunctionFactory) {
       const factoryArity = factory.params.length;
-      let replacementFuncExpr = t.functionExpression(
-        null,
-        [],
-        t.blockStatement(requireExpressions.concat(factory.body.body))
-      );
+      let replacementFuncExpr = createFunctionExpression(factory, requireExpressions);
       let replacementCallExprParams = [];
 
       if (isSimplifiedCommonJSWrapper(dependencyList, factoryArity)) {

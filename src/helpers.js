@@ -93,6 +93,28 @@ module.exports = ({ types: t }) => {
     return t.isFunctionExpression(factory) || t.isArrowFunctionExpression(factory);
   };
 
+  const createFunctionExpression = (factory, requireExpressions) => {
+    if (t.isFunctionExpression(factory)) {
+      return t.functionExpression(
+        null,
+        [],
+        t.blockStatement(requireExpressions.concat(factory.body.body))
+      );
+    }
+    let bodyStatement;
+    if (t.isBlockStatement(factory.body)) {
+      bodyStatement = factory.body.body;
+    } else {
+      // implicit return arrow function
+      bodyStatement = t.returnStatement(factory.body);
+    }
+    return t.arrowFunctionExpression(
+      [],
+      t.blockStatement(requireExpressions.concat(bodyStatement)),
+      false
+    );
+  };
+
   return {
     decodeDefineArguments,
     decodeRequireArguments,
@@ -102,6 +124,7 @@ module.exports = ({ types: t }) => {
     isSimplifiedCommonJSWrapper,
     isModuleOrExportsInjected,
     getUniqueIdentifier,
-    isFunctionExpression
+    isFunctionExpression,
+    createFunctionExpression
   };
 };

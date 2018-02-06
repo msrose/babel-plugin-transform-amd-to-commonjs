@@ -5,18 +5,29 @@ const { AMD_DEFINE_RESULT } = require('../src/constants');
 describe('Plugin for define blocks', () => {
   it('transforms anonymous define blocks with one dependency', () => {
     expect(`
-      define(['stuff'], (donkeys) => {
+      define(['stuff'], donkeys => {
         return {
           llamas: donkeys.version
         };
       });
     `).toBeTransformedTo(`
-      module.exports = function() {
+      module.exports = (() => {
         var donkeys = require('stuff');
         return {
           llamas: donkeys.version
         };
-      }();
+      })();
+    `);
+  });
+
+  it('transforms anonymous define blocks with one dependency and implicit return value', () => {
+    expect(`
+      define(['stuff'], donkeys => ({ llamas: donkeys.version }))
+    `).toBeTransformedTo(`
+      module.exports = (() => {
+            var donkeys = require('stuff');
+            return { llamas: donkeys.version };
+      })();
     `);
   });
 
@@ -29,14 +40,26 @@ describe('Plugin for define blocks', () => {
         };
       });
     `).toBeTransformedTo(`
-      module.exports = function() {
+      module.exports = (() => {
         var donkeys = require('stuff');
         var aruba = require('here');
         return {
           llamas: donkeys.version,
           cows: aruba.hi
         };
-      }();
+      })();
+    `);
+  });
+
+  it('transforms anonymous define blocks with multiple dependencies and implicit return value', () => {
+    expect(`
+      define(['stuff', 'here'], (donkeys, aruba) => ({ llamas: donkeys.version, cows: aruba.hi }));
+    `).toBeTransformedTo(`
+      module.exports = (() => {
+            var donkeys = require('stuff');
+            var aruba = require('here');
+            return { llamas: donkeys.version, cows: aruba.hi };
+      })();
     `);
   });
 
@@ -48,13 +71,13 @@ describe('Plugin for define blocks', () => {
         };
       });
     `).toBeTransformedTo(`
-      module.exports = function() {
+      module.exports = (() => {
         var donkeys = require('stuff');
         require('here');
         return {
           llamas: donkeys.version
         };
-      }();
+      })();
     `);
   });
 
@@ -77,11 +100,11 @@ describe('Plugin for define blocks', () => {
         };
       });
     `).toBeTransformedTo(`
-      module.exports = function() {
+      module.exports = (() => {
         return {
           llamas: 'donkeys'
         };
-      }();
+      })();
     `);
   });
 
@@ -95,12 +118,12 @@ describe('Plugin for define blocks', () => {
       });
     `).toBeTransformedTo(`
       var dependency = 'hey';
-      module.exports = function() {
+      module.exports = (() => {
         var here = require(dependency);
         return {
           llamas: here.hi
         };
-      }();
+      })();
     `);
   });
 
@@ -112,12 +135,12 @@ describe('Plugin for define blocks', () => {
         };
       });
     `).toBeTransformedTo(`
-      module.exports = function() {
+      module.exports = (() => {
         var here = require('hi');
         return {
           llamas: here.hi
         };
-      }();
+      })();
     `);
   });
 
@@ -129,11 +152,11 @@ describe('Plugin for define blocks', () => {
         };
       });
     `).toBeTransformedTo(`
-      module.exports = function() {
+      module.exports = (() => {
         return {
           llamas: 'they are fluffy'
         };
-      }();
+      })();
     `);
   });
 
@@ -143,9 +166,9 @@ describe('Plugin for define blocks', () => {
         var x = require('x');
       });
     `).toBeTransformedTo(`
-      module.exports = function() {
+      module.exports = (() => {
         var x = require('x');
-      }();
+      })();
     `);
   });
 
@@ -161,9 +184,9 @@ describe('Plugin for define blocks', () => {
       });
     `).toBeTransformedTo(
       checkAmdDefineResult(`
-        function() {
+        (() => {
           module.exports = { hey: 'boi' };
-        }()
+        })()
       `)
     );
   });
@@ -175,9 +198,9 @@ describe('Plugin for define blocks', () => {
       });
     `).toBeTransformedTo(
       checkAmdDefineResult(`
-        function() {
+        (() => {
           exports.hey = 'boi';
-        }()
+        })()
       `)
     );
   });
@@ -291,12 +314,12 @@ describe('Plugin for define blocks', () => {
         };
       });
     `).toBeTransformedTo(`
-      module.exports = function() {
+      module.exports = (() => {
         var module = require('notmodule');
         return {
           notmodule: module.notmodule
         };
-      }();
+      })();
     `);
   });
 
@@ -308,12 +331,12 @@ describe('Plugin for define blocks', () => {
         };
       });
     `).toBeTransformedTo(`
-      module.exports = function() {
+      module.exports = (() => {
         var exports = require('notexports');
         return {
           notexports: exports.notexports
         };
-      }();
+      })();
     `);
   });
 });

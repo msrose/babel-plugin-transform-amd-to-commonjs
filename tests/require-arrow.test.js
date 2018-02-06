@@ -7,9 +7,20 @@ describe('Plugin for require blocks', () => {
         llama.doSomeStuff();
       });
     `).toBeTransformedTo(`
-      (function() {
+      (() => {
         var llama = require('llamas');
         llama.doSomeStuff();
+      })();
+    `);
+  });
+
+  it('transforms require blocks with one dependency and implicit return', () => {
+    expect(`
+      require(['llamas'], (llama) => llama.doSomeStuff());
+    `).toBeTransformedTo(`
+      (() => {
+            var llama = require('llamas');
+            return llama.doSomeStuff();
       })();
     `);
   });
@@ -21,11 +32,23 @@ describe('Plugin for require blocks', () => {
         frog.sayRibbit();
       });
     `).toBeTransformedTo(`
-      (function() {
+      (() => {
         var llama = require('llamas');
         var frog = require('frogs');
         llama.doSomeStuff();
         frog.sayRibbit();
+      })();
+    `);
+  });
+
+  it('transforms require blocks with multiple dependencies and implicit return', () => {
+    expect(`
+      require(['llamas', 'frogs'], (llama, frog) => llama.doSomeStuff(frogs));
+    `).toBeTransformedTo(`
+      (() => {
+            var llama = require('llamas');
+            var frog = require('frogs');
+            return llama.doSomeStuff(frogs);
       })();
     `);
   });
@@ -36,7 +59,7 @@ describe('Plugin for require blocks', () => {
         llama.doSomeStuff();
       });
     `).toBeTransformedTo(`
-      (function() {
+      (() => {
         var llama = require('llamas');
         require('frogs');
         llama.doSomeStuff();
@@ -51,7 +74,7 @@ describe('Plugin for require blocks', () => {
         require(['yep', 'that', 'me']);
       });
     `).toBeTransformedTo(`
-      (function() {
+      (() => {
         var here = require('here');
         require('is');
         require('i');
@@ -72,12 +95,12 @@ describe('Plugin for require blocks', () => {
         });
       });
     `).toBeTransformedTo(`
-      (function() {
+      (() => {
         var here = require('here');
         require('is');
         require('i');
         here.doStuff();
-        (function() {
+        (() => {
           var yep = require('yep');
           require('that');
           require('me');
@@ -96,12 +119,12 @@ describe('Plugin for require blocks', () => {
         });
       });
     `).toBeTransformedTo(`
-      module.exports = (function() {
+      module.exports = (() => {
         var here = require('here');
         require('is');
         require('i');
         here.doStuff();
-        (function() {
+        (() => {
           var yep = require('yep');
           require('that');
           require('me');
