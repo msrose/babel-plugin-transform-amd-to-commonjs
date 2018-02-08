@@ -107,11 +107,11 @@ AMD is interpreted as described by the [AMD specification](https://github.com/am
 #### 1.0.0
 
 - Versions >= 0.2.1 and &lt; 1.0.0 support Node.js 4.
-  1.0.0 and above only support Node.js >= 6.
-  To upgrade to 1.0.0, first upgrade to Node.js >= 6.
+  1.0.0 and above only support Node.js 6 and above.
+  To upgrade to >= 1.0.0, first upgrade to Node.js >= 6.
 - If everything works fine with &lt; 1.0.0, you should just be able to drop in >= 1.0.0 after upgrading Node.js.
   If you have any issues, there is one more edge-case breaking change that _might_ be affecting you (but probably is not):
-  - 1.0.0 accounts for the case where you're using a combination of return statements and module/exports to define the exports of your AMD modules.
+  - >= 1.0.0 accounts for the case where you're using a combination of return statements and module/exports to define the exports of your AMD modules.
     Earlier versions don't account for this case, so if you're upgrading, make sure that each AMD module only uses either return statements _or_ module/exports to define its exports.
     See [#26](https://github.com/msrose/babel-plugin-transform-amd-to-commonjs/pull/26) and the [caveats](#injecting-require-module-or-exports-as-dependencies) section of the README for more details.
 
