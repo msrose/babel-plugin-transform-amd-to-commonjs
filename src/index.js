@@ -27,15 +27,17 @@ module.exports = ({ types: t }) => {
     return array1.map((element, index) => [element, array2[index]]);
   };
 
-  const ExpressionStatement = path => {
+  const ExpressionStatement = (path, { opts }) => {
     const { node, parent } = path;
 
     if (!t.isCallExpression(node.expression)) return;
 
+    const options = Object.assign({ restrictToTopLevelDefine: true }, opts);
+
     const { name } = node.expression.callee;
     const isDefineCall = name === DEFINE;
 
-    if (isDefineCall && !t.isProgram(parent)) return;
+    if (isDefineCall && options.restrictToTopLevelDefine && !t.isProgram(parent)) return;
 
     const argumentDecoder = argumentDecoders[name];
 

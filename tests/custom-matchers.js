@@ -3,8 +3,8 @@
 const babel = require('babel-core');
 const diff = require('jest-diff');
 
-const transformAmdToCommonJS = code => {
-  return babel.transform(code, { plugins: ['./src/index'], babelrc: false }).code;
+const transformAmdToCommonJS = (code, options = {}) => {
+  return babel.transform(code, { plugins: [['./src/index', options]], babelrc: false }).code;
 };
 
 const transformTrivial = code => {
@@ -20,7 +20,14 @@ const removeBlankLines = string => {
 
 const customMatchers = {
   toBeTransformedTo(actual, expected) {
-    const transformed = removeBlankLines(transformAmdToCommonJS(actual));
+    let options = {};
+
+    if (typeof actual !== 'string') {
+      options = actual.options;
+      actual = actual.program;
+    }
+
+    const transformed = removeBlankLines(transformAmdToCommonJS(actual, options));
     actual = removeBlankLines(transformTrivial(actual));
     expected = removeBlankLines(transformTrivial(expected));
 

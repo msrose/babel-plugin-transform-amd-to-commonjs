@@ -58,7 +58,7 @@ describe('Plugin for define blocks', () => {
     `);
   });
 
-  it('only transforms define blocks at the top level', () => {
+  it('only transforms define blocks at the top level by default', () => {
     const program = `
       if(someDumbCondition) {
         define(['stuff'], function(stuff) {
@@ -67,6 +67,26 @@ describe('Plugin for define blocks', () => {
       }
     `;
     expect(program).toBeTransformedTo(program);
+  });
+
+  it('transforms non-top-level define blocks when the option is specified', () => {
+    expect({
+      options: { restrictToTopLevelDefine: false },
+      program: `
+        if(someDumbCondition) {
+          define(['stuff'], function(stuff) {
+            return { hi: 'world' };
+          });
+        }
+      `
+    }).toBeTransformedTo(`
+      if(someDumbCondition) {
+        module.exports = (function() {
+          var stuff = require('stuff');
+          return { hi: 'world' };
+        })();
+      }
+    `);
   });
 
   it('transforms anonymous define blocks with no dependency list', () => {
