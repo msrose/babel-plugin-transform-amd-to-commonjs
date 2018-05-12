@@ -82,6 +82,20 @@ Output:
 })();
 ```
 
+## Options 
+
+Specify options in your .babelrc:
+
+```
+{
+  "plugins": [
+    ["transform-amd-to-commonjs", { "restrictToTopLevelDefine": true }]
+  ]
+}
+```
+
+- `restrictToTopLevelDefine`: (default: `true`) When `true`, only transform `define` calls that appear at the top-level of a program. Set to `false` to transform _all_ calls to `define`.
+
 ## Details
 
 ### Supported Versions
@@ -96,7 +110,7 @@ npm install --save-dev babel-plugin-transform-amd-to-commonjs@0.2.2
 
 AMD is interpreted as described by the [AMD specification](https://github.com/amdjs/amdjs-api/blob/master/AMD.md).
 
-- Only _top-level_ calls to a `define` function will be transformed.
+- By default, only _top-level_ calls to a `define` function will be transformed. Use the `restrictToTopLevelDefine` option to transform calls that are not at the top-level.
 - _All_ calls to `require` where it is given an array of dependencies as its first argument will be transformed.
 - Explicitly requiring `require`, `module`, and `exports` in an AMD module will not generate a call to require, but instead defer to the global require, module, and exports assumed to be in the CommonJS environment you are transforming to.
   - The same is true for the [simplified CommonJS wrapper](http://requirejs.org/docs/api.html#cjsmodule).
