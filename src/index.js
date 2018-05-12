@@ -1,6 +1,13 @@
 'use strict';
 
-const { REQUIRE, MODULE, EXPORTS, DEFINE, AMD_DEFINE_RESULT } = require('./constants');
+const {
+  REQUIRE,
+  MODULE,
+  EXPORTS,
+  DEFINE,
+  AMD_DEFINE_RESULT,
+  MAYBE_FUNCTION
+} = require('./constants');
 const createHelpers = require('./helpers');
 
 module.exports = ({ types: t }) => {
@@ -14,7 +21,8 @@ module.exports = ({ types: t }) => {
     createModuleExportsResultCheck,
     getUniqueIdentifier,
     isFunctionExpression,
-    createFactoryReplacementExpression
+    createFactoryReplacementExpression,
+    createFunctionCheck
   } = createHelpers({ types: t });
 
   const argumentDecoders = {
@@ -94,9 +102,12 @@ module.exports = ({ types: t }) => {
         path.replaceWith(factoryReplacement);
       }
     } else if (factory && isDefineCall) {
-      const exportExpression = createModuleExportsAssignmentExpression(factory);
-      const nodes = requireExpressions.concat(exportExpression);
-      path.replaceWithMultiple(nodes);
+      const functionCheckNodes = createFunctionCheck(
+        factory,
+        getUniqueIdentifier(path.scope, MAYBE_FUNCTION),
+        requireExpressions
+      );
+      path.replaceWithMultiple(functionCheckNodes);
     } else {
       path.replaceWithMultiple(requireExpressions);
     }

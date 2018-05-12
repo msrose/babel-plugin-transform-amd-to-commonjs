@@ -1,6 +1,6 @@
 'use strict';
 
-const { AMD_DEFINE_RESULT } = require('../src/constants');
+const { AMD_DEFINE_RESULT, MAYBE_FUNCTION, REQUIRE, EXPORTS, MODULE } = require('../src/constants');
 
 describe('Plugin for define blocks', () => {
   it('transforms anonymous define blocks with one dependency', () => {
@@ -337,11 +337,34 @@ describe('Plugin for define blocks', () => {
     `);
   });
 
+  const checkMaybeFunction = (factory, dependencies) => {
+    const requiredDependencies = (dependencies || []).map(d => {
+      if ([REQUIRE, EXPORTS, MODULE].includes(d)) {
+        return d;
+      }
+      return `require('${d}')`;
+    });
+    const injectedDependencies = dependencies
+      ? requiredDependencies.join(',')
+      : `${REQUIRE}, ${EXPORTS}, ${MODULE}`;
+    return `
+      var ${MAYBE_FUNCTION} = ${factory};
+      module.exports = (
+        typeof ${MAYBE_FUNCTION} === 'function'
+          ? ${MAYBE_FUNCTION}(${injectedDependencies})
+          : (function() {
+            ${requiredDependencies.join(';\n')}
+            return ${MAYBE_FUNCTION};
+          })()
+      );
+    `;
+  };
+
   it('transforms non-function modules exporting objects with no dependencies', () => {
     expect(`
       define({ thismodule: 'is an object' });
     `).toBeTransformedTo(`
-      module.exports = { thismodule: 'is an object' };
+      ${checkMaybeFunction("{ thismodule: 'is an object' }")}
     `);
   });
 
@@ -349,8 +372,7 @@ describe('Plugin for define blocks', () => {
     expect(`
       define(['side-effect'], { thismodule: 'is an object' });
     `).toBeTransformedTo(`
-      require('side-effect');
-      module.exports = { thismodule: 'is an object' };
+      ${checkMaybeFunction("{ thismodule: 'is an object' }", ['side-effect'])}
     `);
   });
 
@@ -358,7 +380,7 @@ describe('Plugin for define blocks', () => {
     expect(`
       define(['this', 'module', 'is', 'an', 'array']);
     `).toBeTransformedTo(`
-      module.exports = ['this', 'module', 'is', 'an', 'array'];
+      ${checkMaybeFunction("['this', 'module', 'is', 'an', 'array']")}
     `);
   });
 
@@ -366,8 +388,7 @@ describe('Plugin for define blocks', () => {
     expect(`
       define(['side-effect'], ['this', 'module', 'is', 'an', 'array']);
     `).toBeTransformedTo(`
-      require('side-effect');
-      module.exports = ['this', 'module', 'is', 'an', 'array'];
+      ${checkMaybeFunction("['this', 'module', 'is', 'an', 'array']", ['side-effect'])}
     `);
   });
 
@@ -377,7 +398,7 @@ describe('Plugin for define blocks', () => {
       expect(`
         define(${primitive});
       `).toBeTransformedTo(`
-        module.exports = ${primitive};
+        ${checkMaybeFunction(primitive)}
       `);
     });
   });
@@ -388,8 +409,7 @@ describe('Plugin for define blocks', () => {
       expect(`
         define(['side-effect'], ${primitive});
       `).toBeTransformedTo(`
-        require('side-effect');
-        module.exports = ${primitive};
+        ${checkMaybeFunction(primitive, ['side-effect'])}
       `);
     });
   });
@@ -398,7 +418,7 @@ describe('Plugin for define blocks', () => {
     expect(`
       define(['require'], { some: 'stuff' });
     `).toBeTransformedTo(`
-      module.exports = { some: 'stuff' };
+      ${checkMaybeFunction("{ some: 'stuff' }", ['require'])}
     `);
   });
 
@@ -406,7 +426,7 @@ describe('Plugin for define blocks', () => {
     expect(`
       define(['exports'], { some: 'stuff' });
     `).toBeTransformedTo(`
-      module.exports = { some: 'stuff' };
+      ${checkMaybeFunction("{ some: 'stuff' }", ['exports'])}
     `);
   });
 
@@ -414,7 +434,7 @@ describe('Plugin for define blocks', () => {
     expect(`
       define(['module'], { some: 'stuff' });
     `).toBeTransformedTo(`
-      module.exports = { some: 'stuff' };
+      ${checkMaybeFunction("{ some: 'stuff' }", ['module'])}
     `);
   });
 
@@ -422,12 +442,12 @@ describe('Plugin for define blocks', () => {
     expect(`
       define('auselessname', { thismodule: 'is an object' });
     `).toBeTransformedTo(`
-      module.exports = { thismodule: 'is an object' };
+      ${checkMaybeFunction("{ thismodule: 'is an object' }")}
     `);
     expect(`
       define('auselessname', ['an', 'array', 'factory']);
     `).toBeTransformedTo(`
-      module.exports = ['an', 'array', 'factory'];
+      ${checkMaybeFunction("['an', 'array', 'factory']")}
     `);
   });
 
@@ -435,14 +455,44 @@ describe('Plugin for define blocks', () => {
     expect(`
       define('auselessname', ['side-effect'], { thismodule: 'is an object' });
     `).toBeTransformedTo(`
-      require('side-effect');
-      module.exports = { thismodule: 'is an object' };
+      ${checkMaybeFunction("{ thismodule: 'is an object' }", ['side-effect'])}
     `);
     expect(`
       define('auselessname', ['side-effect'], ['an', 'array', 'factory']);
     `).toBeTransformedTo(`
-      require('side-effect');
-      module.exports = ['an', 'array', 'factory'];
+      ${checkMaybeFunction("['an', 'array', 'factory']", ['side-effect'])}
+    `);
+  });
+
+  it('checks non function-literal factories to see if they are actually functions', () => {
+    const variableFactory = `
+      var myVariableFactory = function(stuff, hi) {
+        stuff.what(hi)
+        return { great: 'stuff' };
+      }
+    `;
+    expect(`
+      ${variableFactory}
+      define(['stuff', 'hi'], myVariableFactory)
+    `).toBeTransformedTo(`
+      ${variableFactory}
+      ${checkMaybeFunction('myVariableFactory', ['stuff', 'hi'])}
+    `);
+  });
+
+  it('accounts for the simplified commonjs wrapper when checking for functions', () => {
+    const variableFactory = `
+      var myVariableFactory = function(require, exports, module) {
+        var stuff = require('stuff')
+        module.exports = { stuff: stuff.stuff }
+      }
+    `;
+    expect(`
+      ${variableFactory}
+      define(myVariableFactory)
+    `).toBeTransformedTo(`
+      ${variableFactory}
+      ${checkMaybeFunction('myVariableFactory')}
     `);
   });
 });

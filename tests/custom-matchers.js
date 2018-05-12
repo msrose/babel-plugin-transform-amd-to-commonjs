@@ -18,6 +18,13 @@ const removeBlankLines = string => {
     .join('\n');
 };
 
+const trimLines = string => {
+  return string
+    .split('\n')
+    .map(line => line.trim())
+    .join('\n');
+};
+
 const customMatchers = {
   toBeTransformedTo(actual, expected) {
     let options = {};
@@ -27,12 +34,12 @@ const customMatchers = {
       actual = actual.program;
     }
 
-    const transformed = removeBlankLines(transformAmdToCommonJS(actual, options));
     actual = removeBlankLines(transformTrivial(actual));
     expected = removeBlankLines(transformTrivial(expected));
+    const transformed = removeBlankLines(transformAmdToCommonJS(actual, options));
 
     const result = {
-      pass: transformed === expected
+      pass: trimLines(transformed) === trimLines(expected)
     };
 
     if (result.pass) {

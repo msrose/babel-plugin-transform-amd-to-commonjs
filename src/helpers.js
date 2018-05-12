@@ -114,6 +114,35 @@ module.exports = ({ types: t }) => {
     );
   };
 
+  const createFunctionCheck = (factory, identifier, requireExpressions) => {
+    return [
+      t.variableDeclaration('var', [t.variableDeclarator(identifier, factory)]),
+      createModuleExportsAssignmentExpression(
+        t.conditionalExpression(
+          t.binaryExpression(
+            '===',
+            t.unaryExpression('typeof', identifier),
+            t.stringLiteral('function')
+          ),
+          t.callExpression(
+            identifier,
+            requireExpressions.length > 0
+              ? requireExpressions.map(e => e.expression)
+              : [REQUIRE, EXPORTS, MODULE].map(a => t.identifier(a))
+          ),
+          t.callExpression(
+            t.functionExpression(
+              null,
+              [],
+              t.blockStatement(requireExpressions.concat(t.returnStatement(identifier)))
+            ),
+            []
+          )
+        )
+      )
+    ];
+  };
+
   return {
     decodeDefineArguments,
     decodeRequireArguments,
@@ -124,6 +153,7 @@ module.exports = ({ types: t }) => {
     isModuleOrExportsInjected,
     getUniqueIdentifier,
     isFunctionExpression,
-    createFactoryReplacementExpression
+    createFactoryReplacementExpression,
+    createFunctionCheck
   };
 };
