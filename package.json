@@ -44,7 +44,7 @@
     "jest": "^22.4.3",
     "jest-diff": "^22.0.1",
     "prettier": "^1.6.1",
-    "regenerator-runtime": "^0.11.0"
+    "regenerator-runtime": "^0.12.0"
   },
   "jest": {
     "setupTestFrameworkScriptFile": "<rootDir>/tests/setup.js",
