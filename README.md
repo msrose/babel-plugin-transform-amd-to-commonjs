@@ -164,8 +164,6 @@ It is strongly advised to simply use return statements to define your AMD module
 That being said, the plugin takes into account the cases where you may have injected them as dependencies.
 Beware of the following gotchas when using this pattern:
 
-- If you're injecting `module`, `exports`, and/or `require` as dependencies, they must be injected as string literals,
-otherwise you'll end up with things like `require('module')`.
 - Returning any value other than `undefined` from a factory function will override anything you assign to `module` or `exports`.
   This behaviour is in accordance with the AMD specification.
   Unless you're doing something really weird in your modules, you don't have to worry about this case, but the plugin handles it by performing a check as needed on the return value of the factory function.

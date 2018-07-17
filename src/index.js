@@ -59,11 +59,11 @@ module.exports = ({ types: t }) => {
       );
 
       const explicitRequires = dependencyParameterPairs
-        .filter(([dependency]) => {
-          return !t.isStringLiteral(dependency) || !keywords.includes(dependency.value);
-        })
         .map(([dependency, paramName]) => {
           return createRequireExpression(dependency, paramName);
+        })
+        .filter(requireExpression => {
+          return requireExpression; // Remove 'undefined' expressions
         });
 
       requireExpressions.push(...explicitRequires);

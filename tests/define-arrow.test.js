@@ -192,6 +192,19 @@ describe('Plugin for define blocks with arrow function factories', () => {
     `);
   });
 
+  it('does not require a dependency named `require` (ugly)', () => {
+    expect(`
+      define(['require'], (abc) => {
+        var x = abc('x');
+      });
+    `).toBeTransformedTo(`
+      module.exports = (() => {
+        var abc = require;
+        var x = abc('x');
+      })();
+    `);
+  });
+
   const checkAmdDefineResult = (value, identifier = AMD_DEFINE_RESULT) => `
     var ${identifier} = ${value};
     typeof ${identifier} !== 'undefined' && (module.exports = ${identifier});
@@ -211,6 +224,21 @@ describe('Plugin for define blocks with arrow function factories', () => {
     );
   });
 
+  it('handles injection of a dependency named `module` (ugly)', () => {
+    expect(`
+      define(['module'], (abc) => {
+        abc.exports = { hey: 'boi' };
+      });
+    `).toBeTransformedTo(
+      checkAmdDefineResult(`
+        (() => {
+          var abc = module;
+          abc.exports = { hey: 'boi' };
+        })()
+      `)
+    );
+  });
+
   it('handles injection of dependency named `exports`', () => {
     expect(`
       define(['exports'], (exports) => {
@@ -220,6 +248,21 @@ describe('Plugin for define blocks with arrow function factories', () => {
       checkAmdDefineResult(`
         (() => {
           exports.hey = 'boi';
+        })()
+      `)
+    );
+  });
+
+  it('handles injection of dependency named `exports` (ugly)', () => {
+    expect(`
+      define(['exports'], (abc) => {
+        abc.hey = 'boi';
+      });
+    `).toBeTransformedTo(
+      checkAmdDefineResult(`
+        (() => {
+          var abc = exports;
+          abc.hey = 'boi';
         })()
       `)
     );
