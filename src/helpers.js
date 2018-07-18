@@ -50,11 +50,10 @@ module.exports = ({ types: t }) => {
     ];
   };
 
-  const createRequireExpression = (dependencyNode, variableName) => {
+  const createDependencyInjectionExpression = (dependencyNode, variableName) => {
     if (
-      dependencyNode.value === MODULE ||
-      dependencyNode.value === EXPORTS ||
-      dependencyNode.value === REQUIRE
+      t.isStringLiteral(dependencyNode) &&
+      [MODULE, EXPORTS, REQUIRE].includes(dependencyNode.value)
     ) {
       // In case of the AMD keywords, only create an expression if the variable name
       // does not match the keyword. This to prevent 'require = require' statements.
@@ -134,7 +133,7 @@ module.exports = ({ types: t }) => {
     decodeRequireArguments,
     createModuleExportsAssignmentExpression,
     createModuleExportsResultCheck,
-    createRequireExpression,
+    createDependencyInjectionExpression,
     isSimplifiedCommonJSWrapper,
     isModuleOrExportsInjected,
     getUniqueIdentifier,

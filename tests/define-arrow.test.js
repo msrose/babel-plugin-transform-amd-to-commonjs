@@ -192,7 +192,7 @@ describe('Plugin for define blocks with arrow function factories', () => {
     `);
   });
 
-  it('does not require a dependency named `require` (ugly)', () => {
+  it('does not require a dependency named `require` which has been renamed', () => {
     expect(`
       define(['require'], (abc) => {
         var x = abc('x');
@@ -224,7 +224,7 @@ describe('Plugin for define blocks with arrow function factories', () => {
     );
   });
 
-  it('handles injection of a dependency named `module` (ugly)', () => {
+  it('handles injection of a dependency named `module` which has been renamed', () => {
     expect(`
       define(['module'], (abc) => {
         abc.exports = { hey: 'boi' };
@@ -253,7 +253,7 @@ describe('Plugin for define blocks with arrow function factories', () => {
     );
   });
 
-  it('handles injection of dependency named `exports` (ugly)', () => {
+  it('handles injection of dependency named `exports` which has been renamed', () => {
     expect(`
       define(['exports'], (abc) => {
         abc.hey = 'boi';

@@ -169,7 +169,7 @@ describe('Plugin for define blocks', () => {
     `);
   });
 
-  it('does not require a dependency named `require` (ugly)', () => {
+  it('does not require a dependency named `require` which has been renamed', () => {
     expect(`
       define(['require'], function(abc) {
         var x = abc('x');
@@ -201,7 +201,7 @@ describe('Plugin for define blocks', () => {
     );
   });
 
-  it('handles injection of dependency named `module` (ugly)', () => {
+  it('handles injection of dependency named `module` which has been renamed', () => {
     expect(`
       define(['module'], function(abc) {
         abc.exports.hey = 'boi';
@@ -230,7 +230,7 @@ describe('Plugin for define blocks', () => {
     );
   });
 
-  it('handles injection of dependency named `exports` (ugly)', () => {
+  it('handles injection of dependency named `exports` which has been renamed', () => {
     expect(`
       define(['exports'], function(abc) {
         abc.hey = 'boi';
