@@ -107,12 +107,12 @@ module.exports = ({ types: t }) => {
     return t.isFunctionExpression(factory) || t.isArrowFunctionExpression(factory);
   };
 
-  const createFactoryReplacementExpression = (factory, requireExpressions) => {
+  const createFactoryReplacementExpression = (factory, dependencyInjections) => {
     if (t.isFunctionExpression(factory)) {
       return t.functionExpression(
         null,
         [],
-        t.blockStatement(requireExpressions.concat(factory.body.body))
+        t.blockStatement(dependencyInjections.concat(factory.body.body))
       );
     }
     let bodyStatement;
@@ -124,7 +124,7 @@ module.exports = ({ types: t }) => {
     }
     return t.arrowFunctionExpression(
       [],
-      t.blockStatement(requireExpressions.concat(bodyStatement))
+      t.blockStatement(dependencyInjections.concat(bodyStatement))
     );
   };
 
