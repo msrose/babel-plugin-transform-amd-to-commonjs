@@ -169,6 +169,19 @@ describe('Plugin for define blocks', () => {
     `);
   });
 
+  it('does not require a dependency named `require` which has been renamed', () => {
+    expect(`
+      define(['require'], function(abc) {
+        var x = abc('x');
+      });
+    `).toBeTransformedTo(`
+      module.exports = function() {
+        var abc = require;
+        var x = abc('x');
+      }();
+    `);
+  });
+
   const checkAmdDefineResult = (value, identifier = AMD_DEFINE_RESULT) => `
     var ${identifier} = ${value};
     typeof ${identifier} !== 'undefined' && (module.exports = ${identifier});
@@ -188,6 +201,21 @@ describe('Plugin for define blocks', () => {
     );
   });
 
+  it('handles injection of dependency named `module` which has been renamed', () => {
+    expect(`
+      define(['module'], function(abc) {
+        abc.exports.hey = 'boi';
+      });
+    `).toBeTransformedTo(
+      checkAmdDefineResult(`
+        function() {
+          var abc = module;
+          abc.exports.hey = 'boi';
+        }()
+      `)
+    );
+  });
+
   it('handles injection of dependency named `exports`', () => {
     expect(`
       define(['exports'], function(exports) {
@@ -197,6 +225,21 @@ describe('Plugin for define blocks', () => {
       checkAmdDefineResult(`
         function() {
           exports.hey = 'boi';
+        }()
+      `)
+    );
+  });
+
+  it('handles injection of dependency named `exports` which has been renamed', () => {
+    expect(`
+      define(['exports'], function(abc) {
+        abc.hey = 'boi';
+      });
+    `).toBeTransformedTo(
+      checkAmdDefineResult(`
+        function() {
+          var abc = exports;
+          abc.hey = 'boi';
         }()
       `)
     );

@@ -9,7 +9,7 @@ module.exports = ({ types: t }) => {
     decodeRequireArguments,
     isModuleOrExportsInjected,
     isSimplifiedCommonJSWrapper,
-    createRequireExpression,
+    createDependencyInjectionExpression,
     createModuleExportsAssignmentExpression,
     createModuleExportsResultCheck,
     getUniqueIdentifier,
@@ -59,11 +59,11 @@ module.exports = ({ types: t }) => {
       );
 
       const explicitRequires = dependencyParameterPairs
-        .filter(([dependency]) => {
-          return !t.isStringLiteral(dependency) || !keywords.includes(dependency.value);
-        })
         .map(([dependency, paramName]) => {
-          return createRequireExpression(dependency, paramName);
+          return createDependencyInjectionExpression(dependency, paramName);
+        })
+        .filter(requireExpression => {
+          return requireExpression !== undefined;
         });
 
       requireExpressions.push(...explicitRequires);
