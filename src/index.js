@@ -56,6 +56,15 @@ module.exports = ({ types: t }) => {
         isFunctionFactory ? factory.params : []
       );
 
+      if (isFunctionFactory && t.isRestElement(factory.params[factory.params.length - 1])) {
+        const restDeps = dependencyList.elements.slice(factory.params.length - 1);
+        dependencyParameterPairs.splice(
+          factory.params.length - 1,
+          dependencyParameterPairs.length - factory.params.length + 1,
+          [restDeps, factory.params[factory.params.length - 1]]
+        );
+      }
+
       const dependencyInjectionExpressions = dependencyParameterPairs
         .map(([dependency, paramName]) => {
           return createDependencyInjectionExpression(dependency, paramName);

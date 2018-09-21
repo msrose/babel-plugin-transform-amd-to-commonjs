@@ -488,4 +488,18 @@ describe('Plugin for define blocks', () => {
       module.exports = ['an', 'array', 'factory'];
     `);
   });
+
+  it('transforms factories that use the spread operator', () => {
+    expect(`
+      define(['dep1', 'dep2', 'dep3'], function(dep, ...rest) {
+        dep.doStuff();
+      });
+    `).toBeTransformedTo(`
+      module.exports = (function() {
+        var dep = require('dep1');
+        var rest = [require('dep2'), require('dep3')];
+        dep.doStuff();
+      })();
+    `);
+  });
 });

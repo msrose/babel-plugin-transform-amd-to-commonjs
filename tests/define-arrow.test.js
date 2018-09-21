@@ -402,4 +402,18 @@ describe('Plugin for define blocks with arrow function factories', () => {
       })();
     `);
   });
+
+  it('transforms factories that use the spread operator', () => {
+    expect(`
+      define(['dep1', 'dep2', 'dep3'], (dep, ...rest) => {
+        dep.doStuff();
+      });
+    `).toBeTransformedTo(`
+      module.exports = (() => {
+        var dep = require('dep1');
+        var rest = [require('dep2'), require('dep3')];
+        dep.doStuff();
+      })();
+    `);
+  });
 });
