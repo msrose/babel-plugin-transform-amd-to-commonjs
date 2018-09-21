@@ -139,10 +139,24 @@ describe('Plugin for require blocks', () => {
       })
     `).toBeTransformedTo(`
       (function() {
-        var dep = require('dep1')
-        var rest = [require('dep2'), require('dep3')]
-        dep.doStuff()
-      })()
+        var dep = require('dep1');
+        var rest = [require('dep2'), require('dep3')];
+        dep.doStuff();
+      })();
+    `);
+  });
+
+  it('transforms factories that use the spread operator including AMD keywords', () => {
+    expect(`
+      require(['dep1', 'dep2', 'module', 'exports', 'require'], function(dep, ...rest) {
+        dep.doStuff();
+      });
+    `).toBeTransformedTo(`
+      (function() {
+        var dep = require('dep1');
+        var rest = [require('dep2'), module, exports, require];
+        dep.doStuff();
+      })();
     `);
   });
 });

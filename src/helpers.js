@@ -69,7 +69,13 @@ module.exports = ({ types: t }) => {
 
     if (t.isRestElement(variableName)) {
       requireCall = t.arrayExpression(
-        dependencyNode.map(node => createDependencyInjectionExpression(node).expression)
+        dependencyNode.map(node => {
+          const dependencyInjection = createDependencyInjectionExpression(node);
+          if (dependencyInjection) {
+            return dependencyInjection.expression;
+          }
+          return t.identifier(node.value);
+        })
       );
       variableName = variableName.argument;
     } else {

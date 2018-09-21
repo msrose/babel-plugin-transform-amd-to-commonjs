@@ -147,4 +147,18 @@ describe('Plugin for require blocks with arrow function callbacks', () => {
       })();
     `);
   });
+
+  it('transforms factories that use the spread operator including AMD keywords', () => {
+    expect(`
+      require(['dep1', 'dep2', 'module', 'exports', 'require'], (dep, ...rest) => {
+        dep.doStuff();
+      });
+    `).toBeTransformedTo(`
+      (() => {
+        var dep = require('dep1');
+        var rest = [require('dep2'), module, exports, require];
+        dep.doStuff();
+      })();
+    `);
+  });
 });

@@ -502,4 +502,20 @@ describe('Plugin for define blocks', () => {
       })();
     `);
   });
+
+  it('transforms factories that use the spread operator including AMD keywords', () => {
+    expect(`
+      define(['dep1', 'dep2', 'module', 'exports', 'require'], function(dep, ...rest) {
+        dep.doStuff();
+      });
+    `).toBeTransformedTo(
+      checkAmdDefineResult(`
+        (function() {
+          var dep = require('dep1');
+          var rest = [require('dep2'), module, exports, require];
+          dep.doStuff();
+        })()
+      `)
+    );
+  });
 });
