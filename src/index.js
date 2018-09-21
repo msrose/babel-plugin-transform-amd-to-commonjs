@@ -56,13 +56,26 @@ module.exports = ({ types: t }) => {
         isFunctionFactory ? factory.params : []
       );
 
-      if (isFunctionFactory && t.isRestElement(factory.params[factory.params.length - 1])) {
-        const restDeps = dependencyList.elements.slice(factory.params.length - 1);
-        dependencyParameterPairs.splice(
-          factory.params.length - 1,
-          dependencyParameterPairs.length - factory.params.length + 1,
-          [restDeps, factory.params[factory.params.length - 1]]
-        );
+      if (isFunctionFactory) {
+        const factoryArity = factory.params.length;
+        const lastFactoryParam = factory.params[factoryArity - 1];
+        if (t.isRestElement(lastFactoryParam)) {
+          const restDependencies = dependencyList.elements.slice(factoryArity - 1);
+          const restDependencyInjections = t.arrayExpression(
+            restDependencies.map(node => {
+              const dependencyInjection = createDependencyInjectionExpression(node);
+              if (dependencyInjection) {
+                return dependencyInjection.expression;
+              }
+              return t.identifier(node.value);
+            })
+          );
+          dependencyParameterPairs.splice(
+            factory.params.length - 1,
+            dependencyParameterPairs.length - factoryArity + 1,
+            [restDependencyInjections, lastFactoryParam.argument]
+          );
+        }
       }
 
       const dependencyInjectionExpressions = dependencyParameterPairs

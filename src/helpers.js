@@ -65,22 +65,9 @@ module.exports = ({ types: t }) => {
       return undefined;
     }
 
-    let requireCall;
-
-    if (t.isRestElement(variableName)) {
-      requireCall = t.arrayExpression(
-        dependencyNode.map(node => {
-          const dependencyInjection = createDependencyInjectionExpression(node);
-          if (dependencyInjection) {
-            return dependencyInjection.expression;
-          }
-          return t.identifier(node.value);
-        })
-      );
-      variableName = variableName.argument;
-    } else {
-      requireCall = t.callExpression(t.identifier(REQUIRE), [dependencyNode]);
-    }
+    const requireCall = t.isArrayExpression(dependencyNode)
+      ? dependencyNode
+      : t.callExpression(t.identifier(REQUIRE), [dependencyNode]);
 
     if (variableName) {
       return t.variableDeclaration('var', [t.variableDeclarator(variableName, requireCall)]);
