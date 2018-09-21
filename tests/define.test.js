@@ -489,7 +489,7 @@ describe('Plugin for define blocks', () => {
     `);
   });
 
-  it('transforms factories that use the spread operator', () => {
+  it('transforms factories that use the rest operator', () => {
     expect(`
       define(['dep1', 'dep2', 'dep3'], function(dep, ...rest) {
         dep.doStuff();
@@ -503,7 +503,7 @@ describe('Plugin for define blocks', () => {
     `);
   });
 
-  it('transforms factories that use the spread operator including AMD keywords', () => {
+  it('transforms factories that use the rest operator including AMD keywords', () => {
     expect(`
       define(['dep1', 'dep2', 'module', 'exports', 'require'], function(dep, ...rest) {
         dep.doStuff();
@@ -517,5 +517,19 @@ describe('Plugin for define blocks', () => {
         })()
       `)
     );
+  });
+
+  it('transforms factories that use the rest operator when there are no rest arguments', () => {
+    expect(`
+      define(['dep1'], function(dep, ...rest) {
+        dep.doStuff();
+      });
+    `).toBeTransformedTo(`
+      module.exports = (function() {
+        var dep = require('dep1');
+        var rest = [];
+        dep.doStuff();
+      })();
+    `);
   });
 });

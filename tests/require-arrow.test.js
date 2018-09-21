@@ -161,4 +161,18 @@ describe('Plugin for require blocks with arrow function callbacks', () => {
       })();
     `);
   });
+
+  it('transforms factories that use the rest operator when there are no rest arguments', () => {
+    expect(`
+      require(['dep1'], (dep, ...rest) => {
+        dep.doStuff();
+      });
+    `).toBeTransformedTo(`
+      (() => {
+        var dep = require('dep1');
+        var rest = [];
+        dep.doStuff();
+      })();
+    `);
+  });
 });

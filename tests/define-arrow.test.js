@@ -432,4 +432,18 @@ describe('Plugin for define blocks with arrow function factories', () => {
       `)
     );
   });
+
+  it('transforms factories that use the rest operator when there are no rest arguments', () => {
+    expect(`
+      define(['dep1'], (dep, ...rest) => {
+        dep.doStuff();
+      });
+    `).toBeTransformedTo(`
+      module.exports = (() => {
+        var dep = require('dep1');
+        var rest = [];
+        dep.doStuff();
+      })();
+    `);
+  });
 });

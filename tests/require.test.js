@@ -159,4 +159,18 @@ describe('Plugin for require blocks', () => {
       })();
     `);
   });
+
+  it('transforms factories that use the rest operator when there are no rest arguments', () => {
+    expect(`
+      require(['dep1'], function(dep, ...rest) {
+        dep.doStuff();
+      });
+    `).toBeTransformedTo(`
+      (function() {
+        var dep = require('dep1');
+        var rest = [];
+        dep.doStuff();
+      })();
+    `);
+  });
 });
