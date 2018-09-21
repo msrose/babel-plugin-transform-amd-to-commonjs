@@ -403,7 +403,7 @@ describe('Plugin for define blocks with arrow function factories', () => {
     `);
   });
 
-  it('transforms factories that use the spread operator', () => {
+  it('transforms factories that use the rest operator', () => {
     expect(`
       define(['dep1', 'dep2', 'dep3'], (dep, ...rest) => {
         dep.doStuff();
@@ -417,7 +417,7 @@ describe('Plugin for define blocks with arrow function factories', () => {
     `);
   });
 
-  it('transforms factories that use the spread operator including AMD keywords', () => {
+  it('transforms factories that use the rest operator including AMD keywords', () => {
     expect(`
       define(['dep1', 'dep2', 'module', 'exports', 'require'], (dep, ...rest) => {
         dep.doStuff();
