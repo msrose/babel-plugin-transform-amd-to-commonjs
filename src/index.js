@@ -10,6 +10,7 @@ module.exports = ({ types: t }) => {
     isModuleOrExportsInjected,
     isSimplifiedCommonJSWrapper,
     createDependencyInjectionExpression,
+    createRestDependencyInjectionExpression,
     createModuleExportsAssignmentExpression,
     createModuleExportsResultCheck,
     getUniqueIdentifier,
@@ -60,18 +61,12 @@ module.exports = ({ types: t }) => {
         const factoryArity = factory.params.length;
         const lastFactoryParam = factory.params[factoryArity - 1];
         if (t.isRestElement(lastFactoryParam)) {
-          const restDependencies = dependencyList.elements.slice(factoryArity - 1);
-          const restDependencyInjections = t.arrayExpression(
-            restDependencies.map(node => {
-              const dependencyInjection = createDependencyInjectionExpression(node);
-              if (dependencyInjection) {
-                return dependencyInjection.expression;
-              }
-              return t.identifier(node.value);
-            })
+          const restDependencyNodes = dependencyList.elements.slice(factoryArity - 1);
+          const restDependencyInjections = createRestDependencyInjectionExpression(
+            restDependencyNodes
           );
           dependencyParameterPairs.splice(
-            factory.params.length - 1,
+            factoryArity - 1,
             dependencyParameterPairs.length - factoryArity + 1,
             [restDependencyInjections, lastFactoryParam.argument]
           );

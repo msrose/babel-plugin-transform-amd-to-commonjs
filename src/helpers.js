@@ -76,6 +76,18 @@ module.exports = ({ types: t }) => {
     }
   };
 
+  const createRestDependencyInjectionExpression = dependencyNodes => {
+    return t.arrayExpression(
+      dependencyNodes.map(node => {
+        const dependencyInjection = createDependencyInjectionExpression(node);
+        if (dependencyInjection) {
+          return dependencyInjection.expression;
+        }
+        return t.identifier(node.value);
+      })
+    );
+  };
+
   const isModuleOrExportsInDependencyList = dependencyList => {
     return (
       dependencyList &&
@@ -137,6 +149,7 @@ module.exports = ({ types: t }) => {
     createModuleExportsAssignmentExpression,
     createModuleExportsResultCheck,
     createDependencyInjectionExpression,
+    createRestDependencyInjectionExpression,
     isSimplifiedCommonJSWrapper,
     isModuleOrExportsInjected,
     getUniqueIdentifier,
