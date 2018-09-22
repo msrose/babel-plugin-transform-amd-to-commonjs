@@ -3,17 +3,24 @@ node_js:
   - "6"
   - "8"
   - "10"
+env:
+  - HOUSEKEEP=0
+  - HOUSEKEEP=1
 before_install:
   - npm install -g greenkeeper-lockfile@1
 before_script: greenkeeper-lockfile-update
 matrix:
-  include:
-    - node_js: "10"
+  exclude:
+    - node_js: "6"
       env: HOUSEKEEP=1
+    - node_js: "8"
+      env: HOUSEKEEP=1
+    - node_js: "10"
+      env: HOUSEKEEP=0
 script:
-  - "[[ -n $HOUSEKEEP ]] && npm run lint"
-  - npm test -- --coverage
-  - "[[ -n $HOUSEKEEP ]] && npm run build"
-after_script: "[[ -n $HOUSEKEEP ]] && greenkeeper-lockfile-upload"
+  - "if [ -n $HOUSEKEEP ]; then npm run lint; fi"
+  - "if [ -n $HOUSEKEEP ]; then npm test -- --coverage; else npm test; fi"
+  - "if [ -n $HOUSEKEEP ]; then npm run build; fi"
+after_script: "if [ -n $HOUSEKEEP ]; then greenkeeper-lockfile-upload; fi"
 after_success:
-  - "[[ -n $HOUSEKEEP ]] && bash <(curl -s https://codecov.io/bash)"
+  - "if [ -n $HOUSEKEEP ]; then bash <(curl -s https://codecov.io/bash); fi"
