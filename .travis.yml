@@ -4,11 +4,8 @@ node_js:
   - "8"
   - "10"
 env:
-  - HOUSEKEEP=0
-  - HOUSEKEEP=1
-before_install:
-  - npm install -g greenkeeper-lockfile@1
-before_script: greenkeeper-lockfile-update
+  - HOUSEKEEP=
+  - HOUSEKEEP=yes
 matrix:
   exclude:
     - node_js: "6"
@@ -17,6 +14,9 @@ matrix:
       env: HOUSEKEEP=1
     - node_js: "10"
       env: HOUSEKEEP=0
+before_install:
+  - "if [ -n $HOUSEKEEP ]; then npm install -g greenkeeper-lockfile@1; fi"
+before_script: "if [ -n $HOUSEKEEP ]; then greenkeeper-lockfile-update; fi"
 script:
   - "if [ -n $HOUSEKEEP ]; then npm run lint; fi"
   - "if [ -n $HOUSEKEEP ]; then npm test -- --coverage; else npm test; fi"
