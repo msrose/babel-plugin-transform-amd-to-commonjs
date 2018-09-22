@@ -106,6 +106,9 @@ Only Node.js >= 6 is supported. For Node.js 4, please use version 0.2.2:
 npm install --save-dev babel-plugin-transform-amd-to-commonjs@0.2.2
 ```
 
+While this plugin lists @babel/core@^7.0.0 as a peer dependency, it should still work fine with babel-core@^6.0.0.
+Listing this peer dependency aligns with [what is done by the core babel plugins](https://babeljs.io/docs/en/v7-migration#versioning-dependencies-blog-2017-12-27-nearing-the-70-releasehtml-peer-dependencies-integrations).
+
 ### AMD
 
 AMD is interpreted as described by the [AMD specification](https://github.com/amdjs/amdjs-api/blob/master/AMD.md).

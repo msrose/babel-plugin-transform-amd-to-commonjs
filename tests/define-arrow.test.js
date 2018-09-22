@@ -207,7 +207,7 @@ describe('Plugin for define blocks with arrow function factories', () => {
 
   const checkAmdDefineResult = (value, identifier = AMD_DEFINE_RESULT) => `
     var ${identifier} = ${value};
-    typeof ${identifier} !== 'undefined' && (module.exports = ${identifier});
+    typeof ${identifier} !== "undefined" && (module.exports = ${identifier});
   `;
 
   it('handles injection of a dependency named `module`', () => {
