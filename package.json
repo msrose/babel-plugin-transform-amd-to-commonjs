@@ -55,6 +55,10 @@
     "collectCoverageFrom": [
       "src/**/*.js"
     ],
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "<rootDir>/examples"
+    ]
   }
 }

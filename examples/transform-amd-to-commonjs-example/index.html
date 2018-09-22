@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Test Bundle</title>
+  </head>
+  <body>
+    <pre id="exportedStuff"></pre>
+    <script type="text/javascript" charset="utf-8" src="build/bundle.js"></script>
+    <script type="text/javascript" charset="utf-8">
+      exportedStuff.innerText = JSON.stringify(TestBundleDayum, null, 4);
+    </script>
+  </body>
+</html>
