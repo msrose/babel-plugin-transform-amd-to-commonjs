@@ -9,11 +9,11 @@ env:
 matrix:
   exclude:
     - node_js: "6"
-      env: HOUSEKEEP=1
+      env: HOUSEKEEP=yes
     - node_js: "8"
-      env: HOUSEKEEP=1
+      env: HOUSEKEEP=yes
     - node_js: "10"
-      env: HOUSEKEEP=0
+      env: HOUSEKEEP=
 before_install:
   - "if [ -n $HOUSEKEEP ]; then npm install -g greenkeeper-lockfile@1; fi"
 before_script: "if [ -n $HOUSEKEEP ]; then greenkeeper-lockfile-update; fi"
