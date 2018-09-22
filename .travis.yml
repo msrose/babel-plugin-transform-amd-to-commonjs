@@ -11,9 +11,9 @@ matrix:
     - node_js: "10"
       env: HOUSEKEEP=1
 script:
-  - [[ -n $HOUSEKEEP ]] && npm run lint
+  - "[[ -n $HOUSEKEEP ]] && npm run lint"
   - npm test -- --coverage
-  - [[ -n $HOUSEKEEP ]] && npm run build
-after_script: [[ -n $HOUSEKEEP ]] && greenkeeper-lockfile-upload
+  - "[[ -n $HOUSEKEEP ]] && npm run build"
+after_script: "[[ -n $HOUSEKEEP ]] && greenkeeper-lockfile-upload"
 after_success:
-  - [[ -n $HOUSEKEEP ]] && bash <(curl -s https://codecov.io/bash)
+  - "[[ -n $HOUSEKEEP ]] && bash <(curl -s https://codecov.io/bash)"
