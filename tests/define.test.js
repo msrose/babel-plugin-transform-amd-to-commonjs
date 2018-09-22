@@ -488,4 +488,48 @@ describe('Plugin for define blocks', () => {
       module.exports = ['an', 'array', 'factory'];
     `);
   });
+
+  it('transforms factories that use the rest operator', () => {
+    expect(`
+      define(['dep1', 'dep2', 'dep3'], function(dep, ...rest) {
+        dep.doStuff();
+      });
+    `).toBeTransformedTo(`
+      module.exports = (function() {
+        var dep = require('dep1');
+        var rest = [require('dep2'), require('dep3')];
+        dep.doStuff();
+      })();
+    `);
+  });
+
+  it('transforms factories that use the rest operator including AMD keywords', () => {
+    expect(`
+      define(['dep1', 'dep2', 'module', 'exports', 'require'], function(dep, ...rest) {
+        dep.doStuff();
+      });
+    `).toBeTransformedTo(
+      checkAmdDefineResult(`
+        (function() {
+          var dep = require('dep1');
+          var rest = [require('dep2'), module, exports, require];
+          dep.doStuff();
+        })()
+      `)
+    );
+  });
+
+  it('transforms factories that use the rest operator when there are no rest arguments', () => {
+    expect(`
+      define(['dep1'], function(dep, ...rest) {
+        dep.doStuff();
+      });
+    `).toBeTransformedTo(`
+      module.exports = (function() {
+        var dep = require('dep1');
+        var rest = [];
+        dep.doStuff();
+      })();
+    `);
+  });
 });

@@ -65,12 +65,27 @@ module.exports = ({ types: t }) => {
       return undefined;
     }
 
-    const requireCall = t.callExpression(t.identifier(REQUIRE), [dependencyNode]);
+    const requireCall = t.isArrayExpression(dependencyNode)
+      ? dependencyNode
+      : t.callExpression(t.identifier(REQUIRE), [dependencyNode]);
+
     if (variableName) {
       return t.variableDeclaration('var', [t.variableDeclarator(variableName, requireCall)]);
     } else {
       return t.expressionStatement(requireCall);
     }
+  };
+
+  const createRestDependencyInjectionExpression = dependencyNodes => {
+    return t.arrayExpression(
+      dependencyNodes.map(node => {
+        const dependencyInjection = createDependencyInjectionExpression(node);
+        if (dependencyInjection) {
+          return dependencyInjection.expression;
+        }
+        return t.identifier(node.value);
+      })
+    );
   };
 
   const isModuleOrExportsInDependencyList = dependencyList => {
@@ -134,6 +149,7 @@ module.exports = ({ types: t }) => {
     createModuleExportsAssignmentExpression,
     createModuleExportsResultCheck,
     createDependencyInjectionExpression,
+    createRestDependencyInjectionExpression,
     isSimplifiedCommonJSWrapper,
     isModuleOrExportsInjected,
     getUniqueIdentifier,
