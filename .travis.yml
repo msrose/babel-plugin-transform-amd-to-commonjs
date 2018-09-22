@@ -1,15 +1,26 @@
 language: node_js
 node_js:
-  - "8"
   - "6"
+  - "8"
   - "10"
+env:
+  - HOUSEKEEP=
+  - HOUSEKEEP=yes
+matrix:
+  exclude:
+    - node_js: "6"
+      env: HOUSEKEEP=yes
+    - node_js: "8"
+      env: HOUSEKEEP=yes
+    - node_js: "10"
+      env: HOUSEKEEP=
 before_install:
-  - npm install -g greenkeeper-lockfile@1
-before_script: greenkeeper-lockfile-update
+  - "if [[ -n $HOUSEKEEP ]]; then npm install -g greenkeeper-lockfile@1; fi"
+before_script: "if [[ -n $HOUSEKEEP ]]; then greenkeeper-lockfile-update; fi"
 script:
-  - npm run lint
-  - npm test -- --coverage
-  - npm run build
-after_script: greenkeeper-lockfile-upload
+  - "if [[ -n $HOUSEKEEP ]]; then npm run lint; fi"
+  - "if [[ -n $HOUSEKEEP ]]; then npm test -- --coverage; else npm test; fi"
+  - "if [[ -n $HOUSEKEEP ]]; then npm run build; fi"
+after_script: "if [[ -n $HOUSEKEEP ]]; then greenkeeper-lockfile-upload; fi"
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
+  - "if [[ -n $HOUSEKEEP ]]; then bash <(curl -s https://codecov.io/bash); fi"
