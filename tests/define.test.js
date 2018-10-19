@@ -381,22 +381,23 @@ describe('Plugin for define blocks', () => {
   });
 
   const checkMaybeFunction = (factory, dependencies) => {
+    const amdKeywords = [REQUIRE, EXPORTS, MODULE];
     const requiredDependencies = (dependencies || []).map(d => {
-      if ([REQUIRE, EXPORTS, MODULE].includes(d)) {
+      if (amdKeywords.includes(d)) {
         return d;
       }
       return `require('${d}')`;
     });
     const injectedDependencies = dependencies
       ? requiredDependencies.join(',')
-      : `${REQUIRE}, ${EXPORTS}, ${MODULE}`;
+      : amdKeywords.join(',');
     return `
       var ${MAYBE_FUNCTION} = ${factory};
       module.exports = (
-        typeof ${MAYBE_FUNCTION} === 'function'
+        typeof ${MAYBE_FUNCTION} === "function"
           ? ${MAYBE_FUNCTION}(${injectedDependencies})
           : (function() {
-            ${requiredDependencies.join(';\n')}
+            ${requiredDependencies.filter(d => !amdKeywords.includes(d)).join(';\n')}
             return ${MAYBE_FUNCTION};
           })()
       );
@@ -459,17 +460,17 @@ describe('Plugin for define blocks', () => {
 
   it('transforms non-function modules requiring `require` for some reason', () => {
     expect(`
-      define(['require'], { some: 'stuff' });
+      define(['sup', 'require'], { some: 'stuff' });
     `).toBeTransformedTo(`
-      ${checkMaybeFunction("{ some: 'stuff' }", ['require'])}
+      ${checkMaybeFunction("{ some: 'stuff' }", ['sup', 'require'])}
     `);
   });
 
   it('transforms non-function modules requiring `exports` for some reason', () => {
     expect(`
-      define(['exports'], { some: 'stuff' });
+      define(['exports', 'dawg'], { some: 'stuff' });
     `).toBeTransformedTo(`
-      ${checkMaybeFunction("{ some: 'stuff' }", ['exports'])}
+      ${checkMaybeFunction("{ some: 'stuff' }", ['exports', 'dawg'])}
     `);
   });
 

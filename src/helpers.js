@@ -62,7 +62,7 @@ module.exports = ({ types: t }) => {
           t.variableDeclarator(variableName, t.identifier(dependencyNode.value))
         ]);
       }
-      return undefined;
+      return t.identifier(dependencyNode.value);
     }
 
     const requireCall = t.isArrayExpression(dependencyNode)
@@ -76,11 +76,18 @@ module.exports = ({ types: t }) => {
     }
   };
 
+  const isExplicitDependencyInjection = dependencyInjection => {
+    return (
+      !t.isIdentifier(dependencyInjection) ||
+      ![REQUIRE, EXPORTS, MODULE].includes(dependencyInjection.name)
+    );
+  };
+
   const createRestDependencyInjectionExpression = dependencyNodes => {
     return t.arrayExpression(
       dependencyNodes.map(node => {
         const dependencyInjection = createDependencyInjectionExpression(node);
-        if (dependencyInjection) {
+        if (isExplicitDependencyInjection(dependencyInjection)) {
           return dependencyInjection.expression;
         }
         return t.identifier(node.value);
@@ -143,7 +150,7 @@ module.exports = ({ types: t }) => {
     );
   };
 
-  const createFunctionCheck = (factory, identifier, requireExpressions) => {
+  const createFunctionCheck = (factory, identifier, dependencyInjections) => {
     return [
       t.variableDeclaration('var', [t.variableDeclarator(identifier, factory)]),
       createModuleExportsAssignmentExpression(
@@ -155,15 +162,19 @@ module.exports = ({ types: t }) => {
           ),
           t.callExpression(
             identifier,
-            requireExpressions.length > 0
-              ? requireExpressions.map(e => e.expression)
+            dependencyInjections.length > 0
+              ? dependencyInjections.map(e => (isExplicitDependencyInjection(e) ? e.expression : e))
               : [REQUIRE, EXPORTS, MODULE].map(a => t.identifier(a))
           ),
           t.callExpression(
             t.functionExpression(
               null,
               [],
-              t.blockStatement(requireExpressions.concat(t.returnStatement(identifier)))
+              t.blockStatement(
+                dependencyInjections
+                  .filter(isExplicitDependencyInjection)
+                  .concat(t.returnStatement(identifier))
+              )
             ),
             []
           )
@@ -184,6 +195,7 @@ module.exports = ({ types: t }) => {
     getUniqueIdentifier,
     isFunctionExpression,
     createFactoryReplacementExpression,
-    createFunctionCheck
+    createFunctionCheck,
+    isExplicitDependencyInjection
   };
 };

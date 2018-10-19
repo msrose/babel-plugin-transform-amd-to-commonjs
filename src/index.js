@@ -23,7 +23,8 @@ module.exports = ({ types: t }) => {
     getUniqueIdentifier,
     isFunctionExpression,
     createFactoryReplacementExpression,
-    createFunctionCheck
+    createFunctionCheck,
+    isExplicitDependencyInjection
   } = createHelpers({ types: t });
 
   const argumentDecoders = {
@@ -81,20 +82,23 @@ module.exports = ({ types: t }) => {
         }
       }
 
-      const dependencyInjectionExpressions = dependencyParameterPairs
-        .map(([dependency, paramName]) => {
+      const dependencyInjectionExpressions = dependencyParameterPairs.map(
+        ([dependency, paramName]) => {
           return createDependencyInjectionExpression(dependency, paramName);
-        })
-        .filter(dependencyInjection => {
-          return dependencyInjection !== undefined;
-        });
+        }
+      );
 
       dependencyInjections.push(...dependencyInjectionExpressions);
     }
 
+    const explicitDependencyInjections = dependencyInjections.filter(isExplicitDependencyInjection);
+
     if (isFunctionFactory) {
       const factoryArity = factory.params.length;
-      let replacementFuncExpr = createFactoryReplacementExpression(factory, dependencyInjections);
+      let replacementFuncExpr = createFactoryReplacementExpression(
+        factory,
+        explicitDependencyInjections
+      );
       let replacementCallExprParams = [];
 
       if (isSimplifiedCommonJSWrapper(dependencyList, factoryArity)) {
@@ -130,7 +134,7 @@ module.exports = ({ types: t }) => {
       );
       path.replaceWithMultiple(functionCheckNodes);
     } else {
-      path.replaceWithMultiple(dependencyInjections);
+      path.replaceWithMultiple(explicitDependencyInjections);
     }
   };
 
