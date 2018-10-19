@@ -16,7 +16,8 @@ module.exports = ({ types: t }) => {
     decodeRequireArguments,
     isModuleOrExportsInjected,
     isSimplifiedCommonJSWrapper,
-    createRequireExpression,
+    createDependencyInjectionExpression,
+    createRestDependencyInjectionExpression,
     createModuleExportsAssignmentExpression,
     createModuleExportsResultCheck,
     getUniqueIdentifier,
@@ -56,9 +57,7 @@ module.exports = ({ types: t }) => {
     if (!t.isArrayExpression(dependencyList) && !factory) return;
 
     const isFunctionFactory = isFunctionExpression(factory);
-    const requireExpressions = [];
-    // Order is important here for the simplified commonjs wrapper
-    const keywords = [REQUIRE, EXPORTS, MODULE];
+    const dependencyInjections = [];
 
     if (dependencyList) {
       const dependencyParameterPairs = zip(
@@ -66,25 +65,47 @@ module.exports = ({ types: t }) => {
         isFunctionFactory ? factory.params : []
       );
 
-      const explicitRequires = dependencyParameterPairs
-        .filter(([dependency]) => {
-          return !t.isStringLiteral(dependency) || !keywords.includes(dependency.value);
-        })
+      if (isFunctionFactory) {
+        const factoryArity = factory.params.length;
+        const lastFactoryParam = factory.params[factoryArity - 1];
+        if (t.isRestElement(lastFactoryParam)) {
+          const restDependencyNodes = dependencyList.elements.slice(factoryArity - 1);
+          const restDependencyInjections = createRestDependencyInjectionExpression(
+            restDependencyNodes
+          );
+          dependencyParameterPairs.splice(
+            factoryArity - 1,
+            dependencyParameterPairs.length - factoryArity + 1,
+            [restDependencyInjections, lastFactoryParam.argument]
+          );
+        }
+      }
+
+      const dependencyInjectionExpressions = dependencyParameterPairs
         .map(([dependency, paramName]) => {
-          return createRequireExpression(dependency, paramName);
+          return createDependencyInjectionExpression(dependency, paramName);
+        })
+        .filter(dependencyInjection => {
+          return dependencyInjection !== undefined;
         });
 
-      requireExpressions.push(...explicitRequires);
+      dependencyInjections.push(...dependencyInjectionExpressions);
     }
 
     if (isFunctionFactory) {
       const factoryArity = factory.params.length;
-      let replacementFuncExpr = createFactoryReplacementExpression(factory, requireExpressions);
+      let replacementFuncExpr = createFactoryReplacementExpression(factory, dependencyInjections);
       let replacementCallExprParams = [];
 
       if (isSimplifiedCommonJSWrapper(dependencyList, factoryArity)) {
         replacementFuncExpr = factory;
-        replacementCallExprParams = keywords.slice(0, factoryArity).map(a => t.identifier(a));
+
+        // Order is important here for the simplified commonjs wrapper
+        const amdKeywords = [REQUIRE, EXPORTS, MODULE];
+
+        replacementCallExprParams = amdKeywords
+          .slice(0, factoryArity)
+          .map(keyword => t.identifier(keyword));
       }
 
       const factoryReplacement = t.callExpression(replacementFuncExpr, replacementCallExprParams);
@@ -105,11 +126,11 @@ module.exports = ({ types: t }) => {
       const functionCheckNodes = createFunctionCheck(
         factory,
         getUniqueIdentifier(path.scope, MAYBE_FUNCTION),
-        requireExpressions
+        dependencyInjections
       );
       path.replaceWithMultiple(functionCheckNodes);
     } else {
-      path.replaceWithMultiple(requireExpressions);
+      path.replaceWithMultiple(dependencyInjections);
     }
   };
 

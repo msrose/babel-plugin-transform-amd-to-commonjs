@@ -133,4 +133,46 @@ describe('Plugin for require blocks with arrow function callbacks', () => {
       })();
     `);
   });
+
+  it('transforms factories that use the rest operator', () => {
+    expect(`
+      require(['dep1', 'dep2', 'dep3'], (dep, ...rest) => {
+        dep.doStuff();
+      });
+    `).toBeTransformedTo(`
+      (() => {
+        var dep = require('dep1');
+        var rest = [require('dep2'), require('dep3')];
+        dep.doStuff();
+      })();
+    `);
+  });
+
+  it('transforms factories that use the rest operator including AMD keywords', () => {
+    expect(`
+      require(['dep1', 'dep2', 'module', 'exports', 'require'], (dep, ...rest) => {
+        dep.doStuff();
+      });
+    `).toBeTransformedTo(`
+      (() => {
+        var dep = require('dep1');
+        var rest = [require('dep2'), module, exports, require];
+        dep.doStuff();
+      })();
+    `);
+  });
+
+  it('transforms factories that use the rest operator when there are no rest arguments', () => {
+    expect(`
+      require(['dep1'], (dep, ...rest) => {
+        dep.doStuff();
+      });
+    `).toBeTransformedTo(`
+      (() => {
+        var dep = require('dep1');
+        var rest = [];
+        dep.doStuff();
+      })();
+    `);
+  });
 });

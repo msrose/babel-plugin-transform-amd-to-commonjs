@@ -50,13 +50,42 @@ module.exports = ({ types: t }) => {
     ];
   };
 
-  const createRequireExpression = (dependencyNode, variableName) => {
-    const requireCall = t.callExpression(t.identifier(REQUIRE), [dependencyNode]);
+  const createDependencyInjectionExpression = (dependencyNode, variableName) => {
+    if (
+      t.isStringLiteral(dependencyNode) &&
+      [MODULE, EXPORTS, REQUIRE].includes(dependencyNode.value)
+    ) {
+      // In case of the AMD keywords, only create an expression if the variable name
+      // does not match the keyword. This to prevent 'require = require' statements.
+      if (variableName && variableName.name !== dependencyNode.value) {
+        return t.variableDeclaration('var', [
+          t.variableDeclarator(variableName, t.identifier(dependencyNode.value))
+        ]);
+      }
+      return undefined;
+    }
+
+    const requireCall = t.isArrayExpression(dependencyNode)
+      ? dependencyNode
+      : t.callExpression(t.identifier(REQUIRE), [dependencyNode]);
+
     if (variableName) {
       return t.variableDeclaration('var', [t.variableDeclarator(variableName, requireCall)]);
     } else {
       return t.expressionStatement(requireCall);
     }
+  };
+
+  const createRestDependencyInjectionExpression = dependencyNodes => {
+    return t.arrayExpression(
+      dependencyNodes.map(node => {
+        const dependencyInjection = createDependencyInjectionExpression(node);
+        if (dependencyInjection) {
+          return dependencyInjection.expression;
+        }
+        return t.identifier(node.value);
+      })
+    );
   };
 
   const isModuleOrExportsInDependencyList = dependencyList => {
@@ -93,12 +122,12 @@ module.exports = ({ types: t }) => {
     return t.isFunctionExpression(factory) || t.isArrowFunctionExpression(factory);
   };
 
-  const createFactoryReplacementExpression = (factory, requireExpressions) => {
+  const createFactoryReplacementExpression = (factory, dependencyInjections) => {
     if (t.isFunctionExpression(factory)) {
       return t.functionExpression(
         null,
         [],
-        t.blockStatement(requireExpressions.concat(factory.body.body))
+        t.blockStatement(dependencyInjections.concat(factory.body.body))
       );
     }
     let bodyStatement;
@@ -110,7 +139,7 @@ module.exports = ({ types: t }) => {
     }
     return t.arrowFunctionExpression(
       [],
-      t.blockStatement(requireExpressions.concat(bodyStatement))
+      t.blockStatement(dependencyInjections.concat(bodyStatement))
     );
   };
 
@@ -148,7 +177,8 @@ module.exports = ({ types: t }) => {
     decodeRequireArguments,
     createModuleExportsAssignmentExpression,
     createModuleExportsResultCheck,
-    createRequireExpression,
+    createDependencyInjectionExpression,
+    createRestDependencyInjectionExpression,
     isSimplifiedCommonJSWrapper,
     isModuleOrExportsInjected,
     getUniqueIdentifier,

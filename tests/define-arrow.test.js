@@ -192,9 +192,22 @@ describe('Plugin for define blocks with arrow function factories', () => {
     `);
   });
 
+  it('does not require a dependency named `require` which has been renamed', () => {
+    expect(`
+      define(['require'], (abc) => {
+        var x = abc('x');
+      });
+    `).toBeTransformedTo(`
+      module.exports = (() => {
+        var abc = require;
+        var x = abc('x');
+      })();
+    `);
+  });
+
   const checkAmdDefineResult = (value, identifier = AMD_DEFINE_RESULT) => `
     var ${identifier} = ${value};
-    typeof ${identifier} !== 'undefined' && (module.exports = ${identifier});
+    typeof ${identifier} !== "undefined" && (module.exports = ${identifier});
   `;
 
   it('handles injection of a dependency named `module`', () => {
@@ -211,6 +224,21 @@ describe('Plugin for define blocks with arrow function factories', () => {
     );
   });
 
+  it('handles injection of a dependency named `module` which has been renamed', () => {
+    expect(`
+      define(['module'], (abc) => {
+        abc.exports = { hey: 'boi' };
+      });
+    `).toBeTransformedTo(
+      checkAmdDefineResult(`
+        (() => {
+          var abc = module;
+          abc.exports = { hey: 'boi' };
+        })()
+      `)
+    );
+  });
+
   it('handles injection of dependency named `exports`', () => {
     expect(`
       define(['exports'], (exports) => {
@@ -220,6 +248,21 @@ describe('Plugin for define blocks with arrow function factories', () => {
       checkAmdDefineResult(`
         (() => {
           exports.hey = 'boi';
+        })()
+      `)
+    );
+  });
+
+  it('handles injection of dependency named `exports` which has been renamed', () => {
+    expect(`
+      define(['exports'], (abc) => {
+        abc.hey = 'boi';
+      });
+    `).toBeTransformedTo(
+      checkAmdDefineResult(`
+        (() => {
+          var abc = exports;
+          abc.hey = 'boi';
         })()
       `)
     );
@@ -356,6 +399,50 @@ describe('Plugin for define blocks with arrow function factories', () => {
         return {
           notexports: exports.notexports
         };
+      })();
+    `);
+  });
+
+  it('transforms factories that use the rest operator', () => {
+    expect(`
+      define(['dep1', 'dep2', 'dep3'], (dep, ...rest) => {
+        dep.doStuff();
+      });
+    `).toBeTransformedTo(`
+      module.exports = (() => {
+        var dep = require('dep1');
+        var rest = [require('dep2'), require('dep3')];
+        dep.doStuff();
+      })();
+    `);
+  });
+
+  it('transforms factories that use the rest operator including AMD keywords', () => {
+    expect(`
+      define(['dep1', 'dep2', 'module', 'exports', 'require'], (dep, ...rest) => {
+        dep.doStuff();
+      });
+    `).toBeTransformedTo(
+      checkAmdDefineResult(`
+        (() => {
+          var dep = require('dep1');
+          var rest = [require('dep2'), module, exports, require];
+          dep.doStuff();
+        })()
+      `)
+    );
+  });
+
+  it('transforms factories that use the rest operator when there are no rest arguments', () => {
+    expect(`
+      define(['dep1'], (dep, ...rest) => {
+        dep.doStuff();
+      });
+    `).toBeTransformedTo(`
+      module.exports = (() => {
+        var dep = require('dep1');
+        var rest = [];
+        dep.doStuff();
       })();
     `);
   });
