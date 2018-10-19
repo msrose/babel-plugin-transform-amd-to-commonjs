@@ -407,33 +407,27 @@ describe('Plugin for define blocks', () => {
   it('transforms non-function modules exporting objects with no dependencies', () => {
     expect(`
       define({ thismodule: 'is an object' });
-    `).toBeTransformedTo(`
-      ${checkMaybeFunction("{ thismodule: 'is an object' }")}
-    `);
+    `).toBeTransformedTo(checkMaybeFunction("{ thismodule: 'is an object' }"));
   });
 
   it('transforms non-function modules exporting objects with dependencies', () => {
     expect(`
       define(['side-effect'], { thismodule: 'is an object' });
-    `).toBeTransformedTo(`
-      ${checkMaybeFunction("{ thismodule: 'is an object' }", ['side-effect'])}
-    `);
+    `).toBeTransformedTo(checkMaybeFunction("{ thismodule: 'is an object' }", ['side-effect']));
   });
 
   it('transforms non-function modules exporting arrays with no dependencies', () => {
     expect(`
       define(['this', 'module', 'is', 'an', 'array']);
-    `).toBeTransformedTo(`
-      ${checkMaybeFunction("['this', 'module', 'is', 'an', 'array']")}
-    `);
+    `).toBeTransformedTo(checkMaybeFunction("['this', 'module', 'is', 'an', 'array']"));
   });
 
   it('transforms non-function modules exporting arrays with dependencies', () => {
     expect(`
       define(['side-effect'], ['this', 'module', 'is', 'an', 'array']);
-    `).toBeTransformedTo(`
-      ${checkMaybeFunction("['this', 'module', 'is', 'an', 'array']", ['side-effect'])}
-    `);
+    `).toBeTransformedTo(
+      checkMaybeFunction("['this', 'module', 'is', 'an', 'array']", ['side-effect'])
+    );
   });
 
   it('transforms non-function modules exporting primitives with no dependencies', () => {
@@ -441,9 +435,7 @@ describe('Plugin for define blocks', () => {
     primitives.forEach(primitive => {
       expect(`
         define(${primitive});
-      `).toBeTransformedTo(`
-        ${checkMaybeFunction(primitive)}
-      `);
+      `).toBeTransformedTo(checkMaybeFunction(primitive));
     });
   });
 
@@ -452,60 +444,44 @@ describe('Plugin for define blocks', () => {
     primitives.forEach(primitive => {
       expect(`
         define(['side-effect'], ${primitive});
-      `).toBeTransformedTo(`
-        ${checkMaybeFunction(primitive, ['side-effect'])}
-      `);
+      `).toBeTransformedTo(checkMaybeFunction(primitive, ['side-effect']));
     });
   });
 
   it('transforms non-function modules requiring `require` for some reason', () => {
     expect(`
       define(['sup', 'require'], { some: 'stuff' });
-    `).toBeTransformedTo(`
-      ${checkMaybeFunction("{ some: 'stuff' }", ['sup', 'require'])}
-    `);
+    `).toBeTransformedTo(checkMaybeFunction("{ some: 'stuff' }", ['sup', 'require']));
   });
 
   it('transforms non-function modules requiring `exports` for some reason', () => {
     expect(`
       define(['exports', 'dawg'], { some: 'stuff' });
-    `).toBeTransformedTo(`
-      ${checkMaybeFunction("{ some: 'stuff' }", ['exports', 'dawg'])}
-    `);
+    `).toBeTransformedTo(checkMaybeFunction("{ some: 'stuff' }", ['exports', 'dawg']));
   });
 
   it('transforms non-function modules requiring `module` for some reason', () => {
     expect(`
       define(['module'], { some: 'stuff' });
-    `).toBeTransformedTo(`
-      ${checkMaybeFunction("{ some: 'stuff' }", ['module'])}
-    `);
+    `).toBeTransformedTo(checkMaybeFunction("{ some: 'stuff' }", ['module']));
   });
 
   it('transforms named non-function modules with no dependencies', () => {
     expect(`
       define('auselessname', { thismodule: 'is an object' });
-    `).toBeTransformedTo(`
-      ${checkMaybeFunction("{ thismodule: 'is an object' }")}
-    `);
+    `).toBeTransformedTo(checkMaybeFunction("{ thismodule: 'is an object' }"));
     expect(`
       define('auselessname', ['an', 'array', 'factory']);
-    `).toBeTransformedTo(`
-      ${checkMaybeFunction("['an', 'array', 'factory']")}
-    `);
+    `).toBeTransformedTo(checkMaybeFunction("['an', 'array', 'factory']"));
   });
 
   it('transforms named non-function modules with dependencies', () => {
     expect(`
       define('auselessname', ['side-effect'], { thismodule: 'is an object' });
-    `).toBeTransformedTo(`
-      ${checkMaybeFunction("{ thismodule: 'is an object' }", ['side-effect'])}
-    `);
+    `).toBeTransformedTo(checkMaybeFunction("{ thismodule: 'is an object' }", ['side-effect']));
     expect(`
       define('auselessname', ['side-effect'], ['an', 'array', 'factory']);
-    `).toBeTransformedTo(`
-      ${checkMaybeFunction("['an', 'array', 'factory']", ['side-effect'])}
-    `);
+    `).toBeTransformedTo(checkMaybeFunction("['an', 'array', 'factory']", ['side-effect']));
   });
 
   it('checks non function-literal factories to see if they are actually functions', () => {
