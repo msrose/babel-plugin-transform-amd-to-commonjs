@@ -327,23 +327,23 @@ describe('Plugin for define blocks', () => {
 
   it('accounts for variable name conflicts when checking the result of `define`', () => {
     expect(`
-      var amdDefineResult = 'for some reason I have this variable declared already';
+      var ${AMD_DEFINE_RESULT} = 'for some reason I have this variable declared already';
       define(function(require, exports, module) {
         var stuff = require('hi');
         exports.hey = stuff.boi;
       });
-    `).toBeTransformedTo(
-      `var amdDefineResult = 'for some reason I have this variable declared already';` +
-        checkAmdDefineResult(
-          `
-            (function(require, exports, module) {
-              var stuff = require('hi');
-              exports.hey = stuff.boi;
-            })(require, exports, module)
-          `,
-          `_${AMD_DEFINE_RESULT}`
-        )
-    );
+    `).toBeTransformedTo(`
+      var ${AMD_DEFINE_RESULT} = 'for some reason I have this variable declared already';
+      ${checkAmdDefineResult(
+        `
+          (function(require, exports, module) {
+            var stuff = require('hi');
+            exports.hey = stuff.boi;
+          })(require, exports, module)
+        `,
+        `_${AMD_DEFINE_RESULT}`
+      )}
+    `);
   });
 
   it("lets you declare a dependency as `module` even though that's crazy", () => {
@@ -380,7 +380,7 @@ describe('Plugin for define blocks', () => {
     `);
   });
 
-  const checkMaybeFunction = (factory, dependencies) => {
+  const checkMaybeFunction = (factory, dependencies, identifier = MAYBE_FUNCTION) => {
     const amdKeywords = [REQUIRE, EXPORTS, MODULE];
     const requiredDependencies = (dependencies || []).map(d => {
       if (amdKeywords.includes(d)) {
@@ -392,13 +392,13 @@ describe('Plugin for define blocks', () => {
       ? requiredDependencies.join(',')
       : amdKeywords.join(',');
     return `
-      var ${MAYBE_FUNCTION} = ${factory};
+      var ${identifier} = ${factory};
       module.exports = (
-        typeof ${MAYBE_FUNCTION} === "function"
-          ? ${MAYBE_FUNCTION}(${injectedDependencies})
+        typeof ${identifier} === "function"
+          ? ${identifier}(${injectedDependencies})
           : (function() {
             ${requiredDependencies.filter(d => !amdKeywords.includes(d)).join(';\n')}
-            return ${MAYBE_FUNCTION};
+            return ${identifier};
           })()
       );
     `;
@@ -513,6 +513,16 @@ describe('Plugin for define blocks', () => {
     `).toBeTransformedTo(`
       ${variableFactory}
       ${checkMaybeFunction('myVariableFactory')}
+    `);
+  });
+
+  it('gets a unique variable name if needed when checking for functions', () => {
+    expect(`
+      var ${MAYBE_FUNCTION} = 'forsomereasonthisexistsinscope'
+      define({ my: 'config', object: 'lol' })
+    `).toBeTransformedTo(`
+      var ${MAYBE_FUNCTION} = 'forsomereasonthisexistsinscope'
+      ${checkMaybeFunction("{ my: 'config', object: 'lol' }", null, `_${MAYBE_FUNCTION}`)}
     `);
   });
 
