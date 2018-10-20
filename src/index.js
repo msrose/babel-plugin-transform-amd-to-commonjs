@@ -1,6 +1,13 @@
 'use strict';
 
-const { REQUIRE, MODULE, EXPORTS, DEFINE, AMD_DEFINE_RESULT } = require('./constants');
+const {
+  REQUIRE,
+  MODULE,
+  EXPORTS,
+  DEFINE,
+  AMD_DEFINE_RESULT,
+  MAYBE_FUNCTION
+} = require('./constants');
 const createHelpers = require('./helpers');
 
 module.exports = ({ types: t }) => {
@@ -15,7 +22,9 @@ module.exports = ({ types: t }) => {
     createModuleExportsResultCheck,
     getUniqueIdentifier,
     isFunctionExpression,
-    createFactoryReplacementExpression
+    createFactoryReplacementExpression,
+    createFunctionCheck,
+    isExplicitDependencyInjection
   } = createHelpers({ types: t });
 
   const argumentDecoders = {
@@ -73,20 +82,23 @@ module.exports = ({ types: t }) => {
         }
       }
 
-      const dependencyInjectionExpressions = dependencyParameterPairs
-        .map(([dependency, paramName]) => {
+      const dependencyInjectionExpressions = dependencyParameterPairs.map(
+        ([dependency, paramName]) => {
           return createDependencyInjectionExpression(dependency, paramName);
-        })
-        .filter(dependencyInjection => {
-          return dependencyInjection !== undefined;
-        });
+        }
+      );
 
       dependencyInjections.push(...dependencyInjectionExpressions);
     }
 
+    const explicitDependencyInjections = dependencyInjections.filter(isExplicitDependencyInjection);
+
     if (isFunctionFactory) {
       const factoryArity = factory.params.length;
-      let replacementFuncExpr = createFactoryReplacementExpression(factory, dependencyInjections);
+      let replacementFuncExpr = createFactoryReplacementExpression(
+        factory,
+        explicitDependencyInjections
+      );
       let replacementCallExprParams = [];
 
       if (isSimplifiedCommonJSWrapper(dependencyList, factoryArity)) {
@@ -115,11 +127,14 @@ module.exports = ({ types: t }) => {
         path.replaceWith(factoryReplacement);
       }
     } else if (factory && isDefineCall) {
-      const exportExpression = createModuleExportsAssignmentExpression(factory);
-      const nodes = dependencyInjections.concat(exportExpression);
-      path.replaceWithMultiple(nodes);
+      const functionCheckNodes = createFunctionCheck(
+        factory,
+        getUniqueIdentifier(path.scope, MAYBE_FUNCTION),
+        dependencyInjections
+      );
+      path.replaceWithMultiple(functionCheckNodes);
     } else {
-      path.replaceWithMultiple(dependencyInjections);
+      path.replaceWithMultiple(explicitDependencyInjections);
     }
   };
 

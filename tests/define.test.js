@@ -1,6 +1,7 @@
 'use strict';
 
-const { AMD_DEFINE_RESULT } = require('../src/constants');
+const { AMD_DEFINE_RESULT, MAYBE_FUNCTION } = require('../src/constants');
+const { checkAmdDefineResult, checkMaybeFunction } = require('./test-helpers');
 
 describe('Plugin for define blocks', () => {
   it('transforms anonymous define blocks with one dependency', () => {
@@ -182,11 +183,6 @@ describe('Plugin for define blocks', () => {
     `);
   });
 
-  const checkAmdDefineResult = (value, identifier = AMD_DEFINE_RESULT) => `
-    var ${identifier} = ${value};
-    typeof ${identifier} !== "undefined" && (module.exports = ${identifier});
-  `;
-
   it('handles injection of a dependency named `module`', () => {
     expect(`
       define(['module'], function(module) {
@@ -327,23 +323,23 @@ describe('Plugin for define blocks', () => {
 
   it('accounts for variable name conflicts when checking the result of `define`', () => {
     expect(`
-      var amdDefineResult = 'for some reason I have this variable declared already';
+      var ${AMD_DEFINE_RESULT} = 'for some reason I have this variable declared already';
       define(function(require, exports, module) {
         var stuff = require('hi');
         exports.hey = stuff.boi;
       });
-    `).toBeTransformedTo(
-      `var amdDefineResult = 'for some reason I have this variable declared already';` +
-        checkAmdDefineResult(
-          `
-            (function(require, exports, module) {
-              var stuff = require('hi');
-              exports.hey = stuff.boi;
-            })(require, exports, module)
-          `,
-          `_${AMD_DEFINE_RESULT}`
-        )
-    );
+    `).toBeTransformedTo(`
+      var ${AMD_DEFINE_RESULT} = 'for some reason I have this variable declared already';
+      ${checkAmdDefineResult(
+        `
+          (function(require, exports, module) {
+            var stuff = require('hi');
+            exports.hey = stuff.boi;
+          })(require, exports, module)
+        `,
+        `_${AMD_DEFINE_RESULT}`
+      )}
+    `);
   });
 
   it("lets you declare a dependency as `module` even though that's crazy", () => {
@@ -383,35 +379,27 @@ describe('Plugin for define blocks', () => {
   it('transforms non-function modules exporting objects with no dependencies', () => {
     expect(`
       define({ thismodule: 'is an object' });
-    `).toBeTransformedTo(`
-      module.exports = { thismodule: 'is an object' };
-    `);
+    `).toBeTransformedTo(checkMaybeFunction("{ thismodule: 'is an object' }"));
   });
 
   it('transforms non-function modules exporting objects with dependencies', () => {
     expect(`
       define(['side-effect'], { thismodule: 'is an object' });
-    `).toBeTransformedTo(`
-      require('side-effect');
-      module.exports = { thismodule: 'is an object' };
-    `);
+    `).toBeTransformedTo(checkMaybeFunction("{ thismodule: 'is an object' }", ['side-effect']));
   });
 
   it('transforms non-function modules exporting arrays with no dependencies', () => {
     expect(`
       define(['this', 'module', 'is', 'an', 'array']);
-    `).toBeTransformedTo(`
-      module.exports = ['this', 'module', 'is', 'an', 'array'];
-    `);
+    `).toBeTransformedTo(checkMaybeFunction("['this', 'module', 'is', 'an', 'array']"));
   });
 
   it('transforms non-function modules exporting arrays with dependencies', () => {
     expect(`
       define(['side-effect'], ['this', 'module', 'is', 'an', 'array']);
-    `).toBeTransformedTo(`
-      require('side-effect');
-      module.exports = ['this', 'module', 'is', 'an', 'array'];
-    `);
+    `).toBeTransformedTo(
+      checkMaybeFunction("['this', 'module', 'is', 'an', 'array']", ['side-effect'])
+    );
   });
 
   it('transforms non-function modules exporting primitives with no dependencies', () => {
@@ -419,9 +407,7 @@ describe('Plugin for define blocks', () => {
     primitives.forEach(primitive => {
       expect(`
         define(${primitive});
-      `).toBeTransformedTo(`
-        module.exports = ${primitive};
-      `);
+      `).toBeTransformedTo(checkMaybeFunction(primitive));
     });
   });
 
@@ -430,62 +416,85 @@ describe('Plugin for define blocks', () => {
     primitives.forEach(primitive => {
       expect(`
         define(['side-effect'], ${primitive});
-      `).toBeTransformedTo(`
-        require('side-effect');
-        module.exports = ${primitive};
-      `);
+      `).toBeTransformedTo(checkMaybeFunction(primitive, ['side-effect']));
     });
   });
 
   it('transforms non-function modules requiring `require` for some reason', () => {
     expect(`
-      define(['require'], { some: 'stuff' });
-    `).toBeTransformedTo(`
-      module.exports = { some: 'stuff' };
-    `);
+      define(['sup', 'require'], { some: 'stuff' });
+    `).toBeTransformedTo(checkMaybeFunction("{ some: 'stuff' }", ['sup', 'require']));
   });
 
   it('transforms non-function modules requiring `exports` for some reason', () => {
     expect(`
-      define(['exports'], { some: 'stuff' });
-    `).toBeTransformedTo(`
-      module.exports = { some: 'stuff' };
-    `);
+      define(['exports', 'dawg'], { some: 'stuff' });
+    `).toBeTransformedTo(checkMaybeFunction("{ some: 'stuff' }", ['exports', 'dawg']));
   });
 
   it('transforms non-function modules requiring `module` for some reason', () => {
     expect(`
       define(['module'], { some: 'stuff' });
-    `).toBeTransformedTo(`
-      module.exports = { some: 'stuff' };
-    `);
+    `).toBeTransformedTo(checkMaybeFunction("{ some: 'stuff' }", ['module']));
   });
 
   it('transforms named non-function modules with no dependencies', () => {
     expect(`
       define('auselessname', { thismodule: 'is an object' });
-    `).toBeTransformedTo(`
-      module.exports = { thismodule: 'is an object' };
-    `);
+    `).toBeTransformedTo(checkMaybeFunction("{ thismodule: 'is an object' }"));
     expect(`
       define('auselessname', ['an', 'array', 'factory']);
-    `).toBeTransformedTo(`
-      module.exports = ['an', 'array', 'factory'];
-    `);
+    `).toBeTransformedTo(checkMaybeFunction("['an', 'array', 'factory']"));
   });
 
   it('transforms named non-function modules with dependencies', () => {
     expect(`
       define('auselessname', ['side-effect'], { thismodule: 'is an object' });
-    `).toBeTransformedTo(`
-      require('side-effect');
-      module.exports = { thismodule: 'is an object' };
-    `);
+    `).toBeTransformedTo(checkMaybeFunction("{ thismodule: 'is an object' }", ['side-effect']));
     expect(`
       define('auselessname', ['side-effect'], ['an', 'array', 'factory']);
+    `).toBeTransformedTo(checkMaybeFunction("['an', 'array', 'factory']", ['side-effect']));
+  });
+
+  it('checks non function-literal factories to see if they are actually functions', () => {
+    const variableFactory = `
+      var myVariableFactory = function(stuff, hi) {
+        stuff.what(hi)
+        return { great: 'stuff' };
+      }
+    `;
+    expect(`
+      ${variableFactory}
+      define(['stuff', 'hi'], myVariableFactory)
     `).toBeTransformedTo(`
-      require('side-effect');
-      module.exports = ['an', 'array', 'factory'];
+      ${variableFactory}
+      ${checkMaybeFunction('myVariableFactory', ['stuff', 'hi'])}
+    `);
+  });
+
+  it('accounts for the simplified commonjs wrapper when checking for functions', () => {
+    const variableFactory = `
+      var myVariableFactory = function(require, exports, module) {
+        var stuff = require('stuff')
+        module.exports = { stuff: stuff.stuff }
+      }
+    `;
+    expect(`
+      ${variableFactory}
+      define(myVariableFactory)
+    `).toBeTransformedTo(`
+      ${variableFactory}
+      ${checkMaybeFunction('myVariableFactory')}
+    `);
+  });
+
+  it('gets a unique variable name if needed when checking for functions', () => {
+    expect(`
+      var ${MAYBE_FUNCTION} = 'forsomereasonthisexistsinscope'
+      define({ my: 'config', object: 'lol' })
+    `).toBeTransformedTo(`
+      var ${MAYBE_FUNCTION} = 'forsomereasonthisexistsinscope'
+      ${checkMaybeFunction("{ my: 'config', object: 'lol' }", null, `_${MAYBE_FUNCTION}`)}
     `);
   });
 

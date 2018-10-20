@@ -27,9 +27,9 @@ const customMatchers = {
       actual = actual.program;
     }
 
-    const transformed = removeBlankLines(transformAmdToCommonJS(actual, options));
     actual = removeBlankLines(transformTrivial(actual));
     expected = removeBlankLines(transformTrivial(expected));
+    const transformed = removeBlankLines(transformAmdToCommonJS(actual, options));
 
     const result = {
       pass: transformed === expected

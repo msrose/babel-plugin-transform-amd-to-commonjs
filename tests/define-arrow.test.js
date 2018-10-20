@@ -1,6 +1,7 @@
 'use strict';
 
 const { AMD_DEFINE_RESULT } = require('../src/constants');
+const { checkAmdDefineResult, checkMaybeFunction } = require('./test-helpers');
 
 describe('Plugin for define blocks with arrow function factories', () => {
   it('transforms anonymous define blocks with one dependency', () => {
@@ -204,11 +205,6 @@ describe('Plugin for define blocks with arrow function factories', () => {
       })();
     `);
   });
-
-  const checkAmdDefineResult = (value, identifier = AMD_DEFINE_RESULT) => `
-    var ${identifier} = ${value};
-    typeof ${identifier} !== "undefined" && (module.exports = ${identifier});
-  `;
 
   it('handles injection of a dependency named `module`', () => {
     expect(`
@@ -444,6 +440,38 @@ describe('Plugin for define blocks with arrow function factories', () => {
         var rest = [];
         dep.doStuff();
       })();
+    `);
+  });
+
+  it('checks non function-literal factories to see if they are actually functions', () => {
+    const variableFactory = `
+      var myVariableFactory = (stuff, hi) => {
+        stuff.what(hi)
+        return { great: 'stuff' };
+      }
+    `;
+    expect(`
+      ${variableFactory}
+      define(['stuff', 'hi'], myVariableFactory)
+    `).toBeTransformedTo(`
+      ${variableFactory}
+      ${checkMaybeFunction('myVariableFactory', ['stuff', 'hi'])}
+    `);
+  });
+
+  it('accounts for the simplified commonjs wrapper when checking for functions', () => {
+    const variableFactory = `
+      var myVariableFactory = (require, exports, module) => {
+        var stuff = require('stuff')
+        module.exports = { stuff: stuff.stuff }
+      }
+    `;
+    expect(`
+      ${variableFactory}
+      define(myVariableFactory)
+    `).toBeTransformedTo(`
+      ${variableFactory}
+      ${checkMaybeFunction('myVariableFactory')}
     `);
   });
 });
