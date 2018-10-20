@@ -1,6 +1,7 @@
 'use strict';
 
-const { AMD_DEFINE_RESULT, MAYBE_FUNCTION, REQUIRE, EXPORTS, MODULE } = require('../src/constants');
+const { AMD_DEFINE_RESULT, MAYBE_FUNCTION } = require('../src/constants');
+const { checkAmdDefineResult, checkMaybeFunction } = require('./test-helpers');
 
 describe('Plugin for define blocks', () => {
   it('transforms anonymous define blocks with one dependency', () => {
@@ -181,11 +182,6 @@ describe('Plugin for define blocks', () => {
       }();
     `);
   });
-
-  const checkAmdDefineResult = (value, identifier = AMD_DEFINE_RESULT) => `
-    var ${identifier} = ${value};
-    typeof ${identifier} !== "undefined" && (module.exports = ${identifier});
-  `;
 
   it('handles injection of a dependency named `module`', () => {
     expect(`
@@ -379,30 +375,6 @@ describe('Plugin for define blocks', () => {
       }();
     `);
   });
-
-  const checkMaybeFunction = (factory, dependencies, identifier = MAYBE_FUNCTION) => {
-    const amdKeywords = [REQUIRE, EXPORTS, MODULE];
-    const requiredDependencies = (dependencies || []).map(d => {
-      if (amdKeywords.includes(d)) {
-        return d;
-      }
-      return `require('${d}')`;
-    });
-    const injectedDependencies = dependencies
-      ? requiredDependencies.join(',')
-      : amdKeywords.join(',');
-    return `
-      var ${identifier} = ${factory};
-      module.exports = (
-        typeof ${identifier} === "function"
-          ? ${identifier}(${injectedDependencies})
-          : (function() {
-            ${requiredDependencies.filter(d => !amdKeywords.includes(d)).join(';\n')}
-            return ${identifier};
-          })()
-      );
-    `;
-  };
 
   it('transforms non-function modules exporting objects with no dependencies', () => {
     expect(`
