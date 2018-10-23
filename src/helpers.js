@@ -150,35 +150,52 @@ module.exports = ({ types: t }) => {
     );
   };
 
-  const createFunctionCheck = (factory, identifier, dependencyInjections) => {
+  const createFunctionCheck = (
+    factory,
+    functionCheckIdentifier,
+    resultCheckIdentifier,
+    dependencyInjections
+  ) => {
+    const factoryCallExpression = t.callExpression(
+      functionCheckIdentifier,
+      dependencyInjections.length > 0
+        ? dependencyInjections.map(e => (isExplicitDependencyInjection(e) ? e.expression : e))
+        : [REQUIRE, EXPORTS, MODULE].map(a => t.identifier(a))
+    );
+    const isModuleOrExportsInjected =
+      dependencyInjections.length === 0 ||
+      dependencyInjections.find(
+        d => !isExplicitDependencyInjection(d) && [EXPORTS, MODULE].includes(d.name)
+      );
     return [
-      t.variableDeclaration('var', [t.variableDeclarator(identifier, factory)]),
-      createModuleExportsAssignmentExpression(
-        t.conditionalExpression(
-          t.binaryExpression(
-            '===',
-            t.unaryExpression('typeof', identifier),
-            t.stringLiteral('function')
-          ),
-          t.callExpression(
-            identifier,
-            dependencyInjections.length > 0
-              ? dependencyInjections.map(e => (isExplicitDependencyInjection(e) ? e.expression : e))
-              : [REQUIRE, EXPORTS, MODULE].map(a => t.identifier(a))
-          ),
-          t.callExpression(
-            t.functionExpression(
-              null,
-              [],
-              t.blockStatement(
-                dependencyInjections
-                  .filter(isExplicitDependencyInjection)
-                  .concat(t.returnStatement(identifier))
-              )
-            ),
-            []
+      t.variableDeclaration('var', [t.variableDeclarator(functionCheckIdentifier, factory)]),
+      t.ifStatement(
+        t.binaryExpression(
+          '===',
+          t.unaryExpression('typeof', functionCheckIdentifier),
+          t.stringLiteral('function')
+        ),
+        t.blockStatement(
+          isModuleOrExportsInjected
+            ? createModuleExportsResultCheck(factoryCallExpression, resultCheckIdentifier)
+            : [createModuleExportsAssignmentExpression(factoryCallExpression)]
+        ),
+        t.blockStatement([
+          createModuleExportsAssignmentExpression(
+            t.callExpression(
+              t.functionExpression(
+                null,
+                [],
+                t.blockStatement(
+                  dependencyInjections
+                    .filter(isExplicitDependencyInjection)
+                    .concat(t.returnStatement(functionCheckIdentifier))
+                )
+              ),
+              []
+            )
           )
-        )
+        ])
       )
     ];
   };

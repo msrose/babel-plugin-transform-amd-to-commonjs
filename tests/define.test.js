@@ -422,11 +422,17 @@ describe('Plugin for define blocks', () => {
 
   it('transforms non-function modules requiring `require` for some reason', () => {
     expect(`
+      define(['require'], { some: 'stuff' });
+    `).toBeTransformedTo(checkMaybeFunction("{ some: 'stuff' }", ['require']));
+    expect(`
       define(['sup', 'require'], { some: 'stuff' });
     `).toBeTransformedTo(checkMaybeFunction("{ some: 'stuff' }", ['sup', 'require']));
   });
 
   it('transforms non-function modules requiring `exports` for some reason', () => {
+    expect(`
+      define(['exports'], { some: 'stuff' });
+    `).toBeTransformedTo(checkMaybeFunction("{ some: 'stuff' }", ['exports']));
     expect(`
       define(['exports', 'dawg'], { some: 'stuff' });
     `).toBeTransformedTo(checkMaybeFunction("{ some: 'stuff' }", ['exports', 'dawg']));
@@ -436,6 +442,9 @@ describe('Plugin for define blocks', () => {
     expect(`
       define(['module'], { some: 'stuff' });
     `).toBeTransformedTo(checkMaybeFunction("{ some: 'stuff' }", ['module']));
+    expect(`
+      define(['module', 'lemon'], { some: 'stuff' });
+    `).toBeTransformedTo(checkMaybeFunction("{ some: 'stuff' }", ['module', 'lemon']));
   });
 
   it('transforms named non-function modules with no dependencies', () => {

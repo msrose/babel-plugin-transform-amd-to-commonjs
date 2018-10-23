@@ -130,6 +130,7 @@ module.exports = ({ types: t }) => {
       const functionCheckNodes = createFunctionCheck(
         factory,
         getUniqueIdentifier(path.scope, MAYBE_FUNCTION),
+        getUniqueIdentifier(path.scope, AMD_DEFINE_RESULT),
         dependencyInjections
       );
       path.replaceWithMultiple(functionCheckNodes);
