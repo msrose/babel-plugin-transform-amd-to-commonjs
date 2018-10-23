@@ -181,20 +181,8 @@ module.exports = ({ types: t }) => {
             : [createModuleExportsAssignmentExpression(factoryCallExpression)]
         ),
         t.blockStatement([
-          createModuleExportsAssignmentExpression(
-            t.callExpression(
-              t.functionExpression(
-                null,
-                [],
-                t.blockStatement(
-                  dependencyInjections
-                    .filter(isExplicitDependencyInjection)
-                    .concat(t.returnStatement(functionCheckIdentifier))
-                )
-              ),
-              []
-            )
-          )
+          ...dependencyInjections.filter(isExplicitDependencyInjection),
+          createModuleExportsAssignmentExpression(functionCheckIdentifier)
         ])
       )
     ];

@@ -30,10 +30,8 @@ const checkMaybeFunction = (factory, dependencies, identifier = MAYBE_FUNCTION) 
             : `module.exports = ${factoryCallExpression}`
         }
       } else {
-        module.exports = (function() {
-          ${requiredDependencies.filter(d => !amdKeywords.includes(d)).join(';\n')}
-          return ${identifier};
-        })()
+        ${requiredDependencies.filter(d => !amdKeywords.includes(d)).join(';\n')}
+        module.exports = ${identifier};
       }
     `;
 };
