@@ -151,7 +151,7 @@ define(dependencies, function(one, two) {
 });
 ```
 
-If you want to be able to define your modules as above, please submit an issue. Otherwise, please define your modules as:
+If you want to be able to define your dependencies as above, please submit an issue. Otherwise, please define your modules as:
 
 ```javascript
 define(['one', 'two'], function(one, two) {
@@ -160,7 +160,7 @@ define(['one', 'two'], function(one, two) {
 });
 ```
 
-However, specifying the factory as a variable _is_ supported:
+However, specifying the factory as a variable _is_ supported (but only for calls to `define`):
 
 ```javascript
 // All's good! Transforming this code is supported
@@ -221,7 +221,8 @@ otherwise you'll end up with things like `require('module')`.
   typeof amdDefineResult !== 'undefined' && (module.exports = amdDefineResult);
   ```
 
-  Note that `{ value: 22 }` is correctly exported in both cases. Without the `typeof amdDefineResult !== 'undefined'` check in place, `{ hey: 'boi' }` would have been erroneously exported once transformed to CommonJS, since the plugin would otherwise transform this module to just:
+  Note that `{ value: 22 }` is correctly exported in both cases.
+  Without the `typeof amdDefineResult !== 'undefined'` check in place, `{ hey: 'boi' }` would have been erroneously exported once transformed to CommonJS, since the plugin would otherwise transform this module to just:
 
   ```javascript
   (function() {
