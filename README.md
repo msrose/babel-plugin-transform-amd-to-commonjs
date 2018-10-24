@@ -138,21 +138,20 @@ AMD is interpreted as described by the [AMD specification](https://github.com/am
 
 Make sure that you have only one AMD module defined per file, otherwise you'll experience strange results once transformed to the CommonJS format.
 
-### Listing module dependencies and callbacks inline
+### Listing module dependencies inline
 
-The following will _not_ be transformed, since the plugin does not traverse the arguments to define or require:
+The following will _not_ be transformed, since the plugin only accounts for dependencies that are specified using an inline array literal:
 
 ```javascript
-// DON'T DO THIS! It won't be transformed.
+// DON'T DO THIS! It won't be transformed correctly.
 var dependencies = ['one', 'two'];
-var factory = function(one, two) {
+define(dependencies, function(one, two) {
   one.doStuff();
   return two.doStuff();
-};
-define(dependencies, factory);
+});
 ```
 
-If you want to be able to define your modules as above, please submit an issue. Otherwise, please define your modules as:
+If you want to be able to define your dependencies as above, please submit an issue. Otherwise, please define your modules as:
 
 ```javascript
 define(['one', 'two'], function(one, two) {
@@ -160,6 +159,37 @@ define(['one', 'two'], function(one, two) {
   return two.doStuff();
 });
 ```
+
+However, specifying the factory as a variable _is_ supported (but only for calls to `define`):
+
+```javascript
+// All's good! Transforming this code is supported
+var factory = function(one, two) {
+  one.doStuff();
+  return two.doStuff();
+};
+define(['one', 'two'], factory);
+```
+
+A runtime check has to be done to determine what to export, so the transformed code looks like this:
+
+```javascript
+var factory = function(one, two) {
+  one.doStuff();
+  return two.doStuff();
+};
+var maybeFactory = factory;
+if (typeof maybeFactory === 'function') {
+  module.exports = factory(require('one'), require('two'));
+} else {
+  require('one');
+  require('two');
+  module.exports = maybeFactory;
+};
+```
+
+It looks a bit weird, but it's all necessary.
+Keep in mind that everything is done with static analysis, so if the factory isn't specified as an inline function literal, it's impossible to tell exactly what value it will take until runtime.
 
 ### Injecting `require`, `module`, or `exports` as dependencies
 
@@ -191,6 +221,14 @@ otherwise you'll end up with things like `require('module')`.
   typeof amdDefineResult !== 'undefined' && (module.exports = amdDefineResult);
   ```
 
-  Note that `{ value: 22 }` is correctly exported in both cases. Without the `typeof amdDefineResult !== 'undefined'` check in place, `{ hey: 'boi' }` would have been erroneously exported once transformed to CommonJS.
+  Note that `{ value: 22 }` is correctly exported in both cases.
+  Without the `typeof amdDefineResult !== 'undefined'` check in place, `{ hey: 'boi' }` would have been erroneously exported once transformed to CommonJS, since the plugin would otherwise transform this module to just:
+
+  ```javascript
+  (function() {
+    module.exports = { hey: 'boi' };
+    return { value: 22 };
+  })()
+  ```
 
   This pattern is only used if necessary. The variable `amdDefineResult` is generated to be unique in its scope.

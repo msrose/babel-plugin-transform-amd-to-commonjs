@@ -15,19 +15,24 @@ const checkMaybeFunction = (factory, dependencies, identifier = MAYBE_FUNCTION) 
     }
     return `require('${d}')`;
   });
+  const isModuleOrExportsInjected =
+    !dependencies || requiredDependencies.find(d => [MODULE, EXPORTS].includes(d));
   const injectedDependencies = dependencies
     ? requiredDependencies.join(',')
     : amdKeywords.join(',');
+  const factoryCallExpression = `${identifier}(${injectedDependencies})`;
   return `
       var ${identifier} = ${factory};
-      module.exports = (
-        typeof ${identifier} === "function"
-          ? ${identifier}(${injectedDependencies})
-          : (function() {
-            ${requiredDependencies.filter(d => !amdKeywords.includes(d)).join(';\n')}
-            return ${identifier};
-          })()
-      );
+      if (typeof ${identifier} === "function") {
+        ${
+          isModuleOrExportsInjected
+            ? checkAmdDefineResult(factoryCallExpression)
+            : `module.exports = ${factoryCallExpression}`
+        }
+      } else {
+        ${requiredDependencies.filter(d => !amdKeywords.includes(d)).join(';\n')}
+        module.exports = ${identifier};
+      }
     `;
 };
 
