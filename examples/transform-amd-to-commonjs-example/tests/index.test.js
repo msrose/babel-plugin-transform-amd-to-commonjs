@@ -40,4 +40,8 @@ describe('Main module', () => {
   it('has another message for a factory with rest arguments', () => {
     expect(main.restFactory).toContain('rest factory');
   });
+
+  it('has another message for a module with a variable factory', () => {
+    expect(main.variableFactory).toContain('variable factory');
+  });
 });
