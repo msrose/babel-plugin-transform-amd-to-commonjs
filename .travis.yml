@@ -14,13 +14,10 @@ matrix:
       env: HOUSEKEEP=yes
     - node_js: "10"
       env: HOUSEKEEP=
-before_install:
-  - "if [[ -n $HOUSEKEEP ]]; then npm install -g greenkeeper-lockfile@1; fi"
-before_script: "if [[ -n $HOUSEKEEP ]]; then greenkeeper-lockfile-update; fi"
 script:
   - "if [[ -n $HOUSEKEEP ]]; then npm run lint; fi"
   - "if [[ -n $HOUSEKEEP ]]; then npm test -- --coverage; else npm test; fi"
+  - "if [[ -n $HOUSEKEEP ]]; then cd examples/transform-amd-to-commonjs-example && npm ci && npm test && cd -; fi"
   - "if [[ -n $HOUSEKEEP ]]; then npm run build; fi"
-after_script: "if [[ -n $HOUSEKEEP ]]; then greenkeeper-lockfile-upload; fi"
 after_success:
   - "if [[ -n $HOUSEKEEP ]]; then bash <(curl -s https://codecov.io/bash); fi"
