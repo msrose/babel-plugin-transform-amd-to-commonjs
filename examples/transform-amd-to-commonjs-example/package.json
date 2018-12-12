@@ -21,6 +21,6 @@
     "babel-core": "^7.0.0-bridge.0",
     "babel-loader": "^8.0.0",
     "babel-plugin-transform-amd-to-commonjs": "1.4.0",
-    "webpack": "^3.10.0"
+    "webpack": "^4.27.1"
   }
 }
