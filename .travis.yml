@@ -17,7 +17,7 @@ matrix:
 script:
   - "if [[ -n $HOUSEKEEP ]]; then npm run lint; fi"
   - "if [[ -n $HOUSEKEEP ]]; then npm test -- --coverage; else npm test; fi"
-  - "if [[ -n $HOUSEKEEP ]]; then cd examples/transform-amd-to-commonjs-example && npm install && npm test && cd -; fi"
+  - "if [[ -n $HOUSEKEEP ]]; then cd examples/transform-amd-to-commonjs-example && npm ci && npm test && cd -; fi"
   - "if [[ -n $HOUSEKEEP ]]; then npm run build; fi"
 after_success:
   - "if [[ -n $HOUSEKEEP ]]; then bash <(curl -s https://codecov.io/bash); fi"
