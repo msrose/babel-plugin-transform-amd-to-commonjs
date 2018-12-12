@@ -1,0 +1,10 @@
+{
+  "groups": {
+    "default": {
+      "packages": [
+        "package.json",
+        "examples/transform-amd-to-commonjs-example/package.json"
+      ]
+    }
+  }
+}
