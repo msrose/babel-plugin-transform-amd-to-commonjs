@@ -11,9 +11,9 @@
   "author": "Michael Rose <michael_rose@outlook.com>",
   "license": "MIT",
   "dependencies": {
-    "babel-jest": "^23.6.0",
+    "babel-jest": "^24.1.0",
     "dayum": "^0.2.0",
-    "jest": "^23.6.0"
+    "jest": "^24.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
