@@ -36,11 +36,11 @@
   },
   "devDependencies": {
     "@babel/cli": "^7.1.2",
-    "@babel/core": "^7.1.2",
-    "@babel/preset-env": "^7.1.0",
+    "@babel/core": "^7.3.4",
+    "@babel/preset-env": "^7.3.4",
     "babel-core": "^7.0.0-bridge.0",
     "babel-jest": "^24.1.0",
-    "eslint": "^5.0.1",
+    "eslint": "^5.15.1",
     "eslint-config-msrose": "^1.0.0",
     "eslint-config-prettier": "^4.0.0",
     "eslint-plugin-jest": "^22.1.2",
@@ -51,7 +51,9 @@
     "regenerator-runtime": "^0.13.0"
   },
   "jest": {
-    "setupTestFrameworkScriptFile": "<rootDir>/tests/setup.js",
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests/setup.js"
+    ],
     "collectCoverageFrom": [
       "src/**/*.js"
     ],
