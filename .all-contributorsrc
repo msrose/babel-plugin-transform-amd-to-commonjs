@@ -1,0 +1,90 @@
+{
+  "projectName": "babel-plugin-transform-amd-to-commonjs",
+  "projectOwner": "msrose",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "commitConvention": "none",
+  "contributors": [
+    {
+      "login": "msrose",
+      "name": "Michael Rose",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/3495264?v=4",
+      "profile": "http://msrose.github.io",
+      "contributions": [
+        "code",
+        "example"
+      ]
+    },
+    {
+      "login": "captbaritone",
+      "name": "Jordan Eldredge",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/162735?v=4",
+      "profile": "https://jordaneldredge.com",
+      "contributions": [
+        "code",
+        "review"
+      ]
+    },
+    {
+      "login": "FransBosuil",
+      "name": "FransBosuil",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/10304018?v=4",
+      "profile": "https://github.com/FransBosuil",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "bschlenk",
+      "name": "Brian Schlenker",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/1390303?v=4",
+      "profile": "https://github.com/bschlenk",
+      "contributions": [
+        "code",
+        "bug"
+      ]
+    },
+    {
+      "login": "greenkeeper[bot]",
+      "name": "greenkeeper[bot]",
+      "avatar_url": "https://avatars3.githubusercontent.com/in/505?v=4",
+      "profile": "https://github.com/apps/greenkeeper",
+      "contributions": [
+        "infra"
+      ]
+    },
+    {
+      "login": "PaquitoSoft",
+      "name": "PaquitoSoft",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/166022?v=4",
+      "profile": "http://paquitosoftware.com",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "philostler",
+      "name": "Phil Ostler",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/244198?v=4",
+      "profile": "https://philostler.com",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "vaaralav",
+      "name": "Ville Vaarala",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/8571541?v=4",
+      "profile": "https://vaaralav.com",
+      "contributions": [
+        "bug"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7
+}
