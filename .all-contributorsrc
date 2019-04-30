@@ -17,7 +17,10 @@
       "profile": "http://msrose.github.io",
       "contributions": [
         "code",
-        "example"
+        "example",
+        "doc",
+        "test",
+        "infra"
       ]
     },
     {
@@ -36,7 +39,8 @@
       "avatar_url": "https://avatars2.githubusercontent.com/u/10304018?v=4",
       "profile": "https://github.com/FransBosuil",
       "contributions": [
-        "code"
+        "code",
+        "test"
       ]
     },
     {
@@ -46,7 +50,8 @@
       "profile": "https://github.com/bschlenk",
       "contributions": [
         "code",
-        "bug"
+        "bug",
+        "test"
       ]
     },
     {
