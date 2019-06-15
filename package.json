@@ -45,7 +45,7 @@
     "babel-jest": "^24.1.0",
     "eslint": "^5.15.1",
     "eslint-config-msrose": "^1.0.0",
-    "eslint-config-prettier": "^4.0.0",
+    "eslint-config-prettier": "^5.0.0",
     "eslint-plugin-jest": "^22.6.4",
     "eslint-plugin-prettier": "^3.0.0",
     "jest": "^24.1.0",
