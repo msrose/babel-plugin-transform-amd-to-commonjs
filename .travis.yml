@@ -1,18 +1,18 @@
 language: node_js
 node_js:
-  - "6"
   - "8"
   - "10"
+  - "12"
 env:
   - HOUSEKEEP=
   - HOUSEKEEP=yes
 matrix:
   exclude:
-    - node_js: "6"
-      env: HOUSEKEEP=yes
     - node_js: "8"
       env: HOUSEKEEP=yes
     - node_js: "10"
+      env: HOUSEKEEP=yes
+    - node_js: "12"
       env: HOUSEKEEP=
 script:
   - "if [[ -n $HOUSEKEEP ]]; then npm run lint; fi"
