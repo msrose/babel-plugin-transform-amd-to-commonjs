@@ -40,7 +40,7 @@
     "@babel/cli": "^7.5.5",
     "@babel/core": "^7.5.5",
     "@babel/preset-env": "^7.5.5",
-    "all-contributors-cli": "^6.8.1",
+    "all-contributors-cli": "^6.9.0",
     "babel-core": "^7.0.0-bridge.0",
     "babel-jest": "^24.9.0",
     "eslint": "^6.3.0",
