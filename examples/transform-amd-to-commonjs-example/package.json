@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "webpack": "webpack"
+    "build": "webpack"
   },
   "author": "Michael Rose <michael_rose@outlook.com>",
   "license": "MIT",

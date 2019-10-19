@@ -14,6 +14,6 @@ TODO: How will jest handle RequireJS shims and other webpack loaders?
 git clone https://github.com/msrose/babel-plugin-transform-amd-to-commonjs
 cd babel-plugin-transform-amd-to-commonjs/examples/transform-amd-to-commonjs-example
 npm install
-npm run webpack
+npm run build
 npm test
 ```
