@@ -22,6 +22,6 @@
     "babel-plugin-transform-amd-to-commonjs": "1.4.0",
     "jest": "^25.1.0",
     "webpack": "^4.41.5",
-    "webpack-cli": "^3.3.10"
+    "webpack-cli": "^3.3.11"
   }
 }
