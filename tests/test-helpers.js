@@ -9,14 +9,14 @@ const checkAmdDefineResult = (value, identifier = AMD_DEFINE_RESULT) => `
 
 const checkMaybeFunction = (factory, dependencies, identifier = MAYBE_FUNCTION) => {
   const amdKeywords = [REQUIRE, EXPORTS, MODULE];
-  const requiredDependencies = (dependencies || []).map(d => {
+  const requiredDependencies = (dependencies || []).map((d) => {
     if (amdKeywords.includes(d)) {
       return d;
     }
     return `require('${d}')`;
   });
   const isModuleOrExportsInjected =
-    !dependencies || requiredDependencies.find(d => [MODULE, EXPORTS].includes(d));
+    !dependencies || requiredDependencies.find((d) => [MODULE, EXPORTS].includes(d));
   const injectedDependencies = dependencies
     ? requiredDependencies.join(',')
     : amdKeywords.join(',');
@@ -30,7 +30,7 @@ const checkMaybeFunction = (factory, dependencies, identifier = MAYBE_FUNCTION) 
             : `module.exports = ${factoryCallExpression}`
         }
       } else {
-        ${requiredDependencies.filter(d => !amdKeywords.includes(d)).join(';\n')}
+        ${requiredDependencies.filter((d) => !amdKeywords.includes(d)).join(';\n')}
         module.exports = ${identifier};
       }
     `;
@@ -38,5 +38,5 @@ const checkMaybeFunction = (factory, dependencies, identifier = MAYBE_FUNCTION) 
 
 module.exports = {
   checkAmdDefineResult,
-  checkMaybeFunction
+  checkMaybeFunction,
 };

@@ -7,14 +7,14 @@ const transformAmdToCommonJS = (code, options = {}) => {
   return babel.transform(code, { plugins: [['./src/index', options]], babelrc: false }).code;
 };
 
-const transformTrivial = code => {
+const transformTrivial = (code) => {
   return babel.transform(code).code;
 };
 
-const removeBlankLines = string => {
+const removeBlankLines = (string) => {
   return string
     .split('\n')
-    .filter(line => !!line.trim().length)
+    .filter((line) => !!line.trim().length)
     .join('\n');
 };
 
@@ -32,7 +32,7 @@ const customMatchers = {
     const transformed = removeBlankLines(transformAmdToCommonJS(actual, options));
 
     const result = {
-      pass: transformed === expected
+      pass: transformed === expected,
     };
 
     if (result.pass) {
@@ -52,7 +52,7 @@ const customMatchers = {
     }
 
     return result;
-  }
+  },
 };
 
 module.exports = customMatchers;

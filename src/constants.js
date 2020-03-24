@@ -6,5 +6,5 @@ module.exports = {
   EXPORTS: 'exports',
   DEFINE: 'define',
   AMD_DEFINE_RESULT: 'amdDefineResult',
-  MAYBE_FUNCTION: 'maybeFunction'
+  MAYBE_FUNCTION: 'maybeFunction',
 };

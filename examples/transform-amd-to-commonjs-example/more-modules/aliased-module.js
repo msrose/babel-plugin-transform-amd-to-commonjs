@@ -1,7 +1,7 @@
 'use strict';
 
-define(['dayum'], function(dayum) {
+define(['dayum'], function (dayum) {
   return {
-    message: 'This module has a ' + dayum.daaaaaaaaaaaaaaaaaaaaayum() + ' alias'
+    message: 'This module has a ' + dayum.daaaaaaaaaaaaaaaaaaaaayum() + ' alias',
   };
 });
