@@ -1,8 +1,8 @@
 module.exports = {
   parserOptions: {
-    sourceType: 'module'
+    sourceType: 'module',
   },
   env: {
-    jest: true
-  }
-}
+    jest: true,
+  },
+};

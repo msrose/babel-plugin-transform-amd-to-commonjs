@@ -11,8 +11,8 @@ define([
   './arrow-function-module',
   './arrow-function-implicit-return',
   './rest-factory-module',
-  './variable-factory-module'
-], function(
+  './variable-factory-module',
+], function (
   dayum,
   otherModule,
   another,
@@ -36,6 +36,6 @@ define([
     arrowFunction: arrowFunction.message,
     implicitReturn: implicitReturn.message,
     restFactory: restFactory.result,
-    variableFactory: variableFactory.message
+    variableFactory: variableFactory.message,
   };
 });

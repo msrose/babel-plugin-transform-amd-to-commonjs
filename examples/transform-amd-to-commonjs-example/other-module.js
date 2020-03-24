@@ -1,7 +1,7 @@
 'use strict';
 
-define(['dayum'], function(dayum) {
+define(['dayum'], function (dayum) {
   return {
-    message: dayum.daaaaaaaaaayum() + ' gurl'
+    message: dayum.daaaaaaaaaayum() + ' gurl',
   };
 });

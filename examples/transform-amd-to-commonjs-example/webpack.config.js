@@ -8,21 +8,21 @@ module.exports = {
   output: {
     filename: 'bundle.js',
     path: path.resolve('./build'),
-    library: 'TestBundleDayum'
+    library: 'TestBundleDayum',
   },
   module: {
     rules: [
       {
         test: /.js$/,
         exclude: /node_modules/,
-        loader: 'babel-loader'
-      }
-    ]
+        loader: 'babel-loader',
+      },
+    ],
   },
   resolve: {
     modules: [path.resolve('./more-modules'), 'node_modules'],
     alias: {
-      'module-alias': 'aliased-module'
-    }
-  }
+      'module-alias': 'aliased-module',
+    },
+  },
 };

@@ -6,7 +6,7 @@ const {
   EXPORTS,
   DEFINE,
   AMD_DEFINE_RESULT,
-  MAYBE_FUNCTION
+  MAYBE_FUNCTION,
 } = require('./constants');
 const createHelpers = require('./helpers');
 
@@ -24,12 +24,12 @@ module.exports = ({ types: t }) => {
     isFunctionExpression,
     createFactoryReplacementExpression,
     createFunctionCheck,
-    isExplicitDependencyInjection
+    isExplicitDependencyInjection,
   } = createHelpers({ types: t });
 
   const argumentDecoders = {
     [DEFINE]: decodeDefineArguments,
-    [REQUIRE]: decodeRequireArguments
+    [REQUIRE]: decodeRequireArguments,
   };
 
   // Simple version of zip that only pairs elements until the end of the first array
@@ -109,7 +109,7 @@ module.exports = ({ types: t }) => {
 
         replacementCallExprParams = amdKeywords
           .slice(0, factoryArity)
-          .map(keyword => t.identifier(keyword));
+          .map((keyword) => t.identifier(keyword));
       }
 
       const factoryReplacement = t.callExpression(replacementFuncExpr, replacementCallExprParams);
@@ -141,7 +141,7 @@ module.exports = ({ types: t }) => {
 
   return {
     visitor: {
-      ExpressionStatement
-    }
+      ExpressionStatement,
+    },
   };
 };

@@ -5,7 +5,7 @@ const { MODULE, EXPORTS, REQUIRE } = require('./constants');
 // A factory function is exported in order to inject the same babel-types object
 // being used by the plugin itself
 module.exports = ({ types: t }) => {
-  const decodeDefineArguments = argNodes => {
+  const decodeDefineArguments = (argNodes) => {
     if (argNodes.length === 1) {
       return { factory: argNodes[0] };
     } else if (argNodes.length === 2) {
@@ -19,11 +19,11 @@ module.exports = ({ types: t }) => {
     }
   };
 
-  const decodeRequireArguments = argNodes => {
+  const decodeRequireArguments = (argNodes) => {
     return { dependencyList: argNodes[0], factory: argNodes[1] };
   };
 
-  const createModuleExportsAssignmentExpression = value => {
+  const createModuleExportsAssignmentExpression = (value) => {
     return t.expressionStatement(
       t.assignmentExpression(
         '=',
@@ -46,7 +46,7 @@ module.exports = ({ types: t }) => {
           ),
           createModuleExportsAssignmentExpression(identifier).expression
         )
-      )
+      ),
     ];
   };
 
@@ -59,7 +59,7 @@ module.exports = ({ types: t }) => {
       // does not match the keyword. This to prevent 'require = require' statements.
       if (variableName && variableName.name !== dependencyNode.value) {
         return t.variableDeclaration('var', [
-          t.variableDeclarator(variableName, t.identifier(dependencyNode.value))
+          t.variableDeclarator(variableName, t.identifier(dependencyNode.value)),
         ]);
       }
       return t.identifier(dependencyNode.value);
@@ -76,16 +76,16 @@ module.exports = ({ types: t }) => {
     }
   };
 
-  const isExplicitDependencyInjection = dependencyInjection => {
+  const isExplicitDependencyInjection = (dependencyInjection) => {
     return (
       !t.isIdentifier(dependencyInjection) ||
       ![REQUIRE, EXPORTS, MODULE].includes(dependencyInjection.name)
     );
   };
 
-  const createRestDependencyInjectionExpression = dependencyNodes => {
+  const createRestDependencyInjectionExpression = (dependencyNodes) => {
     return t.arrayExpression(
-      dependencyNodes.map(node => {
+      dependencyNodes.map((node) => {
         const dependencyInjection = createDependencyInjectionExpression(node);
         if (isExplicitDependencyInjection(dependencyInjection)) {
           return dependencyInjection.expression;
@@ -95,11 +95,11 @@ module.exports = ({ types: t }) => {
     );
   };
 
-  const isModuleOrExportsInDependencyList = dependencyList => {
+  const isModuleOrExportsInDependencyList = (dependencyList) => {
     return (
       dependencyList &&
       dependencyList.elements.some(
-        element =>
+        (element) =>
           t.isStringLiteral(element) && (element.value === MODULE || element.value === EXPORTS)
       )
     );
@@ -125,7 +125,7 @@ module.exports = ({ types: t }) => {
     return scope.hasOwnBinding(name) ? scope.generateUidIdentifier(name) : t.identifier(name);
   };
 
-  const isFunctionExpression = factory => {
+  const isFunctionExpression = (factory) => {
     return t.isFunctionExpression(factory) || t.isArrowFunctionExpression(factory);
   };
 
@@ -159,13 +159,13 @@ module.exports = ({ types: t }) => {
     const factoryCallExpression = t.callExpression(
       functionCheckIdentifier,
       dependencyInjections.length > 0
-        ? dependencyInjections.map(e => (isExplicitDependencyInjection(e) ? e.expression : e))
-        : [REQUIRE, EXPORTS, MODULE].map(a => t.identifier(a))
+        ? dependencyInjections.map((e) => (isExplicitDependencyInjection(e) ? e.expression : e))
+        : [REQUIRE, EXPORTS, MODULE].map((a) => t.identifier(a))
     );
     const isModuleOrExportsInjected =
       dependencyInjections.length === 0 ||
       dependencyInjections.find(
-        d => !isExplicitDependencyInjection(d) && [EXPORTS, MODULE].includes(d.name)
+        (d) => !isExplicitDependencyInjection(d) && [EXPORTS, MODULE].includes(d.name)
       );
     return [
       t.variableDeclaration('var', [t.variableDeclarator(functionCheckIdentifier, factory)]),
@@ -182,9 +182,9 @@ module.exports = ({ types: t }) => {
         ),
         t.blockStatement([
           ...dependencyInjections.filter(isExplicitDependencyInjection),
-          createModuleExportsAssignmentExpression(functionCheckIdentifier)
+          createModuleExportsAssignmentExpression(functionCheckIdentifier),
         ])
-      )
+      ),
     ];
   };
 
@@ -201,6 +201,6 @@ module.exports = ({ types: t }) => {
     isFunctionExpression,
     createFactoryReplacementExpression,
     createFunctionCheck,
-    isExplicitDependencyInjection
+    isExplicitDependencyInjection,
   };
 };

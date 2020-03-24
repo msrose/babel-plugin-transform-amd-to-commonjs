@@ -102,7 +102,7 @@ describe('Plugin for define blocks with arrow function factories', () => {
             return { hi: 'world' };
           });
         }
-      `
+      `,
     }).toBeTransformedTo(`
       if(someDumbCondition) {
         module.exports = (() => {

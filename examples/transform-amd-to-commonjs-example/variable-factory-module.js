@@ -1,8 +1,8 @@
 'use strict';
 
-const factory = function(dayum) {
+const factory = function (dayum) {
   return {
-    message: 'variable factory! ' + dayum.daaaaaaaaaaayum()
+    message: 'variable factory! ' + dayum.daaaaaaaaaaayum(),
   };
 };
 
