@@ -18,7 +18,7 @@
     "@babel/core": "^7.13.8",
     "@babel/preset-env": "^7.13.8",
     "babel-core": "^7.0.0-bridge.0",
-    "babel-loader": "^8.1.0",
+    "babel-loader": "^8.2.2",
     "babel-plugin-transform-amd-to-commonjs": "1.4.0",
     "jest": "^25.5.4",
     "webpack": "^4.46.0",
