@@ -1,0 +1,37 @@
+name: build
+
+on: [push, pull_request]
+
+env:
+  CI: true
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x, 14.x]
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: install
+      run: npm ci
+    - name: lint
+      run: npm run lint
+    - name: test
+      run: npm test -- --coverage
+    - name: examples
+      run: cd examples/transform-amd-to-commonjs-example && npm ci && npm test && npm run build && cd -
+    - name: upload coverage
+      if: matrix['node-version'] == '14.x'
+      run: bash <(curl -s https://codecov.io/bash)
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+    - name: build
+      run: npm run build
