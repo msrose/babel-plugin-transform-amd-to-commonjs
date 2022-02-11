@@ -11,17 +11,17 @@
   "author": "Michael Rose <michael_rose@outlook.com>",
   "license": "MIT",
   "dependencies": {
-    "babel-jest": "^26.6.3",
     "dayum": "^0.2.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.14.3",
-    "@babel/preset-env": "^7.14.2",
+    "@babel/core": "^7.17.2",
+    "@babel/preset-env": "^7.16.11",
     "babel-core": "^7.0.0-bridge.0",
-    "babel-loader": "^8.2.2",
+    "babel-jest": "^27.5.1",
+    "babel-loader": "^8.2.3",
     "babel-plugin-transform-amd-to-commonjs": "1.4.0",
-    "jest": "^26.6.3",
-    "webpack": "^5.35.1",
-    "webpack-cli": "^4.7.0"
+    "jest": "^27.5.1",
+    "webpack": "^5.68.0",
+    "webpack-cli": "^4.9.2"
   }
 }
