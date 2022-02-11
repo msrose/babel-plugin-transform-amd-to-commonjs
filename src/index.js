@@ -71,9 +71,8 @@ module.exports = ({ types: t }) => {
         const lastFactoryParam = factory.params[factoryArity - 1];
         if (t.isRestElement(lastFactoryParam)) {
           const restDependencyNodes = dependencyList.elements.slice(factoryArity - 1);
-          const restDependencyInjections = createRestDependencyInjectionExpression(
-            restDependencyNodes
-          );
+          const restDependencyInjections =
+            createRestDependencyInjectionExpression(restDependencyNodes);
           dependencyParameterPairs.splice(
             factoryArity - 1,
             dependencyParameterPairs.length - factoryArity + 1,
