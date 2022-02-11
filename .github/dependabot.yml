@@ -9,7 +9,11 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    allow:
+      - dependency-type: "direct"
   - package-ecosystem: "npm"
     directory: "/examples/transform-amd-to-commonjs-example/"
     schedule:
       interval: "weekly"
+    allow:
+      - dependency-type: "direct"
