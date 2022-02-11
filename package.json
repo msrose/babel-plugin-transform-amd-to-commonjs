@@ -15,7 +15,7 @@
     "build"
   ],
   "engines": {
-    "node": ">=6"
+    "node": ">=12"
   },
   "repository": {
     "type": "git",

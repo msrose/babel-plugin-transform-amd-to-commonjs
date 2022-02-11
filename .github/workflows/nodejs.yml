@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [10.x, 12.x, 14.x]
+        node-version: [12.x, 14.x, 16.x]
 
     steps:
     - uses: actions/checkout@v1
@@ -29,7 +29,7 @@ jobs:
     - name: examples
       run: cd examples/transform-amd-to-commonjs-example && npm ci && npm test && npm run build && cd -
     - name: upload coverage
-      if: matrix['node-version'] == '14.x'
+      if: matrix['node-version'] == '16.x'
       run: bash <(curl -s https://codecov.io/bash)
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
