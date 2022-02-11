@@ -2,10 +2,8 @@
 
 [![npm version](https://img.shields.io/npm/v/babel-plugin-transform-amd-to-commonjs.svg)](https://www.npmjs.com/package/babel-plugin-transform-amd-to-commonjs)
 [![npm downloads](https://img.shields.io/npm/dm/babel-plugin-transform-amd-to-commonjs.svg)](https://npm-stat.com/charts.html?package=babel-plugin-transform-amd-to-commonjs)
-[![Build Status](https://travis-ci.org/msrose/babel-plugin-transform-amd-to-commonjs.svg?branch=master)](https://travis-ci.org/msrose/babel-plugin-transform-amd-to-commonjs)
+[![build](https://github.com/msrose/babel-plugin-transform-amd-to-commonjs/actions/workflows/nodejs.yml/badge.svg)](https://github.com/msrose/babel-plugin-transform-amd-to-commonjs/actions/workflows/nodejs.yml)
 [![codecov](https://codecov.io/gh/msrose/babel-plugin-transform-amd-to-commonjs/branch/master/graph/badge.svg)](https://codecov.io/gh/msrose/babel-plugin-transform-amd-to-commonjs)
-[![devDependencies Status](https://david-dm.org/msrose/babel-plugin-transform-amd-to-commonjs/dev-status.svg)](https://david-dm.org/msrose/babel-plugin-transform-amd-to-commonjs?type=dev)
-[![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=msrose/babel-plugin-transform-amd-to-commonjs)](https://dependabot.com)
 
 Babel plugin that transforms AMD to CommonJS.
 [Check out the example project](https://github.com/msrose/babel-plugin-transform-amd-to-commonjs/tree/master/examples/transform-amd-to-commonjs-example#transform-amd-to-commonjs-example), which uses this plugin to allow [jest](https://facebook.github.io/jest/) to synchronously `require` AMD modules.
