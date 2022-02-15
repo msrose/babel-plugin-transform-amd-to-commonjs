@@ -12,6 +12,7 @@ updates:
     allow:
       - dependency-type: "direct"
     open-pull-requests-limit: 1
+    versioning-strategy: "increase"
   - package-ecosystem: "npm"
     directory: "/examples/transform-amd-to-commonjs-example/"
     schedule:
@@ -21,3 +22,4 @@ updates:
     allow:
       - dependency-type: "direct"
     open-pull-requests-limit: 1
+    versioning-strategy: "increase"
