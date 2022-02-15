@@ -7,4 +7,5 @@ module.exports = {
   DEFINE: 'define',
   AMD_DEFINE_RESULT: 'amdDefineResult',
   MAYBE_FUNCTION: 'maybeFunction',
+  TRANSFORM_AMD_TO_COMMONJS_IGNORE: 'transform-amd-to-commonjs-ignore',
 };
