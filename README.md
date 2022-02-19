@@ -94,6 +94,22 @@ Specify options in your .babelrc:
 
 - `restrictToTopLevelDefine`: (default: `true`) When `true`, only transform `define` calls that appear at the top-level of a program. Set to `false` to transform _all_ calls to `define`.
 
+## Escape Hatch
+
+If you need to ignore specific modules that are picked up by the plugin (for example, those that are erroneously detected as AMD modules), you can add an ignore comment at the top of the file:
+
+```
+/* transform-amd-to-commonjs-ignore */
+define(['stuff', 'here'], function(donkeys, aruba) {
+  return {
+      llamas: donkeys.version,
+      cows: aruba.hi
+  };
+});
+```
+
+The above module won't be transformed to CommonJS. The ignore comment must be at the beginning of the file and must be the only text in the comment block.
+
 ## Details
 
 ### Supported Versions

@@ -7,7 +7,6 @@ const {
   DEFINE,
   AMD_DEFINE_RESULT,
   MAYBE_FUNCTION,
-  TRANSFORM_AMD_TO_COMMONJS_IGNORE,
 } = require('./constants');
 const createHelpers = require('./helpers');
 
@@ -26,6 +25,7 @@ module.exports = ({ types: t }) => {
     createFactoryReplacementExpression,
     createFunctionCheck,
     isExplicitDependencyInjection,
+    hasIgnoreComment,
   } = createHelpers({ types: t });
 
   const argumentDecoders = {
@@ -38,19 +38,15 @@ module.exports = ({ types: t }) => {
     return array1.map((element, index) => [element, array2[index]]);
   };
 
-  let ignore = false;
-
-  const Program = (path) => {
+  const Program = (path, ...rest) => {
     const { node } = path;
 
-    ignore = (node.body[0]?.leadingComments || []).some(
-      ({ value }) => String(value).trim() === TRANSFORM_AMD_TO_COMMONJS_IGNORE
-    );
+    if (hasIgnoreComment(node)) return;
+
+    path.traverse({ ExpressionStatement }, ...rest);
   };
 
   const ExpressionStatement = (path, { opts }) => {
-    if (ignore) return;
-
     const { node, parent } = path;
 
     if (!t.isCallExpression(node.expression)) return;
@@ -154,7 +150,6 @@ module.exports = ({ types: t }) => {
   return {
     visitor: {
       Program,
-      ExpressionStatement,
     },
   };
 };
