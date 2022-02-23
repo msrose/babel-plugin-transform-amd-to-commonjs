@@ -27,7 +27,16 @@ jobs:
     - name: test
       run: npm test -- --coverage
     - name: examples
-      run: cd examples/transform-amd-to-commonjs-example && npm ci && npm test && npm run build && cd -
+      run:
+        - npm pack
+        - tar xvf babel-plugin-transform-amd-to-commonjs-*.tgz
+        - cd examples/transform-amd-to-commonjs-example
+        - npm ci
+        - npm test # test with latest published version
+        - npm i ../../package
+        - npm test # test with HEAD version
+        - npm run build
+        - cd -
     - name: upload coverage
       if: matrix['node-version'] == '16.x'
       run: bash <(curl -s https://codecov.io/bash)
