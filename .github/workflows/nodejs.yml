@@ -32,10 +32,9 @@ jobs:
         tar xvf babel-plugin-transform-amd-to-commonjs-*.tgz
         cd examples/transform-amd-to-commonjs-example
         npm ci
-        npm test # test with latest published version
-        npm i ../../package
-        npm test # test with HEAD version
-        npm run build
+        npm test && npm run build # test with latest published version
+        npm install ../../package
+        npm test && npm run build # test with HEAD version
         cd -
     - name: upload coverage
       if: matrix['node-version'] == '16.x'
