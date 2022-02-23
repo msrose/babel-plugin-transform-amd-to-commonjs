@@ -131,6 +131,10 @@ AMD is interpreted as described by the [AMD specification](https://github.com/am
 
 ### Upgrading Versions
 
+#### 1.5.0
+
+Version 1.5.0 stops building against Node.js versions less than 12.x (and the built files target Node.js 12.x), so make sure you're using at least Node.js 12.x. There are no known breaking changes caused by this, but if you for some reason cannot upgrade Node.js and are running into errors, please open an issue.
+
 #### 1.0.0
 
 - Versions >= 0.2.1 and &lt; 1.0.0 support Node.js 4.
