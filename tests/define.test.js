@@ -1,6 +1,10 @@
 'use strict';
 
-const { AMD_DEFINE_RESULT, MAYBE_FUNCTION } = require('../src/constants');
+const {
+  AMD_DEFINE_RESULT,
+  MAYBE_FUNCTION,
+  TRANSFORM_AMD_TO_COMMONJS_IGNORE,
+} = require('../src/constants');
 const { checkAmdDefineResult, checkMaybeFunction } = require('./test-helpers');
 
 describe('Plugin for define blocks', () => {
@@ -550,4 +554,107 @@ describe('Plugin for define blocks', () => {
       })();
     `);
   });
+
+  it('ignores modules that have been excluded by block comments', () => {
+    const program = `
+      /* ${TRANSFORM_AMD_TO_COMMONJS_IGNORE} */
+      define(['stuff', 'here'], function(donkeys, aruba) {
+        return {
+           llamas: donkeys.version,
+           cows: aruba.hi
+        };
+      });
+    `;
+    expect(program).toBeTransformedTo(program);
+  });
+
+  it('ignores modules that have been excluded by line comments', () => {
+    const program = `
+      // ${TRANSFORM_AMD_TO_COMMONJS_IGNORE}
+      define(['stuff', 'here'], function(donkeys, aruba) {
+        return {
+           llamas: donkeys.version,
+           cows: aruba.hi
+        };
+      });
+    `;
+    expect(program).toBeTransformedTo(program);
+  });
+
+  it.each([TRANSFORM_AMD_TO_COMMONJS_IGNORE, 'a really nice comment'])(
+    'transforms normally with non-top-level block comments',
+    (comment) => {
+      expect(`
+        define(['stuff', 'here'], function(donkeys, aruba) {
+          /* ${comment} */
+          return {
+            llamas: donkeys.version,
+            cows: aruba.hi
+          };
+        });
+      `).toBeTransformedTo(`
+        module.exports = function() {
+          var donkeys = require('stuff');
+          var aruba = require('here');
+          /* ${comment} */
+          return {
+            llamas: donkeys.version,
+            cows: aruba.hi
+          };
+        }();
+      `);
+    }
+  );
+
+  it.each([TRANSFORM_AMD_TO_COMMONJS_IGNORE, 'a really nice comment'])(
+    'transforms normally with non-top-level line comments',
+    (comment) => {
+      expect(`
+        define(['stuff', 'here'], function(donkeys, aruba) {
+          // ${comment}
+          return {
+            llamas: donkeys.version,
+            cows: aruba.hi
+          };
+        });
+      `).toBeTransformedTo(`
+        module.exports = function() {
+          var donkeys = require('stuff');
+          var aruba = require('here');
+          // ${comment}
+          return {
+            llamas: donkeys.version,
+            cows: aruba.hi
+          };
+        }();
+      `);
+    }
+  );
+
+  it.each(['random comment', 'transform-amd-to-commonjs'])(
+    'transforms normally with random top-level comments',
+    (comment) => {
+      expect(`
+        /* ${comment} */
+        // ${comment}
+        define(['stuff', 'here'], function(donkeys, aruba) {
+          return {
+            llamas: donkeys.version,
+            cows: aruba.hi
+          };
+        });
+      `).toBeTransformedTo(`
+        /* ${comment} */
+        // ${comment}
+        module.exports = function() {
+          var donkeys = require('stuff');
+          var aruba = require('here');
+          return {
+            llamas: donkeys.version,
+            cows: aruba.hi
+          };
+        }();
+      `);
+    }
+  );
 });

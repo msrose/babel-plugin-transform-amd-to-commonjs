@@ -1,6 +1,6 @@
 'use strict';
 
-const { MODULE, EXPORTS, REQUIRE } = require('./constants');
+const { MODULE, EXPORTS, REQUIRE, TRANSFORM_AMD_TO_COMMONJS_IGNORE } = require('./constants');
 
 // A factory function is exported in order to inject the same babel-types object
 // being used by the plugin itself
@@ -188,6 +188,13 @@ module.exports = ({ types: t }) => {
     ];
   };
 
+  const hasIgnoreComment = (node) => {
+    const leadingComments = node.body?.[0]?.leadingComments || [];
+    return leadingComments.some(
+      ({ value }) => String(value).trim() === TRANSFORM_AMD_TO_COMMONJS_IGNORE
+    );
+  };
+
   return {
     decodeDefineArguments,
     decodeRequireArguments,
@@ -202,5 +209,6 @@ module.exports = ({ types: t }) => {
     createFactoryReplacementExpression,
     createFunctionCheck,
     isExplicitDependencyInjection,
+    hasIgnoreComment,
   };
 };

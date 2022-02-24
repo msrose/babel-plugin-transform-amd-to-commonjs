@@ -1,5 +1,7 @@
 'use strict';
 
+const { TRANSFORM_AMD_TO_COMMONJS_IGNORE } = require('../src/constants');
+
 describe('Plugin for require blocks with arrow function callbacks', () => {
   it('transforms require blocks with one dependency', () => {
     expect(`
@@ -175,4 +177,91 @@ describe('Plugin for require blocks with arrow function callbacks', () => {
       })();
     `);
   });
+
+  it('ignores modules that have been excluded by block comments', () => {
+    const program = `
+      /* ${TRANSFORM_AMD_TO_COMMONJS_IGNORE} */
+      require(['llamas', 'frogs'], (llama, frog) => {
+        llama.doSomeStuff();
+        frog.sayRibbit();
+      });
+    `;
+    expect(program).toBeTransformedTo(program);
+  });
+
+  it('ignores modules that have been excluded by line comments', () => {
+    const program = `
+      // ${TRANSFORM_AMD_TO_COMMONJS_IGNORE}
+      require(['llamas', 'frogs'], (llama, frog) => {
+        llama.doSomeStuff();
+        frog.sayRibbit();
+      });
+    `;
+    expect(program).toBeTransformedTo(program);
+  });
+
+  it.each([TRANSFORM_AMD_TO_COMMONJS_IGNORE, 'a really nice comment'])(
+    'transforms normally with non-top-level block comments',
+    (comment) => {
+      expect(`
+        require(['llamas', 'frogs'], (llama, frog) => {
+          /* ${comment} */
+          llama.doSomeStuff();
+          frog.sayRibbit();
+        });
+      `).toBeTransformedTo(`
+        (() => {
+          var llama = require('llamas');
+          var frog = require('frogs');
+          /* ${comment} */
+          llama.doSomeStuff();
+          frog.sayRibbit();
+        })();
+      `);
+    }
+  );
+
+  it.each([TRANSFORM_AMD_TO_COMMONJS_IGNORE, 'a really nice comment'])(
+    'transforms normally with non-top-level line comments',
+    (comment) => {
+      expect(`
+        require(['llamas', 'frogs'], (llama, frog) => {
+          // ${comment}
+          llama.doSomeStuff();
+          frog.sayRibbit();
+        });
+      `).toBeTransformedTo(`
+        (() => {
+          var llama = require('llamas');
+          var frog = require('frogs');
+          // ${comment}
+          llama.doSomeStuff();
+          frog.sayRibbit();
+        })();
+      `);
+    }
+  );
+
+  it.each(['random comment', 'transform-amd-to-commonjs'])(
+    'transforms normally with random top-level comments',
+    (comment) => {
+      expect(`
+        /* ${comment} */
+        // ${comment}
+        require(['llamas', 'frogs'], (llama, frog) => {
+          llama.doSomeStuff();
+          frog.sayRibbit();
+        });
+      `).toBeTransformedTo(`
+        /* ${comment} */
+        // ${comment}
+        (() => {
+          var llama = require('llamas');
+          var frog = require('frogs');
+          llama.doSomeStuff();
+          frog.sayRibbit();
+        })();
+      `);
+    }
+  );
 });

@@ -4,6 +4,9 @@ module.exports = {
   env: {
     node: true,
   },
+  parserOptions: {
+    ecmaVersion: 2020,
+  },
   plugins: ['prettier'],
   extends: ['msrose', 'prettier'],
   rules: {

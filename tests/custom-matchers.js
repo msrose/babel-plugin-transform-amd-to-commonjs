@@ -1,21 +1,25 @@
 'use strict';
 
 const babel = require('@babel/core');
-const diff = require('jest-diff');
+const { diff } = require('jest-diff');
 
 const transformAmdToCommonJS = (code, options = {}) => {
   return babel.transform(code, { plugins: [['./src/index', options]], babelrc: false }).code;
 };
 
-const transformTrivial = (code) => {
-  return babel.transform(code).code;
-};
+const normalize = (program) => {
+  const transformTrivial = (code) => {
+    return babel.transform(code).code;
+  };
 
-const removeBlankLines = (string) => {
-  return string
-    .split('\n')
-    .filter((line) => !!line.trim().length)
-    .join('\n');
+  const removeBlankLines = (string) => {
+    return string
+      .split('\n')
+      .filter((line) => !!line.trim().length)
+      .join('\n');
+  };
+
+  return removeBlankLines(transformTrivial(program));
 };
 
 const customMatchers = {
@@ -27,9 +31,9 @@ const customMatchers = {
       actual = actual.program;
     }
 
-    actual = removeBlankLines(transformTrivial(actual));
-    expected = removeBlankLines(transformTrivial(expected));
-    const transformed = removeBlankLines(transformAmdToCommonJS(actual, options));
+    actual = normalize(actual);
+    expected = normalize(expected);
+    const transformed = normalize(transformAmdToCommonJS(actual, options));
 
     const result = {
       pass: transformed === expected,

@@ -94,6 +94,22 @@ Specify options in your .babelrc:
 
 - `restrictToTopLevelDefine`: (default: `true`) When `true`, only transform `define` calls that appear at the top-level of a program. Set to `false` to transform _all_ calls to `define`.
 
+## Escape Hatch
+
+If you need to ignore specific modules that are picked up by the plugin (for example, those that are erroneously detected as AMD modules), you can add an ignore comment at the top of the file:
+
+```
+/* transform-amd-to-commonjs-ignore */
+define(['stuff', 'here'], function(donkeys, aruba) {
+  return {
+      llamas: donkeys.version,
+      cows: aruba.hi
+  };
+});
+```
+
+The above module won't be transformed to CommonJS. The ignore comment must be at the beginning of the file and must be the only text in the comment block.
+
 ## Details
 
 ### Supported Versions
@@ -114,6 +130,10 @@ AMD is interpreted as described by the [AMD specification](https://github.com/am
 - The module name (optional first argument to `define`) is ignored, since the module ID in CommonJS is determined by the resolved filename.
 
 ### Upgrading Versions
+
+#### 1.5.0
+
+Version 1.5.0 stops building against Node.js versions less than 12.x (and the built files target Node.js 12.x), so make sure you're using at least Node.js 12.x. There are no known breaking changes caused by this, but if you for some reason cannot upgrade Node.js and are running into errors, please open an issue.
 
 #### 1.0.0
 

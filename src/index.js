@@ -25,6 +25,7 @@ module.exports = ({ types: t }) => {
     createFactoryReplacementExpression,
     createFunctionCheck,
     isExplicitDependencyInjection,
+    hasIgnoreComment,
   } = createHelpers({ types: t });
 
   const argumentDecoders = {
@@ -35,6 +36,14 @@ module.exports = ({ types: t }) => {
   // Simple version of zip that only pairs elements until the end of the first array
   const zip = (array1, array2) => {
     return array1.map((element, index) => [element, array2[index]]);
+  };
+
+  const Program = (path, ...rest) => {
+    const { node } = path;
+
+    if (hasIgnoreComment(node)) return;
+
+    path.traverse({ ExpressionStatement }, ...rest);
   };
 
   const ExpressionStatement = (path, { opts }) => {
@@ -140,7 +149,7 @@ module.exports = ({ types: t }) => {
 
   return {
     visitor: {
-      ExpressionStatement,
+      Program,
     },
   };
 };
