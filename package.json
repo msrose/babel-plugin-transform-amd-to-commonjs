@@ -1,6 +1,6 @@
 {
   "name": "babel-plugin-transform-amd-to-commonjs",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Transforms AMD code to CommonJS",
   "main": "build/index.js",
   "scripts": {
