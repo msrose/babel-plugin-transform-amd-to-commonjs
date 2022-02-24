@@ -12,6 +12,7 @@ define([
   './arrow-function-implicit-return',
   './rest-factory-module',
   './variable-factory-module',
+  './comment-ignore',
 ], function (
   dayum,
   otherModule,
@@ -23,7 +24,8 @@ define([
   arrowFunction,
   implicitReturn,
   restFactory,
-  variableFactory
+  variableFactory,
+  commentIgnore
 ) {
   return {
     message: 'I got a two-syllable ' + dayum.daaaaaaayum() + ' in that dress.',
@@ -37,5 +39,6 @@ define([
     implicitReturn: implicitReturn.message,
     restFactory: restFactory.result,
     variableFactory: variableFactory.message,
+    commentIgnore,
   };
 });
