@@ -8,4 +8,5 @@ module.exports = {
   AMD_DEFINE_RESULT: 'amdDefineResult',
   MAYBE_FUNCTION: 'maybeFunction',
   TRANSFORM_AMD_TO_COMMONJS_IGNORE: 'transform-amd-to-commonjs-ignore',
+  AMD_DEPS: 'amdDeps',
 };
