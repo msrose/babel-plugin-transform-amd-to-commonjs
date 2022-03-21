@@ -102,9 +102,14 @@ module.exports = ({ types: t }) => {
 
     const explicitDependencyInjections = dependencyInjections.filter(isExplicitDependencyInjection);
 
-    if (!isDefineCall && (factory && !isFunctionFactory || !t.isArrayExpression(dependencyList))) {
+    if (
+      !isDefineCall &&
+      ((factory && !isFunctionFactory) || !t.isArrayExpression(dependencyList))
+    ) {
       // require call with unknown factory type and/or non-array litteral dependencies.
-      path.replaceWithMultiple(createRequireReplacementWithUnknownVarTypes(path, opts, dependencyList, factory));
+      path.replaceWithMultiple(
+        createRequireReplacementWithUnknownVarTypes(path, opts, dependencyList, factory)
+      );
     } else if (isFunctionFactory) {
       const factoryArity = factory.params.length;
       let replacementFuncExpr = createFactoryReplacementExpression(

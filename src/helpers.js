@@ -1,6 +1,13 @@
 'use strict';
 
-const { MODULE, EXPORTS, REQUIRE, TRANSFORM_AMD_TO_COMMONJS_IGNORE, MAYBE_FUNCTION, AMD_DEPS } = require('./constants');
+const {
+  MODULE,
+  EXPORTS,
+  REQUIRE,
+  TRANSFORM_AMD_TO_COMMONJS_IGNORE,
+  MAYBE_FUNCTION,
+  AMD_DEPS,
+} = require('./constants');
 
 // A factory function is exported in order to inject the same babel-types object
 // being used by the plugin itself
@@ -209,23 +216,27 @@ module.exports = ({ types: t }) => {
     const requireIdent = t.identifier(REQUIRE);
     const exportsIdent = t.identifier(EXPORTS);
     const DEP = 'dep';
-    return t.functionExpression(null, [t.identifier(DEP)], t.blockStatement([
-      t.returnStatement(
-        t.logicalExpression(
-          '||',
-          t.memberExpression(
-            t.objectExpression([
-              t.objectProperty(requireIdent, requireIdent),
-              t.objectProperty(moduleIdent, moduleIdent),
-              t.objectProperty(exportsIdent, t.memberExpression(moduleIdent, exportsIdent))
-            ]),
-            t.identifier(DEP),
-            true
-          ),
-          t.callExpression(t.identifier(REQUIRE), [t.identifier(DEP)])
-        )
-      )
-    ]));
+    return t.functionExpression(
+      null,
+      [t.identifier(DEP)],
+      t.blockStatement([
+        t.returnStatement(
+          t.logicalExpression(
+            '||',
+            t.memberExpression(
+              t.objectExpression([
+                t.objectProperty(requireIdent, requireIdent),
+                t.objectProperty(moduleIdent, moduleIdent),
+                t.objectProperty(exportsIdent, t.memberExpression(moduleIdent, exportsIdent)),
+              ]),
+              t.identifier(DEP),
+              true
+            ),
+            t.callExpression(t.identifier(REQUIRE), [t.identifier(DEP)])
+          )
+        ),
+      ])
+    );
   };
 
   const createRequireReplacementWithUnknownVarTypes = (path, opts, dependencyList, factory) => {
@@ -234,8 +245,12 @@ module.exports = ({ types: t }) => {
     const blockStatements = [];
 
     // Define block scoped variables 'maybeFunction' and 'amdDeps'.
-    blockStatements.push(t.variableDeclaration('var', [t.variableDeclarator(factoryIdentifier, factory)]));
-    blockStatements.push(t.variableDeclaration('var', [t.variableDeclarator(depsIdentifier, dependencyList)]));
+    blockStatements.push(
+      t.variableDeclaration('var', [t.variableDeclarator(factoryIdentifier, factory)])
+    );
+    blockStatements.push(
+      t.variableDeclaration('var', [t.variableDeclarator(depsIdentifier, dependencyList)])
+    );
 
     // If we don't know that the dependency list is an array, then we need to check
     // the type at runtime.
@@ -245,9 +260,14 @@ module.exports = ({ types: t }) => {
       // }
       blockStatements.push(
         t.ifStatement(
-          t.unaryExpression('!', t.callExpression(t.memberExpression(t.identifier('Array'),t.identifier('isArray')), [depsIdentifier])),
+          t.unaryExpression(
+            '!',
+            t.callExpression(t.memberExpression(t.identifier('Array'), t.identifier('isArray')), [
+              depsIdentifier,
+            ])
+          ),
           t.blockStatement([
-            t.returnStatement(t.callExpression(t.identifier(REQUIRE), [depsIdentifier]))
+            t.returnStatement(t.callExpression(t.identifier(REQUIRE), [depsIdentifier])),
           ])
         )
       );
@@ -261,40 +281,50 @@ module.exports = ({ types: t }) => {
       // }
       blockStatements.push(
         t.ifStatement(
-          t.binaryExpression('!==', t.unaryExpression('typeof', factoryIdentifier), t.stringLiteral('function')),
+          t.binaryExpression(
+            '!==',
+            t.unaryExpression('typeof', factoryIdentifier),
+            t.stringLiteral('function')
+          ),
           t.blockStatement([
-            t.expressionStatement(t.assignmentExpression('=', factoryIdentifier, t.functionExpression(null, [], t.blockStatement([]))))
+            t.expressionStatement(
+              t.assignmentExpression(
+                '=',
+                factoryIdentifier,
+                t.functionExpression(null, [], t.blockStatement([]))
+              )
+            ),
           ])
         )
       );
     }
     // Invoke the factory function.
-    blockStatements.push(t.expressionStatement(t.callExpression(t.memberExpression(factoryIdentifier, t.identifier('apply')),
-      [
-        /*
-         * The 'this' argument for the factory function.
-         * 'void 0'
-         */
-        t.unaryExpression('void', t.numericLiteral(0)),
+    blockStatements.push(
+      t.expressionStatement(
+        t.callExpression(t.memberExpression(factoryIdentifier, t.identifier('apply')), [
+          /*
+           * The 'this' argument for the factory function.
+           * 'void 0'
+           */
+          t.unaryExpression('void', t.numericLiteral(0)),
 
-        /*
-         * The arguments to the factory function as an array.
-         * 'deps.map(amdFactoryArgsGenerator)''
-         */
-        t.callExpression(
-          t.memberExpression(
-            depsIdentifier,
-            t.identifier('map')
-          ),
-          [getAmdFactoryArgsMapper(path, opts)]
-        )
-      ]
-    )));
+          /*
+           * The arguments to the factory function as an array.
+           * 'deps.map(amdFactoryArgsGenerator)''
+           */
+          t.callExpression(t.memberExpression(depsIdentifier, t.identifier('map')), [
+            getAmdFactoryArgsMapper(path, opts),
+          ]),
+        ])
+      )
+    );
     // Wrap it all up in an IIF, being sure to preserve the 'this' reference from
     // outer scope.
     return t.callExpression(
       t.memberExpression(
-        t.parenthesizedExpression(t.functionExpression(null, [], t.blockStatement(blockStatements))),
+        t.parenthesizedExpression(
+          t.functionExpression(null, [], t.blockStatement(blockStatements))
+        ),
         t.identifier('apply')
       ),
       [t.thisExpression()]
