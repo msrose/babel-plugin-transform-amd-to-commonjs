@@ -255,16 +255,25 @@ module.exports = ({ types: t }) => {
     // If we don't know that the dependency list is an array, then we need to check
     // the type at runtime.
     if (!t.isArrayExpression(dependencyList)) {
-      // if (!Array.isArray(amdDeps)) {
+      // if (amdDeps === null || typeof amdDeps !== 'object' || isNaN(amdDeps.length)) {
       //   return require(amdDeps);
       // }
       blockStatements.push(
         t.ifStatement(
-          t.unaryExpression(
-            '!',
-            t.callExpression(t.memberExpression(t.identifier('Array'), t.identifier('isArray')), [
-              depsIdentifier,
-            ])
+          t.logicalExpression(
+            '||',
+            t.binaryExpression('===', depsIdentifier, t.nullLiteral()),
+            t.logicalExpression(
+              '||',
+              t.binaryExpression(
+                '!==',
+                t.unaryExpression('typeof', depsIdentifier),
+                t.stringLiteral('object')
+              ),
+              t.callExpression(t.identifier('isNaN'), [
+                t.memberExpression(depsIdentifier, t.identifier('length')),
+              ])
+            )
           ),
           t.blockStatement([
             t.returnStatement(t.callExpression(t.identifier(REQUIRE), [depsIdentifier])),

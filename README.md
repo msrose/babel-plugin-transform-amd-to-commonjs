@@ -154,7 +154,7 @@ Make sure that you have only one AMD module defined per file, otherwise you'll e
 
 ### Listing module dependencies inline (v1.6 and above)
 
-In v1.6, require dependencies and factories with unknown types (at build time) are now supported.  The dependency list may be a function call or variable name that resolves to an array type at runtime.  The factory may be a function call or variable name that resolves to a function at runtime.
+In v1.6, require dependencies and factories with unknown types (at build time) are now supported.  The dependency list may be a function call or variable name that resolves to an array-like type at runtime.  The factory may be a function call or variable name that resolves to a function at runtime.
 
 ```javascript
 require(getDeps(), myFactoryFunction);
@@ -166,7 +166,7 @@ will be transformed to:
 (function () {
   var maybeFunction = myFactoryFunction;
   var amdDeps = getDeps();
-  if (!Array.isArray(amdDeps)) {
+  if (amdDeps === null || typeof amdDeps !== "object" || isNaN(amdDeps.length)) {
     return require(amdDeps);
   }
   if (typeof maybeFunction !== "function") {

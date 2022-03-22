@@ -266,7 +266,7 @@ describe('Plugin for require blocks', () => {
           bar.doSomethingElse();
         };
         var amdDeps = deps;
-        if (!Array.isArray(amdDeps)) {
+        if (amdDeps === null || typeof amdDeps !== "object" || isNaN(amdDeps.length)) {
           return require(amdDeps);
         }
         maybeFunction.apply(void 0, amdDeps.map(function (dep) {
@@ -308,7 +308,7 @@ describe('Plugin for require blocks', () => {
       (function () {
         var maybeFunction = factory;
         var amdDeps = deps;
-        if (!Array.isArray(amdDeps)) {
+        if (amdDeps === null || typeof amdDeps !== "object" || isNaN(amdDeps.length)) {
           return require(amdDeps);
         }
         if (typeof maybeFunction !== "function") {
