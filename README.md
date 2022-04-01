@@ -169,6 +169,7 @@ will be transformed to:
   if (amdDeps === null || typeof amdDeps !== "object" || isNaN(amdDeps.length)) {
     return require(amdDeps);
   }
+  amdDeps = [].slice.call(amdDeps);
   if (typeof maybeFunction !== "function") {
     maybeFunction = function () {};
   }

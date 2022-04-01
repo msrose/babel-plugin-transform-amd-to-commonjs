@@ -269,6 +269,7 @@ describe('Plugin for require blocks', () => {
         if (amdDeps === null || typeof amdDeps !== "object" || isNaN(amdDeps.length)) {
           return require(amdDeps);
         }
+        amdDeps = [].slice.call(amdDeps);
         maybeFunction.apply(void 0, amdDeps.map(function (dep) {
           return {
             require: require,
@@ -311,6 +312,7 @@ describe('Plugin for require blocks', () => {
         if (amdDeps === null || typeof amdDeps !== "object" || isNaN(amdDeps.length)) {
           return require(amdDeps);
         }
+        amdDeps = [].slice.call(amdDeps);
         if (typeof maybeFunction !== "function") {
           maybeFunction = function () {};
         }

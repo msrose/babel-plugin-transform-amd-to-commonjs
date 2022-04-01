@@ -280,6 +280,23 @@ module.exports = ({ types: t }) => {
           ])
         )
       );
+      // Convert array-like objects to real arrays
+      // amdDeps = [].slice.call(amdDeps);
+      blockStatements.push(
+        t.expressionStatement(
+          t.assignmentExpression(
+            '=',
+            depsIdentifier,
+            t.callExpression(
+              t.memberExpression(
+                t.memberExpression(t.arrayExpression(), t.identifier('slice')),
+                t.identifier('call')
+              ),
+              [depsIdentifier]
+            )
+          )
+        )
+      );
     }
 
     // If we don't know that the factory is a function, the we need to check the type
