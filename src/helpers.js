@@ -19,7 +19,7 @@ module.exports = ({ types: t }) => {
       return { factory: argNodes[0] };
     } else if (argNodes.length === 2) {
       const decodedArgs = { factory: argNodes[1] };
-      if (t.isArrayExpression(argNodes[0])) {
+      if (!t.isStringLiteral(argNodes[0])) {
         decodedArgs.dependencyList = argNodes[0];
       }
       return decodedArgs;

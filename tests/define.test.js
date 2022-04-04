@@ -675,4 +675,16 @@ describe('Plugin for define blocks', () => {
       `);
     }
   );
+
+  it('transforms define call that use non-array literal dependency list and non function factory', () => {
+    expect(`
+      define(deps, factory);
+    `).toBeTransformedTo(checkVarArgsResult('factory', 'deps', true, true, true));
+  });
+
+  it('transforms named define call that use non-array literal dependency list and non function factory', () => {
+    expect(`
+      define('somename', deps, factory);
+    `).toBeTransformedTo(checkVarArgsResult('factory', 'deps', true, true, true));
+  });
 });
