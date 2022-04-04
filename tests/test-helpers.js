@@ -36,7 +36,59 @@ const checkMaybeFunction = (factory, dependencies, identifier = MAYBE_FUNCTION) 
     `;
 };
 
+const checkVarArgsResult = (factory, dependencies, checkDeps, checkFactory, isDefineCall) => {
+  const requireFactoryResult = `
+    maybeFunction = function() {};
+  `;
+  const defineFactoryResult = `
+    var amdFactoryResult = maybeFunction;
+    maybeFunction = function () {
+      return amdFactoryResult;
+    };
+  `;
+  let factoryCheck = '';
+  if (checkFactory) {
+    factoryCheck = `
+    if (typeof maybeFunction !== "function") {
+      ${isDefineCall ? defineFactoryResult : requireFactoryResult}
+    }
+    `;
+  }
+  let depsCheck = '';
+  if (checkDeps) {
+    depsCheck = `
+    if (amdDeps === null || typeof amdDeps !== "object" || isNaN(amdDeps.length)) {
+      return require(amdDeps);
+    }
+    amdDeps = [].slice.call(amdDeps);
+    `;
+  }
+
+  return `
+  (function () {
+    var maybeFunction = ${factory};
+    var amdDeps = ${dependencies};
+    ${depsCheck}${factoryCheck}
+    ${
+      isDefineCall ? 'var amdDefineResult = ' : ''
+    }maybeFunction.apply(void 0, amdDeps.map(function (dep) {
+      return {
+        require: require,
+        module: module,
+        exports: module.exports
+      }[dep] || require(dep);
+    }));
+    ${
+      isDefineCall
+        ? 'typeof amdDefineResult !== "undefined" && (module.exports = amdDefineResult);'
+        : ''
+    }
+  }).apply(this);
+  `;
+};
+
 module.exports = {
   checkAmdDefineResult,
   checkMaybeFunction,
+  checkVarArgsResult,
 };

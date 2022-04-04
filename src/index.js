@@ -26,7 +26,7 @@ module.exports = ({ types: t }) => {
     createFunctionCheck,
     isExplicitDependencyInjection,
     hasIgnoreComment,
-    createRequireReplacementWithUnknownVarTypes,
+    createFactoryInvocationWithUnknownArgTypes,
   } = createHelpers({ types: t });
 
   const argumentDecoders = {
@@ -64,13 +64,27 @@ module.exports = ({ types: t }) => {
     if (!argumentDecoder) return;
 
     const { dependencyList, factory } = argumentDecoder(node.expression.arguments);
+    const isDependencyArray = dependencyList && t.isArrayExpression(dependencyList);
 
-    if (!t.isArrayExpression(dependencyList) && !factory) return;
+    if (!isDependencyArray && !factory) return;
 
     const isFunctionFactory = isFunctionExpression(factory);
     const dependencyInjections = [];
 
-    if (dependencyList && t.isArrayExpression(dependencyList)) {
+    if (factory && dependencyList && (!isFunctionFactory || !isDependencyArray)) {
+      // define/require call with unknown factory type and/or non-array litteral dependencies.
+      path.replaceWithMultiple(
+        createFactoryInvocationWithUnknownArgTypes(
+          path,
+          opts,
+          dependencyList,
+          factory,
+          isDefineCall
+        )
+      );
+      return;
+    }
+    if (isDependencyArray) {
       const dependencyParameterPairs = zip(
         dependencyList.elements,
         isFunctionFactory ? factory.params : []
@@ -102,15 +116,7 @@ module.exports = ({ types: t }) => {
 
     const explicitDependencyInjections = dependencyInjections.filter(isExplicitDependencyInjection);
 
-    if (
-      !isDefineCall &&
-      ((factory && !isFunctionFactory) || !t.isArrayExpression(dependencyList))
-    ) {
-      // require call with unknown factory type and/or non-array litteral dependencies.
-      path.replaceWithMultiple(
-        createRequireReplacementWithUnknownVarTypes(path, opts, dependencyList, factory)
-      );
-    } else if (isFunctionFactory) {
+    if (isFunctionFactory) {
       const factoryArity = factory.params.length;
       let replacementFuncExpr = createFactoryReplacementExpression(
         factory,

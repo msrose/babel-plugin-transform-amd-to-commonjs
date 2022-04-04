@@ -1,6 +1,7 @@
 'use strict';
 
 const { TRANSFORM_AMD_TO_COMMONJS_IGNORE } = require('../src/constants');
+const { checkVarArgsResult } = require('./test-helpers');
 
 describe('Plugin for require blocks', () => {
   it('transforms require blocks with one dependency', () => {
@@ -259,71 +260,29 @@ describe('Plugin for require blocks', () => {
         foo.doSomething();
         bar.doSomethingElse();
       });
-    `).toBeTransformedTo(`
-      (function () {
-        var maybeFunction = function (foo, bar) {
+    `).toBeTransformedTo(
+      checkVarArgsResult(
+        `function(foo, bar) {
           foo.doSomething();
           bar.doSomethingElse();
-        };
-        var amdDeps = deps;
-        if (amdDeps === null || typeof amdDeps !== "object" || isNaN(amdDeps.length)) {
-          return require(amdDeps);
-        }
-        amdDeps = [].slice.call(amdDeps);
-        maybeFunction.apply(void 0, amdDeps.map(function (dep) {
-          return {
-            require: require,
-            module: module,
-            exports: module.exports
-          }[dep] || require(dep);
-        }));
-      }).apply(this);
-    `);
+        }`,
+        'deps',
+        true,
+        false,
+        false
+      )
+    );
   });
 
   it('transforms require with non-function factory', () => {
     expect(`
       require(['dep1', 'dep2'], factory);
-    `).toBeTransformedTo(`
-      (function () {
-        var maybeFunction = factory;
-        var amdDeps = ['dep1', 'dep2'];
-        if (typeof maybeFunction !== "function") {
-          maybeFunction = function () {};
-        }
-        maybeFunction.apply(void 0, amdDeps.map(function (dep) {
-          return {
-            require: require,
-            module: module,
-            exports: module.exports
-          }[dep] || require(dep);
-        }));
-      }).apply(this);
-    `);
+    `).toBeTransformedTo(checkVarArgsResult('factory', "['dep1', 'dep2']", false, true, false));
   });
 
   it('transforms require with non-array dependencies and non-function factory', () => {
     expect(`
       require(deps, factory);
-    `).toBeTransformedTo(`
-      (function () {
-        var maybeFunction = factory;
-        var amdDeps = deps;
-        if (amdDeps === null || typeof amdDeps !== "object" || isNaN(amdDeps.length)) {
-          return require(amdDeps);
-        }
-        amdDeps = [].slice.call(amdDeps);
-        if (typeof maybeFunction !== "function") {
-          maybeFunction = function () {};
-        }
-        maybeFunction.apply(void 0, amdDeps.map(function (dep) {
-          return {
-            require: require,
-            module: module,
-            exports: module.exports
-          }[dep] || require(dep);
-        }));
-      }).apply(this);
-    `);
+    `).toBeTransformedTo(checkVarArgsResult('factory', 'deps', true, true, false));
   });
 });

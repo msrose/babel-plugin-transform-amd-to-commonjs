@@ -7,6 +7,8 @@ const {
   TRANSFORM_AMD_TO_COMMONJS_IGNORE,
   MAYBE_FUNCTION,
   AMD_DEPS,
+  AMD_DEFINE_RESULT,
+  AMD_FACTORY_RESULT,
 } = require('./constants');
 
 // A factory function is exported in order to inject the same babel-types object
@@ -203,8 +205,8 @@ module.exports = ({ types: t }) => {
   };
 
   const getAmdFactoryArgsMapper = () => {
-    // Returns the factory args genrator function.
-    //
+    // Returns the factory args mapper function.
+    // Generated code:
     // function(dep) {
     //   return {
     //     require: require,
@@ -239,7 +241,13 @@ module.exports = ({ types: t }) => {
     );
   };
 
-  const createRequireReplacementWithUnknownVarTypes = (path, opts, dependencyList, factory) => {
+  const createFactoryInvocationWithUnknownArgTypes = (
+    path,
+    opts,
+    dependencyList,
+    factory,
+    isDefineCall
+  ) => {
     const factoryIdentifier = getUniqueIdentifier(path.scope, MAYBE_FUNCTION);
     const depsIdentifier = getUniqueIdentifier(path.scope, AMD_DEPS);
     const blockStatements = [];
@@ -255,6 +263,7 @@ module.exports = ({ types: t }) => {
     // If we don't know that the dependency list is an array, then we need to check
     // the type at runtime.
     if (!t.isArrayExpression(dependencyList)) {
+      // Generated code:
       // if (amdDeps === null || typeof amdDeps !== 'object' || isNaN(amdDeps.length)) {
       //   return require(amdDeps);
       // }
@@ -299,12 +308,19 @@ module.exports = ({ types: t }) => {
       );
     }
 
-    // If we don't know that the factory is a function, the we need to check the type
+    // If we don't know that the factory is a function, then we need to check the type
     // at runtime.
     if (!isFunctionExpression(factory)) {
+      // define:
+      // if (typeof maybeFunction !== 'function') {
+      //   var amdFactoryResult = maybeFunction;
+      //   maybeFunction = function () {return amFactorydResult};
+      // }
+      // require:
       // if (typeof maybeFunction !== 'function') {
       //   maybeFunction = function () {};
       // }
+      const resultIdentifier = getUniqueIdentifier(path.scope, AMD_FACTORY_RESULT);
       blockStatements.push(
         t.ifStatement(
           t.binaryExpression(
@@ -313,11 +329,22 @@ module.exports = ({ types: t }) => {
             t.stringLiteral('function')
           ),
           t.blockStatement([
+            ...(isDefineCall
+              ? [
+                  t.variableDeclaration('var', [
+                    t.variableDeclarator(resultIdentifier, factoryIdentifier),
+                  ]),
+                ]
+              : []),
             t.expressionStatement(
               t.assignmentExpression(
                 '=',
                 factoryIdentifier,
-                t.functionExpression(null, [], t.blockStatement([]))
+                t.functionExpression(
+                  null,
+                  [],
+                  t.blockStatement([...(isDefineCall ? [t.returnStatement(resultIdentifier)] : [])])
+                )
               )
             ),
           ])
@@ -325,25 +352,33 @@ module.exports = ({ types: t }) => {
       );
     }
     // Invoke the factory function.
-    blockStatements.push(
-      t.expressionStatement(
-        t.callExpression(t.memberExpression(factoryIdentifier, t.identifier('apply')), [
-          /*
-           * The 'this' argument for the factory function.
-           * 'void 0'
-           */
-          t.unaryExpression('void', t.numericLiteral(0)),
+    const factoryInvocation = t.callExpression(
+      t.memberExpression(factoryIdentifier, t.identifier('apply')),
+      [
+        /*
+         * The 'this' argument for the factory function.
+         * 'void 0'
+         */
+        t.unaryExpression('void', t.numericLiteral(0)),
 
-          /*
-           * The arguments to the factory function as an array.
-           * 'deps.map(amdFactoryArgsGenerator)''
-           */
-          t.callExpression(t.memberExpression(depsIdentifier, t.identifier('map')), [
-            getAmdFactoryArgsMapper(path, opts),
-          ]),
-        ])
-      )
+        /*
+         * The arguments to the factory function as an array.
+         * 'deps.map(<amdFactoryArgsMapper>)''
+         */
+        t.callExpression(t.memberExpression(depsIdentifier, t.identifier('map')), [
+          getAmdFactoryArgsMapper(path, opts),
+        ]),
+      ]
     );
+    if (isDefineCall) {
+      const resultCheckIdentifier = getUniqueIdentifier(path.scope, AMD_DEFINE_RESULT);
+      blockStatements.push.apply(
+        blockStatements,
+        createModuleExportsResultCheck(factoryInvocation, resultCheckIdentifier)
+      );
+    } else {
+      blockStatements.push(t.expressionStatement(factoryInvocation));
+    }
     // Wrap it all up in an IIF, being sure to preserve the 'this' reference from
     // outer scope.
     return t.callExpression(
@@ -372,7 +407,6 @@ module.exports = ({ types: t }) => {
     createFunctionCheck,
     isExplicitDependencyInjection,
     hasIgnoreComment,
-    getAmdFactoryArgsMapper,
-    createRequireReplacementWithUnknownVarTypes,
+    createFactoryInvocationWithUnknownArgTypes,
   };
 };
