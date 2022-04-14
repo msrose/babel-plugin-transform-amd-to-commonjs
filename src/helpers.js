@@ -246,7 +246,8 @@ module.exports = ({ types: t }) => {
     opts,
     dependencyList,
     factory,
-    isDefineCall
+    isDefineCall,
+    arity
   ) => {
     const factoryIdentifier = getUniqueIdentifier(path.scope, MAYBE_FUNCTION);
     const depsIdentifier = getUniqueIdentifier(path.scope, AMD_DEPS);
@@ -263,32 +264,67 @@ module.exports = ({ types: t }) => {
     // If we don't know that the dependency list is an array, then we need to check
     // the type at runtime.
     if (!t.isArrayExpression(dependencyList)) {
-      // Generated code:
-      // if (amdDeps === null || typeof amdDeps !== 'object' || isNaN(amdDeps.length)) {
-      //   return require(amdDeps);
-      // }
-      blockStatements.push(
-        t.ifStatement(
-          t.logicalExpression(
-            '||',
-            t.binaryExpression('===', depsIdentifier, t.nullLiteral()),
-            t.logicalExpression(
-              '||',
+      if (isDefineCall) {
+        // If the arity of the define call is 2, then the dependency list argument
+        // could be the module name if the type is string.  In that case, we ignore
+        // the module name and use the default dependencies per the spec:
+        // https://github.com/amdjs/amdjs-api/wiki/AMD#dependencies-
+        // Generated code:
+        // if (typeof amdDeps === 'string') {
+        //   amdDeps = ['require', 'exports', 'module'];
+        // }
+        if (arity === 2) {
+          blockStatements.push(
+            t.ifStatement(
               t.binaryExpression(
-                '!==',
+                '===',
                 t.unaryExpression('typeof', depsIdentifier),
-                t.stringLiteral('object')
+                t.stringLiteral('string')
               ),
-              t.callExpression(t.identifier('isNaN'), [
-                t.memberExpression(depsIdentifier, t.identifier('length')),
+              t.blockStatement([
+                t.expressionStatement(
+                  t.assignmentExpression(
+                    '=',
+                    depsIdentifier,
+                    t.arrayExpression([
+                      t.stringLiteral(REQUIRE),
+                      t.stringLiteral(EXPORTS),
+                      t.stringLiteral(MODULE),
+                    ])
+                  )
+                ),
               ])
             )
-          ),
-          t.blockStatement([
-            t.returnStatement(t.callExpression(t.identifier(REQUIRE), [depsIdentifier])),
-          ])
-        )
-      );
+          );
+        }
+      } else {
+        // Generated code:
+        // if (amdDeps === null || typeof amdDeps !== 'object' || isNaN(amdDeps.length)) {
+        //   return require(amdDeps);
+        // }
+        blockStatements.push(
+          t.ifStatement(
+            t.logicalExpression(
+              '||',
+              t.binaryExpression('===', depsIdentifier, t.nullLiteral()),
+              t.logicalExpression(
+                '||',
+                t.binaryExpression(
+                  '!==',
+                  t.unaryExpression('typeof', depsIdentifier),
+                  t.stringLiteral('object')
+                ),
+                t.callExpression(t.identifier('isNaN'), [
+                  t.memberExpression(depsIdentifier, t.identifier('length')),
+                ])
+              )
+            ),
+            t.blockStatement([
+              t.returnStatement(t.callExpression(t.identifier(REQUIRE), [depsIdentifier])),
+            ])
+          )
+        );
+      }
       // Convert array-like objects to real arrays
       // amdDeps = [].slice.call(amdDeps);
       blockStatements.push(

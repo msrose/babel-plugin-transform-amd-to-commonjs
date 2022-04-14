@@ -36,7 +36,14 @@ const checkMaybeFunction = (factory, dependencies, identifier = MAYBE_FUNCTION) 
     `;
 };
 
-const checkVarArgsResult = (factory, dependencies, checkDeps, checkFactory, isDefineCall) => {
+const checkVarArgsResult = (
+  factory,
+  dependencies,
+  checkDeps,
+  checkFactory,
+  isDefineCall,
+  checkForModuleName
+) => {
   const requireFactoryResult = `
     maybeFunction = function() {};
   `;
@@ -56,12 +63,22 @@ const checkVarArgsResult = (factory, dependencies, checkDeps, checkFactory, isDe
   }
   let depsCheck = '';
   if (checkDeps) {
-    depsCheck = `
-    if (amdDeps === null || typeof amdDeps !== "object" || isNaN(amdDeps.length)) {
-      return require(amdDeps);
+    if (isDefineCall) {
+      if (checkForModuleName) {
+        depsCheck = `
+        if (typeof amdDeps === "string") {
+          amdDeps = ["require", "exports", "module"];
+        }
+        `;
+      }
+    } else {
+      depsCheck = `
+      if (amdDeps === null || typeof amdDeps !== "object" || isNaN(amdDeps.length)) {
+        return require(amdDeps);
+      }
+      `;
     }
-    amdDeps = [].slice.call(amdDeps);
-    `;
+    depsCheck += '\namdDeps = [].slice.call(amdDeps);';
   }
 
   return `

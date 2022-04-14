@@ -79,7 +79,8 @@ module.exports = ({ types: t }) => {
           opts,
           dependencyList,
           factory,
-          isDefineCall
+          isDefineCall,
+          node.expression.arguments.length
         )
       );
       return;
