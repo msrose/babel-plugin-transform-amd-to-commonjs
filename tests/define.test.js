@@ -676,21 +676,48 @@ describe('Plugin for define blocks', () => {
     }
   );
 
-  it('transforms define call that use non-array literal dependency list and non function factory', () => {
+  it('transforms define call that use var args dependency list and factory', () => {
     expect(`
       define(deps, factory);
     `).toBeTransformedTo(checkVarArgsResult('factory', 'deps', true, true, true, true));
   });
 
-  it('transforms named define call that use non-array literal dependency list and non function factory', () => {
+  it('transforms named define call that uses var args dependency list and factory', () => {
     expect(`
       define('somename', deps, factory);
     `).toBeTransformedTo(checkVarArgsResult('factory', 'deps', true, true, true));
   });
 
-  it('transforms named define call that use non-literals for all three arguments', () => {
+  it('transforms named define call that use var args for all three arguments', () => {
     expect(`
       define(name, deps, factory);
     `).toBeTransformedTo(checkVarArgsResult('factory', 'deps', true, true, true));
+  });
+
+  it('transforms define with var arg dependency list', () => {
+    expect(`
+      define(deps, function(foo, bar) {
+        foo.doSomething();
+        bar.doSomethingElse();
+      });
+    `).toBeTransformedTo(
+      checkVarArgsResult(
+        `function(foo, bar) {
+          foo.doSomething();
+          bar.doSomethingElse();
+        }`,
+        'deps',
+        true,
+        false,
+        true,
+        true
+      )
+    );
+  });
+
+  it('transforms define with var arg factory', () => {
+    expect(`
+      define(['dep1', 'dep2'], factory);
+    `).toBeTransformedTo(checkVarArgsResult('factory', "['dep1', 'dep2']", false, true, true));
   });
 });
