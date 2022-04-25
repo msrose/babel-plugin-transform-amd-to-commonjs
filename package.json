@@ -38,7 +38,7 @@
   },
   "devDependencies": {
     "@babel/cli": "^7.17.6",
-    "@babel/core": "^7.17.8",
+    "@babel/core": "^7.17.9",
     "@babel/preset-env": "^7.16.11",
     "all-contributors-cli": "^6.20.0",
     "babel-core": "^7.0.0-bridge.0",
@@ -46,7 +46,7 @@
     "eslint": "^8.10.0",
     "eslint-config-msrose": "^1.0.0",
     "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-jest": "^26.1.4",
+    "eslint-plugin-jest": "^26.1.5",
     "eslint-plugin-prettier": "^4.0.0",
     "jest": "^27.5.1",
     "jest-diff": "^27.5.1",
