@@ -1,7 +1,7 @@
 'use strict';
 
 const { TRANSFORM_AMD_TO_COMMONJS_IGNORE } = require('../src/constants');
-const { checkVarArgsResult } = require('./test-helpers');
+const { checkVariableDepAndFactoryResult } = require('./test-helpers');
 
 describe('Plugin for require blocks', () => {
   it('transforms require blocks with one dependency', () => {
@@ -271,7 +271,7 @@ describe('Plugin for require blocks', () => {
         bar.doSomethingElse();
       });
     `).toBeTransformedTo(
-      checkVarArgsResult({
+      checkVariableDepAndFactoryResult({
         factory: `function(foo, bar) {
           foo.doSomething();
           bar.doSomethingElse();
@@ -288,7 +288,7 @@ describe('Plugin for require blocks', () => {
     expect(`
       require(deps, factory);
     `).toBeTransformedTo(
-      checkVarArgsResult({
+      checkVariableDepAndFactoryResult({
         factory: 'factory',
         dependencies: 'deps',
         checkDeps: true,
@@ -302,7 +302,7 @@ describe('Plugin for require blocks', () => {
     expect(`
       require(["dep1", "dep2"], this.factory);
     `).toBeTransformedTo(
-      checkVarArgsResult({
+      checkVariableDepAndFactoryResult({
         factory: 'this.factory',
         dependencies: '["dep1", "dep2"]',
         checkDeps: false,
@@ -316,7 +316,7 @@ describe('Plugin for require blocks', () => {
     expect(`
       require(["dep1", "dep2"], foo?.factory);
     `).toBeTransformedTo(
-      checkVarArgsResult({
+      checkVariableDepAndFactoryResult({
         factory: 'foo?.factory',
         dependencies: '["dep1", "dep2"]',
         checkDeps: false,
@@ -330,7 +330,7 @@ describe('Plugin for require blocks', () => {
     expect(`
       require(["dep1", "dep2"], getFactory());
     `).toBeTransformedTo(
-      checkVarArgsResult({
+      checkVariableDepAndFactoryResult({
         factory: 'getFactory()',
         dependencies: '["dep1", "dep2"]',
         checkDeps: false,
@@ -344,7 +344,7 @@ describe('Plugin for require blocks', () => {
     expect(`
       require(["dep1", "dep2"], getFactory?.());
     `).toBeTransformedTo(
-      checkVarArgsResult({
+      checkVariableDepAndFactoryResult({
         factory: 'getFactory?.()',
         dependencies: '["dep1", "dep2"]',
         checkDeps: false,
@@ -358,7 +358,7 @@ describe('Plugin for require blocks', () => {
     expect(`
       require(["dep1", "dep2"], factories[i]);
     `).toBeTransformedTo(
-      checkVarArgsResult({
+      checkVariableDepAndFactoryResult({
         factory: 'factories[i]',
         dependencies: '["dep1", "dep2"]',
         checkDeps: false,
@@ -372,7 +372,7 @@ describe('Plugin for require blocks', () => {
     expect(`
       require(["dep1", "dep2"], factory1 || factory2);
     `).toBeTransformedTo(
-      checkVarArgsResult({
+      checkVariableDepAndFactoryResult({
         factory: 'factory1 || factory2',
         dependencies: '["dep1", "dep2"]',
         checkDeps: false,
@@ -386,7 +386,7 @@ describe('Plugin for require blocks', () => {
     expect(`
       require(["dep1", "dep2"], foo ? factory1 : factory2);
     `).toBeTransformedTo(
-      checkVarArgsResult({
+      checkVariableDepAndFactoryResult({
         factory: 'foo ? factory1 : factory2',
         dependencies: '["dep1", "dep2"]',
         checkDeps: false,
@@ -400,7 +400,7 @@ describe('Plugin for require blocks', () => {
     expect(`
       require(["dep1", "dep2"], factory = myFactory);
     `).toBeTransformedTo(
-      checkVarArgsResult({
+      checkVariableDepAndFactoryResult({
         factory: 'factory = myFactory',
         dependencies: '["dep1", "dep2"]',
         checkDeps: false,
@@ -414,7 +414,7 @@ describe('Plugin for require blocks', () => {
     expect(`
       require(["dep1", "dep2"], (factory = myFactory));
     `).toBeTransformedTo(
-      checkVarArgsResult({
+      checkVariableDepAndFactoryResult({
         factory: '(factory = myFactory)',
         dependencies: '["dep1", "dep2"]',
         checkDeps: false,

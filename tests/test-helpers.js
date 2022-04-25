@@ -36,7 +36,7 @@ const checkMaybeFunction = (factory, dependencies, identifier = MAYBE_FUNCTION) 
     `;
 };
 
-const checkVarArgsResult = ({
+const checkVariableDepAndFactoryResult = ({
   factory,
   dependencies,
   checkDeps,
@@ -106,5 +106,5 @@ const checkVarArgsResult = ({
 module.exports = {
   checkAmdDefineResult,
   checkMaybeFunction,
-  checkVarArgsResult,
+  checkVariableDepAndFactoryResult,
 };

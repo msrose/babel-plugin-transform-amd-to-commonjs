@@ -5,7 +5,11 @@ const {
   MAYBE_FUNCTION,
   TRANSFORM_AMD_TO_COMMONJS_IGNORE,
 } = require('../src/constants');
-const { checkAmdDefineResult, checkMaybeFunction, checkVarArgsResult } = require('./test-helpers');
+const {
+  checkAmdDefineResult,
+  checkMaybeFunction,
+  checkVariableDepAndFactoryResult,
+} = require('./test-helpers');
 
 describe('Plugin for define blocks', () => {
   it('transforms anonymous define blocks with one dependency', () => {
@@ -662,7 +666,7 @@ describe('Plugin for define blocks', () => {
     expect(`
       define(deps, factory);
     `).toBeTransformedTo(
-      checkVarArgsResult({
+      checkVariableDepAndFactoryResult({
         factory: 'factory',
         dependencies: 'deps',
         checkDeps: true,
@@ -677,7 +681,7 @@ describe('Plugin for define blocks', () => {
     expect(`
       define('somename', deps, factory);
     `).toBeTransformedTo(
-      checkVarArgsResult({
+      checkVariableDepAndFactoryResult({
         factory: 'factory',
         dependencies: 'deps',
         checkDeps: true,
@@ -691,7 +695,7 @@ describe('Plugin for define blocks', () => {
     expect(`
       define(name, deps, factory);
     `).toBeTransformedTo(
-      checkVarArgsResult({
+      checkVariableDepAndFactoryResult({
         factory: 'factory',
         dependencies: 'deps',
         checkDeps: true,
@@ -708,7 +712,7 @@ describe('Plugin for define blocks', () => {
         bar.doSomethingElse();
       });
     `).toBeTransformedTo(
-      checkVarArgsResult({
+      checkVariableDepAndFactoryResult({
         factory: `function(foo, bar) {
           foo.doSomething();
           bar.doSomethingElse();
