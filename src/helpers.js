@@ -241,26 +241,13 @@ module.exports = ({ types: t }) => {
     );
   };
 
-  const createFactoryInvocationWithUnknownArgTypes = (
-    path,
-    opts,
+  const injectDepListTypeCheck = ({
+    blockStatements,
     dependencyList,
-    factory,
     isDefineCall,
-    arity
-  ) => {
-    const factoryIdentifier = getUniqueIdentifier(path.scope, MAYBE_FUNCTION);
-    const depsIdentifier = getUniqueIdentifier(path.scope, AMD_DEPS);
-    const blockStatements = [];
-
-    // Define block scoped variables 'maybeFunction' and 'amdDeps'.
-    blockStatements.push(
-      t.variableDeclaration('var', [t.variableDeclarator(factoryIdentifier, factory)])
-    );
-    blockStatements.push(
-      t.variableDeclaration('var', [t.variableDeclarator(depsIdentifier, dependencyList)])
-    );
-
+    arity,
+    depsIdentifier,
+  }) => {
     // If we don't know that the dependency list is an array, then we need to check
     // the type at runtime.
     if (!t.isArrayExpression(dependencyList)) {
@@ -299,25 +286,16 @@ module.exports = ({ types: t }) => {
         }
       } else {
         // Generated code:
-        // if (amdDeps === null || typeof amdDeps !== 'object' || isNaN(amdDeps.length)) {
+        // if (!Arrays.isArray(amdDeps)) {
         //   return require(amdDeps);
         // }
         blockStatements.push(
           t.ifStatement(
-            t.logicalExpression(
-              '||',
-              t.binaryExpression('===', depsIdentifier, t.nullLiteral()),
-              t.logicalExpression(
-                '||',
-                t.binaryExpression(
-                  '!==',
-                  t.unaryExpression('typeof', depsIdentifier),
-                  t.stringLiteral('object')
-                ),
-                t.callExpression(t.identifier('isNaN'), [
-                  t.memberExpression(depsIdentifier, t.identifier('length')),
-                ])
-              )
+            t.unaryExpression(
+              '!',
+              t.callExpression(t.memberExpression(t.identifier('Array'), t.identifier('isArray')), [
+                depsIdentifier,
+              ])
             ),
             t.blockStatement([
               t.returnStatement(t.callExpression(t.identifier(REQUIRE), [depsIdentifier])),
@@ -325,25 +303,16 @@ module.exports = ({ types: t }) => {
           )
         );
       }
-      // Convert array-like objects to real arrays
-      // amdDeps = [].slice.call(amdDeps);
-      blockStatements.push(
-        t.expressionStatement(
-          t.assignmentExpression(
-            '=',
-            depsIdentifier,
-            t.callExpression(
-              t.memberExpression(
-                t.memberExpression(t.arrayExpression(), t.identifier('slice')),
-                t.identifier('call')
-              ),
-              [depsIdentifier]
-            )
-          )
-        )
-      );
     }
+  };
 
+  const injectFactoryFunctionTypeCheck = ({
+    blockStatements,
+    path,
+    factory,
+    factoryIdentifier,
+    isDefineCall,
+  }) => {
     // If we don't know that the factory is a function, then we need to check the type
     // at runtime.
     if (!isFunctionExpression(factory)) {
@@ -387,7 +356,15 @@ module.exports = ({ types: t }) => {
         )
       );
     }
-    // Invoke the factory function.
+  };
+
+  const injectFactoryFunctionInvocation = ({
+    path,
+    blockStatements,
+    factoryIdentifier,
+    depsIdentifier,
+    isDefineCall,
+  }) => {
     const factoryInvocation = t.callExpression(
       t.memberExpression(factoryIdentifier, t.identifier('apply')),
       [
@@ -402,19 +379,64 @@ module.exports = ({ types: t }) => {
          * 'deps.map(<amdFactoryArgsMapper>)''
          */
         t.callExpression(t.memberExpression(depsIdentifier, t.identifier('map')), [
-          getAmdFactoryArgsMapper(path, opts),
+          getAmdFactoryArgsMapper(),
         ]),
       ]
     );
     if (isDefineCall) {
       const resultCheckIdentifier = getUniqueIdentifier(path.scope, AMD_DEFINE_RESULT);
-      blockStatements.push.apply(
-        blockStatements,
-        createModuleExportsResultCheck(factoryInvocation, resultCheckIdentifier)
+      blockStatements.push(
+        ...createModuleExportsResultCheck(factoryInvocation, resultCheckIdentifier)
       );
     } else {
       blockStatements.push(t.expressionStatement(factoryInvocation));
     }
+  };
+
+  const createFactoryInvocationWithUnknownArgTypes = ({
+    path,
+    dependencyList,
+    factory,
+    isDefineCall,
+    arity,
+  }) => {
+    const factoryIdentifier = getUniqueIdentifier(path.scope, MAYBE_FUNCTION);
+    const depsIdentifier = getUniqueIdentifier(path.scope, AMD_DEPS);
+    const blockStatements = [];
+
+    // Define block scoped variables 'maybeFunction' and 'amdDeps'.
+    blockStatements.push(
+      t.variableDeclaration('var', [t.variableDeclarator(factoryIdentifier, factory)])
+    );
+    blockStatements.push(
+      t.variableDeclaration('var', [t.variableDeclarator(depsIdentifier, dependencyList)])
+    );
+
+    injectDepListTypeCheck({
+      blockStatements,
+      dependencyList,
+      isDefineCall,
+      arity,
+      depsIdentifier,
+    });
+
+    injectFactoryFunctionTypeCheck({
+      blockStatements,
+      path,
+      factory,
+      factoryIdentifier,
+      isDefineCall,
+    });
+
+    // Invoke the factory function.
+    injectFactoryFunctionInvocation({
+      path,
+      blockStatements,
+      factoryIdentifier,
+      depsIdentifier,
+      isDefineCall,
+    });
+
     // Wrap it all up in an IIF, being sure to preserve the 'this' reference from
     // outer scope.
     return t.callExpression(

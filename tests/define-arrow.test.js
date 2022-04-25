@@ -1,7 +1,7 @@
 'use strict';
 
 const { AMD_DEFINE_RESULT, TRANSFORM_AMD_TO_COMMONJS_IGNORE } = require('../src/constants');
-const { checkAmdDefineResult, checkMaybeFunction, checkVarArgsResult } = require('./test-helpers');
+const { checkAmdDefineResult, checkMaybeFunction } = require('./test-helpers');
 
 describe('Plugin for define blocks with arrow function factories', () => {
   it('transforms anonymous define blocks with one dependency', () => {
@@ -455,7 +455,7 @@ describe('Plugin for define blocks with arrow function factories', () => {
       define(['stuff', 'hi'], myVariableFactory)
     `).toBeTransformedTo(`
       ${variableFactory}
-      ${checkVarArgsResult('myVariableFactory', "['stuff', 'hi']", false, true, true)}
+      ${checkMaybeFunction('myVariableFactory', ['stuff', 'hi'])}
     `);
   });
 

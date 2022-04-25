@@ -69,19 +69,43 @@ module.exports = ({ types: t }) => {
     if (!isDependencyArray && !factory) return;
 
     const isFunctionFactory = isFunctionExpression(factory);
+
+    const isFactoryTypeUnknowable =
+      // true if we can't determine the type of the factory at build time
+      t.isIdentifier(factory) ||
+      t.isMemberExpression(factory) ||
+      t.isOptionalMemberExpression(factory) ||
+      t.isCallExpression(factory) ||
+      t.isOptionalCallExpression(factory) ||
+      t.isLogicalExpression(factory) ||
+      t.isConditionalExpression(factory) ||
+      t.isAssignmentExpression(factory) ||
+      t.isParenthesizedExpression(factory);
+
     const dependencyInjections = [];
 
-    if (factory && dependencyList && (!isFunctionFactory || !isDependencyArray)) {
-      // define/require call with unknown factory type and/or non-array litteral dependencies.
+    const handleUnknownArgTypes =
+      // define/require call with unknown factory type and/or non-array literal dependencies.
+      // Note that we ignore some cases that are already handled by pre-existing code.  These
+      // include define calls with array type dependencies and unknown type function factories:
+      //    define(['dep1', 'dep2'], myFactory);
+      // as well as require calls with array dependencies and factories who's types can be
+      // determined known at compile time (function or non-function):
+      //    require(['dep1', 'dep2'], {nonFunction: 'factory'});
+      factory &&
+      dependencyList &&
+      ((isDefineCall && !isDependencyArray) ||
+        (!isDefineCall && (!isDependencyArray || isFactoryTypeUnknowable)));
+
+    if (handleUnknownArgTypes) {
       path.replaceWithMultiple(
-        createFactoryInvocationWithUnknownArgTypes(
+        createFactoryInvocationWithUnknownArgTypes({
           path,
-          opts,
           dependencyList,
           factory,
           isDefineCall,
-          node.expression.arguments.length
-        )
+          arity: node.expression.arguments.length,
+        })
       );
       return;
     }

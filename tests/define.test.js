@@ -389,9 +389,7 @@ describe('Plugin for define blocks', () => {
   it('transforms non-function modules exporting objects with dependencies', () => {
     expect(`
       define(['side-effect'], { thismodule: 'is an object' });
-    `).toBeTransformedTo(
-      checkVarArgsResult("{ thismodule: 'is an object' }", "['side-effect']", false, true, true)
-    );
+    `).toBeTransformedTo(checkMaybeFunction("{ thismodule: 'is an object' }", ['side-effect']));
   });
 
   it('transforms non-function modules exporting arrays with no dependencies', () => {
@@ -404,13 +402,7 @@ describe('Plugin for define blocks', () => {
     expect(`
       define(['side-effect'], ['this', 'module', 'is', 'an', 'array']);
     `).toBeTransformedTo(
-      checkVarArgsResult(
-        "['this', 'module', 'is', 'an', 'array']",
-        "['side-effect']",
-        false,
-        true,
-        true
-      )
+      checkMaybeFunction("['this', 'module', 'is', 'an', 'array']", ['side-effect'])
     );
   });
 
@@ -428,41 +420,35 @@ describe('Plugin for define blocks', () => {
     primitives.forEach((primitive) => {
       expect(`
         define(['side-effect'], ${primitive});
-      `).toBeTransformedTo(checkVarArgsResult(primitive, "['side-effect']", false, true, true));
+      `).toBeTransformedTo(checkMaybeFunction(primitive, ['side-effect']));
     });
   });
 
   it('transforms non-function modules requiring `require` for some reason', () => {
     expect(`
       define(['require'], { some: 'stuff' });
-    `).toBeTransformedTo(checkVarArgsResult("{ some: 'stuff' }", "['require']", false, true, true));
+    `).toBeTransformedTo(checkMaybeFunction("{ some: 'stuff' }", ['require']));
     expect(`
       define(['sup', 'require'], { some: 'stuff' });
-    `).toBeTransformedTo(
-      checkVarArgsResult("{ some: 'stuff' }", "['sup', 'require']", false, true, true)
-    );
+    `).toBeTransformedTo(checkMaybeFunction("{ some: 'stuff' }", ['sup', 'require']));
   });
 
   it('transforms non-function modules requiring `exports` for some reason', () => {
     expect(`
       define(['exports'], { some: 'stuff' });
-    `).toBeTransformedTo(checkVarArgsResult("{ some: 'stuff' }", "['exports']", false, true, true));
+    `).toBeTransformedTo(checkMaybeFunction("{ some: 'stuff' }", ['exports']));
     expect(`
       define(['exports', 'dawg'], { some: 'stuff' });
-    `).toBeTransformedTo(
-      checkVarArgsResult("{ some: 'stuff' }", "['exports', 'dawg']", false, true, true)
-    );
+    `).toBeTransformedTo(checkMaybeFunction("{ some: 'stuff' }", ['exports', 'dawg']));
   });
 
   it('transforms non-function modules requiring `module` for some reason', () => {
     expect(`
       define(['module'], { some: 'stuff' });
-    `).toBeTransformedTo(checkVarArgsResult("{ some: 'stuff' }", "['module']", false, true, true));
+    `).toBeTransformedTo(checkMaybeFunction("{ some: 'stuff' }", ['module']));
     expect(`
       define(['module', 'lemon'], { some: 'stuff' });
-    `).toBeTransformedTo(
-      checkVarArgsResult("{ some: 'stuff' }", "['module', 'lemon']", false, true, true)
-    );
+    `).toBeTransformedTo(checkMaybeFunction("{ some: 'stuff' }", ['module', 'lemon']));
   });
 
   it('transforms named non-function modules with no dependencies', () => {
@@ -477,14 +463,10 @@ describe('Plugin for define blocks', () => {
   it('transforms named non-function modules with dependencies', () => {
     expect(`
       define('auselessname', ['side-effect'], { thismodule: 'is an object' });
-    `).toBeTransformedTo(
-      checkVarArgsResult("{ thismodule: 'is an object' }", "['side-effect']", false, true, true)
-    );
+    `).toBeTransformedTo(checkMaybeFunction("{ thismodule: 'is an object' }", ['side-effect']));
     expect(`
       define('auselessname', ['side-effect'], ['an', 'array', 'factory']);
-    `).toBeTransformedTo(
-      checkVarArgsResult("['an', 'array', 'factory']", "['side-effect']", false, true, true)
-    );
+    `).toBeTransformedTo(checkMaybeFunction("['an', 'array', 'factory']", ['side-effect']));
   });
 
   it('checks non function-literal factories to see if they are actually functions', () => {
@@ -492,14 +474,14 @@ describe('Plugin for define blocks', () => {
       var myVariableFactory = function(stuff, hi) {
         stuff.what(hi)
         return { great: 'stuff' };
-      };
+      }
     `;
     expect(`
       ${variableFactory}
       define(['stuff', 'hi'], myVariableFactory)
     `).toBeTransformedTo(`
       ${variableFactory}
-      ${checkVarArgsResult('myVariableFactory', "['stuff', 'hi']", false, true, true)}
+      ${checkMaybeFunction('myVariableFactory', ['stuff', 'hi'])}
     `);
   });
 
@@ -679,19 +661,44 @@ describe('Plugin for define blocks', () => {
   it('transforms define call that use var args dependency list and factory', () => {
     expect(`
       define(deps, factory);
-    `).toBeTransformedTo(checkVarArgsResult('factory', 'deps', true, true, true, true));
+    `).toBeTransformedTo(
+      checkVarArgsResult({
+        factory: 'factory',
+        dependencies: 'deps',
+        checkDeps: true,
+        checkFactory: true,
+        isDefineCall: true,
+        checkForModuleName: true,
+      })
+    );
   });
 
   it('transforms named define call that uses var args dependency list and factory', () => {
     expect(`
       define('somename', deps, factory);
-    `).toBeTransformedTo(checkVarArgsResult('factory', 'deps', true, true, true));
+    `).toBeTransformedTo(
+      checkVarArgsResult({
+        factory: 'factory',
+        dependencies: 'deps',
+        checkDeps: true,
+        checkFactory: true,
+        isDefineCall: true,
+      })
+    );
   });
 
   it('transforms named define call that use var args for all three arguments', () => {
     expect(`
       define(name, deps, factory);
-    `).toBeTransformedTo(checkVarArgsResult('factory', 'deps', true, true, true));
+    `).toBeTransformedTo(
+      checkVarArgsResult({
+        factory: 'factory',
+        dependencies: 'deps',
+        checkDeps: true,
+        checkFactory: true,
+        isDefineCall: true,
+      })
+    );
   });
 
   it('transforms define with var arg dependency list', () => {
@@ -701,23 +708,17 @@ describe('Plugin for define blocks', () => {
         bar.doSomethingElse();
       });
     `).toBeTransformedTo(
-      checkVarArgsResult(
-        `function(foo, bar) {
+      checkVarArgsResult({
+        factory: `function(foo, bar) {
           foo.doSomething();
           bar.doSomethingElse();
         }`,
-        'deps',
-        true,
-        false,
-        true,
-        true
-      )
+        dependencies: 'deps',
+        checkDeps: true,
+        checkFactory: false,
+        isDefineCall: true,
+        checkForModuleName: true,
+      })
     );
-  });
-
-  it('transforms define with var arg factory', () => {
-    expect(`
-      define(['dep1', 'dep2'], factory);
-    `).toBeTransformedTo(checkVarArgsResult('factory', "['dep1', 'dep2']", false, true, true));
   });
 });

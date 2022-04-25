@@ -36,14 +36,14 @@ const checkMaybeFunction = (factory, dependencies, identifier = MAYBE_FUNCTION) 
     `;
 };
 
-const checkVarArgsResult = (
+const checkVarArgsResult = ({
   factory,
   dependencies,
   checkDeps,
   checkFactory,
   isDefineCall,
-  checkForModuleName
-) => {
+  checkForModuleName,
+}) => {
   const requireFactoryResult = `
     maybeFunction = function() {};
   `;
@@ -73,12 +73,11 @@ const checkVarArgsResult = (
       }
     } else {
       depsCheck = `
-      if (amdDeps === null || typeof amdDeps !== "object" || isNaN(amdDeps.length)) {
+      if (!Array.isArray(amdDeps)) {
         return require(amdDeps);
       }
       `;
     }
-    depsCheck += '\namdDeps = [].slice.call(amdDeps);';
   }
 
   return `
