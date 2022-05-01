@@ -98,6 +98,17 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "chuckdumont",
+      "name": "Chuck Dumont",
+      "avatar_url": "https://avatars.githubusercontent.com/u/273476?v=4",
+      "profile": "https://github.com/chuckdumont",
+      "contributions": [
+        "code",
+        "test",
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7

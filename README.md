@@ -166,10 +166,9 @@ will be transformed to:
 (function () {
   var maybeFunction = myFactoryFunction;
   var amdDeps = getDeps();
-  if (amdDeps === null || typeof amdDeps !== "object" || isNaN(amdDeps.length)) {
+  if (!Array.isArray(amdDeps)) {
     return require(amdDeps);
   }
-  amdDeps = [].slice.call(amdDeps);
   if (typeof maybeFunction !== "function") {
     maybeFunction = function () {};
   }
@@ -184,6 +183,32 @@ will be transformed to:
 ```
 
 If either the dependency list is known to be an array, or the factory is known to be a function, at build time then the associated runtime type checking for the argument is omitted from the generated code.
+
+Calls to `define` are transformed in a similar manner, but include code for assigning the value returned by the factory function to module.exports:
+
+```javascript
+(function () {
+  var maybeFunction = factory;
+  var amdDeps = deps;
+  if (typeof amdDeps === 'string') {
+    amdDeps = ['require', 'exports', 'module'];
+  }
+  if (typeof maybeFunction !== "function") {
+    var amdFactoryResult = maybeFunction;
+    maybeFunction = function () {
+      return amdFactoryResult;
+    };
+  }
+  var amdDefineResult = maybeFunction.apply(void 0, amdDeps.map(function (dep) {
+    return {
+      require: require,
+      module: module,
+      exports: module.exports
+    }[dep] || require(dep);
+  }));
+  typeof amdDefineResult !== "undefined" && (module.exports = amdDefineResult);
+}).apply(this);
+```
 
 ### Listing module dependencies inline (v1.5)
 
@@ -300,6 +325,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <tr>
     <td align="center"><a href="https://vaaralav.com"><img src="https://avatars0.githubusercontent.com/u/8571541?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Ville Vaarala</b></sub></a><br /><a href="https://github.com/msrose/babel-plugin-transform-amd-to-commonjs/issues?q=author%3Avaaralav" title="Bug reports">🐛</a></td>
     <td align="center"><a href="https://github.com/gillyspy"><img src="https://avatars.githubusercontent.com/u/1345313?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Gerald Gillespie</b></sub></a><br /><a href="https://github.com/msrose/babel-plugin-transform-amd-to-commonjs/issues?q=author%3Agillyspy" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://github.com/chuckdumont"><img src="https://avatars.githubusercontent.com/u/273476?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Chuck Dumont</b></sub></a><br /><a href="https://github.com/msrose/babel-plugin-transform-amd-to-commonjs/commits?author=chuckdumont" title="Code">💻</a> <a href="https://github.com/msrose/babel-plugin-transform-amd-to-commonjs/commits?author=chuckdumont" title="Tests">⚠️</a> <a href="https://github.com/msrose/babel-plugin-transform-amd-to-commonjs/commits?author=chuckdumont" title="Documentation">📖</a></td>
   </tr>
 </table>
 
