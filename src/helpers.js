@@ -1,6 +1,15 @@
 'use strict';
 
-const { MODULE, EXPORTS, REQUIRE, TRANSFORM_AMD_TO_COMMONJS_IGNORE } = require('./constants');
+const {
+  MODULE,
+  EXPORTS,
+  REQUIRE,
+  TRANSFORM_AMD_TO_COMMONJS_IGNORE,
+  MAYBE_FUNCTION,
+  AMD_DEPS,
+  AMD_DEFINE_RESULT,
+  AMD_FACTORY_RESULT,
+} = require('./constants');
 
 // A factory function is exported in order to inject the same babel-types object
 // being used by the plugin itself
@@ -10,7 +19,7 @@ module.exports = ({ types: t }) => {
       return { factory: argNodes[0] };
     } else if (argNodes.length === 2) {
       const decodedArgs = { factory: argNodes[1] };
-      if (t.isArrayExpression(argNodes[0])) {
+      if (!t.isStringLiteral(argNodes[0])) {
         decodedArgs.dependencyList = argNodes[0];
       }
       return decodedArgs;
@@ -195,6 +204,252 @@ module.exports = ({ types: t }) => {
     );
   };
 
+  const getAmdFactoryArgsMapper = () => {
+    // Returns the factory args mapper function.
+    // Generated code:
+    // function(dep) {
+    //   return {
+    //     require: require,
+    //     module: module,
+    //     exports: module.exports
+    //   }[dep] || require(dep);
+    // }
+    const moduleIdent = t.identifier(MODULE);
+    const requireIdent = t.identifier(REQUIRE);
+    const exportsIdent = t.identifier(EXPORTS);
+    const DEP = 'dep';
+    return t.functionExpression(
+      null,
+      [t.identifier(DEP)],
+      t.blockStatement([
+        t.returnStatement(
+          t.logicalExpression(
+            '||',
+            t.memberExpression(
+              t.objectExpression([
+                t.objectProperty(requireIdent, requireIdent),
+                t.objectProperty(moduleIdent, moduleIdent),
+                t.objectProperty(exportsIdent, t.memberExpression(moduleIdent, exportsIdent)),
+              ]),
+              t.identifier(DEP),
+              true
+            ),
+            t.callExpression(t.identifier(REQUIRE), [t.identifier(DEP)])
+          )
+        ),
+      ])
+    );
+  };
+
+  const injectDepListTypeCheck = ({
+    blockStatements,
+    dependencyList,
+    isDefineCall,
+    arity,
+    depsIdentifier,
+  }) => {
+    // If we don't know that the dependency list is an array, then we need to check
+    // the type at runtime.
+    if (!t.isArrayExpression(dependencyList)) {
+      if (isDefineCall) {
+        // If the arity of the define call is 2, then the dependency list argument
+        // could be the module name if the type is string.  In that case, we ignore
+        // the module name and use the default dependencies per the spec:
+        // https://github.com/amdjs/amdjs-api/wiki/AMD#dependencies-
+        // Generated code:
+        // if (typeof amdDeps === 'string') {
+        //   amdDeps = ['require', 'exports', 'module'];
+        // }
+        if (arity === 2) {
+          blockStatements.push(
+            t.ifStatement(
+              t.binaryExpression(
+                '===',
+                t.unaryExpression('typeof', depsIdentifier),
+                t.stringLiteral('string')
+              ),
+              t.blockStatement([
+                t.expressionStatement(
+                  t.assignmentExpression(
+                    '=',
+                    depsIdentifier,
+                    t.arrayExpression([
+                      t.stringLiteral(REQUIRE),
+                      t.stringLiteral(EXPORTS),
+                      t.stringLiteral(MODULE),
+                    ])
+                  )
+                ),
+              ])
+            )
+          );
+        }
+      } else {
+        // Generated code:
+        // if (!Arrays.isArray(amdDeps)) {
+        //   return require(amdDeps);
+        // }
+        blockStatements.push(
+          t.ifStatement(
+            t.unaryExpression(
+              '!',
+              t.callExpression(t.memberExpression(t.identifier('Array'), t.identifier('isArray')), [
+                depsIdentifier,
+              ])
+            ),
+            t.blockStatement([
+              t.returnStatement(t.callExpression(t.identifier(REQUIRE), [depsIdentifier])),
+            ])
+          )
+        );
+      }
+    }
+  };
+
+  const injectFactoryFunctionTypeCheck = ({
+    blockStatements,
+    path,
+    factory,
+    factoryIdentifier,
+    isDefineCall,
+  }) => {
+    // If we don't know that the factory is a function, then we need to check the type
+    // at runtime.
+    if (!isFunctionExpression(factory)) {
+      // define:
+      // if (typeof maybeFunction !== 'function') {
+      //   var amdFactoryResult = maybeFunction;
+      //   maybeFunction = function () {return amFactorydResult};
+      // }
+      // require:
+      // if (typeof maybeFunction !== 'function') {
+      //   maybeFunction = function () {};
+      // }
+      const resultIdentifier = getUniqueIdentifier(path.scope, AMD_FACTORY_RESULT);
+      blockStatements.push(
+        t.ifStatement(
+          t.binaryExpression(
+            '!==',
+            t.unaryExpression('typeof', factoryIdentifier),
+            t.stringLiteral('function')
+          ),
+          t.blockStatement([
+            ...(isDefineCall
+              ? [
+                  t.variableDeclaration('var', [
+                    t.variableDeclarator(resultIdentifier, factoryIdentifier),
+                  ]),
+                ]
+              : []),
+            t.expressionStatement(
+              t.assignmentExpression(
+                '=',
+                factoryIdentifier,
+                t.functionExpression(
+                  null,
+                  [],
+                  t.blockStatement([...(isDefineCall ? [t.returnStatement(resultIdentifier)] : [])])
+                )
+              )
+            ),
+          ])
+        )
+      );
+    }
+  };
+
+  const injectFactoryFunctionInvocation = ({
+    path,
+    blockStatements,
+    factoryIdentifier,
+    depsIdentifier,
+    isDefineCall,
+  }) => {
+    const factoryInvocation = t.callExpression(
+      t.memberExpression(factoryIdentifier, t.identifier('apply')),
+      [
+        /*
+         * The 'this' argument for the factory function.
+         * 'void 0'
+         */
+        t.unaryExpression('void', t.numericLiteral(0)),
+
+        /*
+         * The arguments to the factory function as an array.
+         * 'deps.map(<amdFactoryArgsMapper>)''
+         */
+        t.callExpression(t.memberExpression(depsIdentifier, t.identifier('map')), [
+          getAmdFactoryArgsMapper(),
+        ]),
+      ]
+    );
+    if (isDefineCall) {
+      const resultCheckIdentifier = getUniqueIdentifier(path.scope, AMD_DEFINE_RESULT);
+      blockStatements.push(
+        ...createModuleExportsResultCheck(factoryInvocation, resultCheckIdentifier)
+      );
+    } else {
+      blockStatements.push(t.expressionStatement(factoryInvocation));
+    }
+  };
+
+  const createFactoryInvocationWithUnknownArgTypes = ({
+    path,
+    dependencyList,
+    factory,
+    isDefineCall,
+    arity,
+  }) => {
+    const factoryIdentifier = getUniqueIdentifier(path.scope, MAYBE_FUNCTION);
+    const depsIdentifier = getUniqueIdentifier(path.scope, AMD_DEPS);
+    const blockStatements = [];
+
+    // Define block scoped variables 'maybeFunction' and 'amdDeps'.
+    blockStatements.push(
+      t.variableDeclaration('var', [t.variableDeclarator(factoryIdentifier, factory)])
+    );
+    blockStatements.push(
+      t.variableDeclaration('var', [t.variableDeclarator(depsIdentifier, dependencyList)])
+    );
+
+    injectDepListTypeCheck({
+      blockStatements,
+      dependencyList,
+      isDefineCall,
+      arity,
+      depsIdentifier,
+    });
+
+    injectFactoryFunctionTypeCheck({
+      blockStatements,
+      path,
+      factory,
+      factoryIdentifier,
+      isDefineCall,
+    });
+
+    // Invoke the factory function.
+    injectFactoryFunctionInvocation({
+      path,
+      blockStatements,
+      factoryIdentifier,
+      depsIdentifier,
+      isDefineCall,
+    });
+
+    // Wrap it all up in an IIF, being sure to preserve the 'this' reference from
+    // outer scope.
+    return t.callExpression(
+      t.memberExpression(
+        t.parenthesizedExpression(
+          t.functionExpression(null, [], t.blockStatement(blockStatements))
+        ),
+        t.identifier('apply')
+      ),
+      [t.thisExpression()]
+    );
+  };
+
   return {
     decodeDefineArguments,
     decodeRequireArguments,
@@ -210,5 +465,6 @@ module.exports = ({ types: t }) => {
     createFunctionCheck,
     isExplicitDependencyInjection,
     hasIgnoreComment,
+    createFactoryInvocationWithUnknownArgTypes,
   };
 };

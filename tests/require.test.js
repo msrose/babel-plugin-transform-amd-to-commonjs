@@ -1,6 +1,7 @@
 'use strict';
 
 const { TRANSFORM_AMD_TO_COMMONJS_IGNORE } = require('../src/constants');
+const { checkVariableDepAndFactoryResult } = require('./test-helpers');
 
 describe('Plugin for require blocks', () => {
   it('transforms require blocks with one dependency', () => {
@@ -262,4 +263,164 @@ describe('Plugin for require blocks', () => {
       `);
     }
   );
+
+  it('transforms require with non-array dependency list', () => {
+    expect(`
+      require(deps, function(foo, bar) {
+        foo.doSomething();
+        bar.doSomethingElse();
+      });
+    `).toBeTransformedTo(
+      checkVariableDepAndFactoryResult({
+        factory: `function(foo, bar) {
+          foo.doSomething();
+          bar.doSomethingElse();
+        }`,
+        dependencies: 'deps',
+        checkDeps: true,
+        checkFactory: false,
+        isDefineCall: false,
+      })
+    );
+  });
+
+  it('transforms require with non-array dependencies and non-function factory', () => {
+    expect(`
+      require(deps, factory);
+    `).toBeTransformedTo(
+      checkVariableDepAndFactoryResult({
+        factory: 'factory',
+        dependencies: 'deps',
+        checkDeps: true,
+        checkFactory: true,
+        isDefineCall: false,
+      })
+    );
+  });
+
+  it('transforms require with array dependencies and member expression factory', () => {
+    expect(`
+      require(["dep1", "dep2"], this.factory);
+    `).toBeTransformedTo(
+      checkVariableDepAndFactoryResult({
+        factory: 'this.factory',
+        dependencies: '["dep1", "dep2"]',
+        checkDeps: false,
+        checkFactory: true,
+        isDefineCall: false,
+      })
+    );
+  });
+
+  it('transforms require with array dependencies and optional member expression factory', () => {
+    expect(`
+      require(["dep1", "dep2"], foo?.factory);
+    `).toBeTransformedTo(
+      checkVariableDepAndFactoryResult({
+        factory: 'foo?.factory',
+        dependencies: '["dep1", "dep2"]',
+        checkDeps: false,
+        checkFactory: true,
+        isDefineCall: false,
+      })
+    );
+  });
+
+  it('transforms require with array dependencies and call expression factory', () => {
+    expect(`
+      require(["dep1", "dep2"], getFactory());
+    `).toBeTransformedTo(
+      checkVariableDepAndFactoryResult({
+        factory: 'getFactory()',
+        dependencies: '["dep1", "dep2"]',
+        checkDeps: false,
+        checkFactory: true,
+        isDefineCall: false,
+      })
+    );
+  });
+
+  it('transforms require with array dependencies and optional call expression factory', () => {
+    expect(`
+      require(["dep1", "dep2"], getFactory?.());
+    `).toBeTransformedTo(
+      checkVariableDepAndFactoryResult({
+        factory: 'getFactory?.()',
+        dependencies: '["dep1", "dep2"]',
+        checkDeps: false,
+        checkFactory: true,
+        isDefineCall: false,
+      })
+    );
+  });
+
+  it('transforms require with array dependencies and array expression factory', () => {
+    expect(`
+      require(["dep1", "dep2"], factories[i]);
+    `).toBeTransformedTo(
+      checkVariableDepAndFactoryResult({
+        factory: 'factories[i]',
+        dependencies: '["dep1", "dep2"]',
+        checkDeps: false,
+        checkFactory: true,
+        isDefineCall: false,
+      })
+    );
+  });
+
+  it('transforms require with array dependencies and logical expression factory', () => {
+    expect(`
+      require(["dep1", "dep2"], factory1 || factory2);
+    `).toBeTransformedTo(
+      checkVariableDepAndFactoryResult({
+        factory: 'factory1 || factory2',
+        dependencies: '["dep1", "dep2"]',
+        checkDeps: false,
+        checkFactory: true,
+        isDefineCall: false,
+      })
+    );
+  });
+
+  it('transforms require with array dependencies and conditional expression factory', () => {
+    expect(`
+      require(["dep1", "dep2"], foo ? factory1 : factory2);
+    `).toBeTransformedTo(
+      checkVariableDepAndFactoryResult({
+        factory: 'foo ? factory1 : factory2',
+        dependencies: '["dep1", "dep2"]',
+        checkDeps: false,
+        checkFactory: true,
+        isDefineCall: false,
+      })
+    );
+  });
+
+  it('transforms require with array dependencies and assignment expression factory', () => {
+    expect(`
+      require(["dep1", "dep2"], factory = myFactory);
+    `).toBeTransformedTo(
+      checkVariableDepAndFactoryResult({
+        factory: 'factory = myFactory',
+        dependencies: '["dep1", "dep2"]',
+        checkDeps: false,
+        checkFactory: true,
+        isDefineCall: false,
+      })
+    );
+  });
+
+  it('transforms require with array dependencies and parenthesized expression expression factory', () => {
+    expect(`
+      require(["dep1", "dep2"], (factory = myFactory));
+    `).toBeTransformedTo(
+      checkVariableDepAndFactoryResult({
+        factory: '(factory = myFactory)',
+        dependencies: '["dep1", "dep2"]',
+        checkDeps: false,
+        checkFactory: true,
+        isDefineCall: false,
+      })
+    );
+  });
 });

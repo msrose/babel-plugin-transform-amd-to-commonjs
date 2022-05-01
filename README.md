@@ -152,7 +152,40 @@ Version 1.5.0 stops building against Node.js versions less than 12.x (and the bu
 
 Make sure that you have only one AMD module defined per file, otherwise you'll experience strange results once transformed to the CommonJS format.
 
-### Listing module dependencies inline
+### Listing module dependencies inline (v1.6 and above)
+
+In v1.6, require dependencies and factories with unknown types (at build time) are now supported.  The dependency list may be a function call or variable name that resolves to an array-like type at runtime.  The factory may be a function call or variable name that resolves to a function at runtime.
+
+```javascript
+require(getDeps(), myFactoryFunction);
+```
+
+will be transformed to:
+
+```javascript
+(function () {
+  var maybeFunction = myFactoryFunction;
+  var amdDeps = getDeps();
+  if (amdDeps === null || typeof amdDeps !== "object" || isNaN(amdDeps.length)) {
+    return require(amdDeps);
+  }
+  amdDeps = [].slice.call(amdDeps);
+  if (typeof maybeFunction !== "function") {
+    maybeFunction = function () {};
+  }
+  maybeFunction.apply(void 0, amdDeps.map(function (dep) {
+    return {
+      require: require,
+      module: module,
+      exports: module.exports
+    }[dep] || require(dep);
+  }));
+}).apply(this);
+```
+
+If either the dependency list is known to be an array, or the factory is known to be a function, at build time then the associated runtime type checking for the argument is omitted from the generated code.
+
+### Listing module dependencies inline (v1.5)
 
 The following will _not_ be transformed, since the plugin only accounts for dependencies that are specified using an inline array literal:
 

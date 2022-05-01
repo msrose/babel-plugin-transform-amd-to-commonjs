@@ -26,6 +26,7 @@ module.exports = ({ types: t }) => {
     createFunctionCheck,
     isExplicitDependencyInjection,
     hasIgnoreComment,
+    createFactoryInvocationWithUnknownArgTypes,
   } = createHelpers({ types: t });
 
   const argumentDecoders = {
@@ -63,13 +64,52 @@ module.exports = ({ types: t }) => {
     if (!argumentDecoder) return;
 
     const { dependencyList, factory } = argumentDecoder(node.expression.arguments);
+    const isDependencyArray = dependencyList && t.isArrayExpression(dependencyList);
 
-    if (!t.isArrayExpression(dependencyList) && !factory) return;
+    if (!isDependencyArray && !factory) return;
 
     const isFunctionFactory = isFunctionExpression(factory);
+
+    const isFactoryTypeUnknowable =
+      // true if we can't determine the type of the factory at build time
+      t.isIdentifier(factory) ||
+      t.isMemberExpression(factory) ||
+      t.isOptionalMemberExpression(factory) ||
+      t.isCallExpression(factory) ||
+      t.isOptionalCallExpression(factory) ||
+      t.isLogicalExpression(factory) ||
+      t.isConditionalExpression(factory) ||
+      t.isAssignmentExpression(factory) ||
+      t.isParenthesizedExpression(factory);
+
     const dependencyInjections = [];
 
-    if (dependencyList) {
+    const handleUnknownArgTypes =
+      // define/require call with unknown factory type and/or non-array literal dependencies.
+      // Note that we ignore some cases that are already handled by pre-existing code.  These
+      // include define calls with array type dependencies and unknown type function factories:
+      //    define(['dep1', 'dep2'], myFactory);
+      // as well as require calls with array dependencies and factories who's types can be
+      // determined known at compile time (function or non-function):
+      //    require(['dep1', 'dep2'], {nonFunction: 'factory'});
+      factory &&
+      dependencyList &&
+      ((isDefineCall && !isDependencyArray) ||
+        (!isDefineCall && (!isDependencyArray || isFactoryTypeUnknowable)));
+
+    if (handleUnknownArgTypes) {
+      path.replaceWithMultiple(
+        createFactoryInvocationWithUnknownArgTypes({
+          path,
+          dependencyList,
+          factory,
+          isDefineCall,
+          arity: node.expression.arguments.length,
+        })
+      );
+      return;
+    }
+    if (isDependencyArray) {
       const dependencyParameterPairs = zip(
         dependencyList.elements,
         isFunctionFactory ? factory.params : []

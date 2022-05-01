@@ -5,7 +5,11 @@ const {
   MAYBE_FUNCTION,
   TRANSFORM_AMD_TO_COMMONJS_IGNORE,
 } = require('../src/constants');
-const { checkAmdDefineResult, checkMaybeFunction } = require('./test-helpers');
+const {
+  checkAmdDefineResult,
+  checkMaybeFunction,
+  checkVariableDepAndFactoryResult,
+} = require('./test-helpers');
 
 describe('Plugin for define blocks', () => {
   it('transforms anonymous define blocks with one dependency', () => {
@@ -657,4 +661,68 @@ describe('Plugin for define blocks', () => {
       `);
     }
   );
+
+  it('transforms define call that use var args dependency list and factory', () => {
+    expect(`
+      define(deps, factory);
+    `).toBeTransformedTo(
+      checkVariableDepAndFactoryResult({
+        factory: 'factory',
+        dependencies: 'deps',
+        checkDeps: true,
+        checkFactory: true,
+        isDefineCall: true,
+        checkForModuleName: true,
+      })
+    );
+  });
+
+  it('transforms named define call that uses var args dependency list and factory', () => {
+    expect(`
+      define('somename', deps, factory);
+    `).toBeTransformedTo(
+      checkVariableDepAndFactoryResult({
+        factory: 'factory',
+        dependencies: 'deps',
+        checkDeps: true,
+        checkFactory: true,
+        isDefineCall: true,
+      })
+    );
+  });
+
+  it('transforms named define call that use var args for all three arguments', () => {
+    expect(`
+      define(name, deps, factory);
+    `).toBeTransformedTo(
+      checkVariableDepAndFactoryResult({
+        factory: 'factory',
+        dependencies: 'deps',
+        checkDeps: true,
+        checkFactory: true,
+        isDefineCall: true,
+      })
+    );
+  });
+
+  it('transforms define with var arg dependency list', () => {
+    expect(`
+      define(deps, function(foo, bar) {
+        foo.doSomething();
+        bar.doSomethingElse();
+      });
+    `).toBeTransformedTo(
+      checkVariableDepAndFactoryResult({
+        factory: `function(foo, bar) {
+          foo.doSomething();
+          bar.doSomethingElse();
+        }`,
+        dependencies: 'deps',
+        checkDeps: true,
+        checkFactory: false,
+        isDefineCall: true,
+        checkForModuleName: true,
+      })
+    );
+  });
 });
