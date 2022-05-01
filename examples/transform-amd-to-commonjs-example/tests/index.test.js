@@ -1,4 +1,5 @@
 import main from '../index';
+import variableDeps from '../variableDeps';
 
 describe('Main module', () => {
   it('has a message', () => {
@@ -47,5 +48,15 @@ describe('Main module', () => {
 
   it('ignores modules with the ignore comment', () => {
     expect(main.commentIgnore).toBe('hello');
+  });
+});
+
+describe('Variable dependencies module', () => {
+  it('has a message from a module with variable dependencies', () => {
+    expect(variableDeps.variableDepsDefine).toContain('variable define deps');
+  });
+
+  it('has a message from a module with variable dependencies and factory', () => {
+    expect(variableDeps.variableDepsAndFactory).toContain('variable define deps AND factory');
   });
 });

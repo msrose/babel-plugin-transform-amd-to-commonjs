@@ -4,3 +4,5 @@ npm-debug.log
 *.swo
 build
 coverage
+*.tgz
+package
