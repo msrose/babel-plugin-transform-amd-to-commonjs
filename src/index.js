@@ -36,7 +36,10 @@ module.exports = ({ types: t }) => {
 
   // Simple version of zip that only pairs elements until the end of the first array
   const zip = (array1, array2) => {
-    return array1.map((element, index) => [element, array2[index]]);
+    if (array1) {
+      return array1.map((element, index) => [element, array2[index]]);
+    }
+    return [];
   };
 
   const Program = (path, ...rest) => {
