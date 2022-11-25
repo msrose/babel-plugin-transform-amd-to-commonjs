@@ -17,7 +17,7 @@
     "@babel/core": "^7.20.2",
     "@babel/preset-env": "^7.19.4",
     "babel-core": "^7.0.0-bridge.0",
-    "babel-jest": "^29.2.2",
+    "babel-jest": "^29.3.1",
     "babel-loader": "^8.2.5",
     "babel-plugin-transform-amd-to-commonjs": "1.6.0",
     "jest": "^29.2.2",
