@@ -37,7 +37,7 @@
     "@babel/core": "^7.0.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.20.7",
+    "@babel/cli": "^7.21.0",
     "@babel/core": "^7.20.5",
     "@babel/preset-env": "^7.20.2",
     "all-contributors-cli": "^6.24.0",
