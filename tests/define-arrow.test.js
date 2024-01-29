@@ -216,7 +216,7 @@ describe('Plugin for define blocks with arrow function factories', () => {
         (() => {
           module.exports = { hey: 'boi' };
         })()
-      `)
+      `),
     );
   });
 
@@ -231,7 +231,7 @@ describe('Plugin for define blocks with arrow function factories', () => {
           var abc = module;
           abc.exports = { hey: 'boi' };
         })()
-      `)
+      `),
     );
   });
 
@@ -245,7 +245,7 @@ describe('Plugin for define blocks with arrow function factories', () => {
         (() => {
           exports.hey = 'boi';
         })()
-      `)
+      `),
     );
   });
 
@@ -260,7 +260,7 @@ describe('Plugin for define blocks with arrow function factories', () => {
           var abc = exports;
           abc.hey = 'boi';
         })()
-      `)
+      `),
     );
   });
 
@@ -276,7 +276,7 @@ describe('Plugin for define blocks with arrow function factories', () => {
           var stuff = require('hi');
           exports.hey = stuff.boi;
         })(require, exports, module)
-      `)
+      `),
     );
     expect(`
       define((require, exports) => {
@@ -289,7 +289,7 @@ describe('Plugin for define blocks with arrow function factories', () => {
           var stuff = require('hi');
           exports.hey = stuff.boi;
         })(require, exports)
-      `)
+      `),
     );
     expect(`
       define((require) => {
@@ -316,7 +316,7 @@ describe('Plugin for define blocks with arrow function factories', () => {
           var stuff = llamas('hi');
           cows.hey = stuff.boi;
         })(require, exports, module)
-      `)
+      `),
     );
     expect(`
       define((llamas, cows) => {
@@ -329,7 +329,7 @@ describe('Plugin for define blocks with arrow function factories', () => {
           var stuff = llamas('hi');
           cows.hey = stuff.boi;
         })(require, exports)
-      `)
+      `),
     );
     expect(`
       define((donkeys) => {
@@ -360,8 +360,8 @@ describe('Plugin for define blocks with arrow function factories', () => {
               exports.hey = stuff.boi;
             })(require, exports, module)
           `,
-          `_${AMD_DEFINE_RESULT}`
-        )
+          `_${AMD_DEFINE_RESULT}`,
+        ),
     );
   });
 
@@ -425,7 +425,7 @@ describe('Plugin for define blocks with arrow function factories', () => {
           var rest = [require('dep2'), module, exports, require];
           dep.doStuff();
         })()
-      `)
+      `),
     );
   });
 
@@ -523,7 +523,7 @@ describe('Plugin for define blocks with arrow function factories', () => {
           };
         })();
       `);
-    }
+    },
   );
 
   it.each([TRANSFORM_AMD_TO_COMMONJS_IGNORE, 'a really nice comment'])(
@@ -548,7 +548,7 @@ describe('Plugin for define blocks with arrow function factories', () => {
           };
         })();
       `);
-    }
+    },
   );
 
   it.each(['random comment', 'transform-amd-to-commonjs'])(
@@ -575,6 +575,6 @@ describe('Plugin for define blocks with arrow function factories', () => {
           };
         })();
       `);
-    }
+    },
   );
 });

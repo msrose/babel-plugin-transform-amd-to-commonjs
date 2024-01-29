@@ -25,7 +25,7 @@ define([
   implicitReturn,
   restFactory,
   variableFactory,
-  commentIgnore
+  commentIgnore,
 ) {
   return {
     message: 'I got a two-syllable ' + dayum.daaaaaaayum() + ' in that dress.',

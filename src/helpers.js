@@ -37,8 +37,8 @@ module.exports = ({ types: t }) => {
       t.assignmentExpression(
         '=',
         t.memberExpression(t.identifier(MODULE), t.identifier(EXPORTS)),
-        value
-      )
+        value,
+      ),
     );
   };
 
@@ -51,10 +51,10 @@ module.exports = ({ types: t }) => {
           t.binaryExpression(
             '!==',
             t.unaryExpression('typeof', identifier),
-            t.stringLiteral('undefined')
+            t.stringLiteral('undefined'),
           ),
-          createModuleExportsAssignmentExpression(identifier).expression
-        )
+          createModuleExportsAssignmentExpression(identifier).expression,
+        ),
       ),
     ];
   };
@@ -100,7 +100,7 @@ module.exports = ({ types: t }) => {
           return dependencyInjection.expression;
         }
         return t.identifier(node.value);
-      })
+      }),
     );
   };
 
@@ -109,7 +109,7 @@ module.exports = ({ types: t }) => {
       dependencyList &&
       dependencyList.elements.some(
         (element) =>
-          t.isStringLiteral(element) && (element.value === MODULE || element.value === EXPORTS)
+          t.isStringLiteral(element) && (element.value === MODULE || element.value === EXPORTS),
       )
     );
   };
@@ -143,7 +143,7 @@ module.exports = ({ types: t }) => {
       return t.functionExpression(
         null,
         [],
-        t.blockStatement(dependencyInjections.concat(factory.body.body))
+        t.blockStatement(dependencyInjections.concat(factory.body.body)),
       );
     }
     let bodyStatement;
@@ -155,7 +155,7 @@ module.exports = ({ types: t }) => {
     }
     return t.arrowFunctionExpression(
       [],
-      t.blockStatement(dependencyInjections.concat(bodyStatement))
+      t.blockStatement(dependencyInjections.concat(bodyStatement)),
     );
   };
 
@@ -163,18 +163,18 @@ module.exports = ({ types: t }) => {
     factory,
     functionCheckIdentifier,
     resultCheckIdentifier,
-    dependencyInjections
+    dependencyInjections,
   ) => {
     const factoryCallExpression = t.callExpression(
       functionCheckIdentifier,
       dependencyInjections.length > 0
         ? dependencyInjections.map((e) => (isExplicitDependencyInjection(e) ? e.expression : e))
-        : [REQUIRE, EXPORTS, MODULE].map((a) => t.identifier(a))
+        : [REQUIRE, EXPORTS, MODULE].map((a) => t.identifier(a)),
     );
     const isModuleOrExportsInjected =
       dependencyInjections.length === 0 ||
       dependencyInjections.find(
-        (d) => !isExplicitDependencyInjection(d) && [EXPORTS, MODULE].includes(d.name)
+        (d) => !isExplicitDependencyInjection(d) && [EXPORTS, MODULE].includes(d.name),
       );
     return [
       t.variableDeclaration('var', [t.variableDeclarator(functionCheckIdentifier, factory)]),
@@ -182,17 +182,17 @@ module.exports = ({ types: t }) => {
         t.binaryExpression(
           '===',
           t.unaryExpression('typeof', functionCheckIdentifier),
-          t.stringLiteral('function')
+          t.stringLiteral('function'),
         ),
         t.blockStatement(
           isModuleOrExportsInjected
             ? createModuleExportsResultCheck(factoryCallExpression, resultCheckIdentifier)
-            : [createModuleExportsAssignmentExpression(factoryCallExpression)]
+            : [createModuleExportsAssignmentExpression(factoryCallExpression)],
         ),
         t.blockStatement([
           ...dependencyInjections.filter(isExplicitDependencyInjection),
           createModuleExportsAssignmentExpression(functionCheckIdentifier),
-        ])
+        ]),
       ),
     ];
   };
@@ -200,7 +200,7 @@ module.exports = ({ types: t }) => {
   const hasIgnoreComment = (node) => {
     const leadingComments = node.body?.[0]?.leadingComments || [];
     return leadingComments.some(
-      ({ value }) => String(value).trim() === TRANSFORM_AMD_TO_COMMONJS_IGNORE
+      ({ value }) => String(value).trim() === TRANSFORM_AMD_TO_COMMONJS_IGNORE,
     );
   };
 
@@ -232,12 +232,12 @@ module.exports = ({ types: t }) => {
                 t.objectProperty(exportsIdent, t.memberExpression(moduleIdent, exportsIdent)),
               ]),
               t.identifier(DEP),
-              true
+              true,
             ),
-            t.callExpression(t.identifier(REQUIRE), [t.identifier(DEP)])
-          )
+            t.callExpression(t.identifier(REQUIRE), [t.identifier(DEP)]),
+          ),
         ),
-      ])
+      ]),
     );
   };
 
@@ -266,7 +266,7 @@ module.exports = ({ types: t }) => {
               t.binaryExpression(
                 '===',
                 t.unaryExpression('typeof', depsIdentifier),
-                t.stringLiteral('string')
+                t.stringLiteral('string'),
               ),
               t.blockStatement([
                 t.expressionStatement(
@@ -277,11 +277,11 @@ module.exports = ({ types: t }) => {
                       t.stringLiteral(REQUIRE),
                       t.stringLiteral(EXPORTS),
                       t.stringLiteral(MODULE),
-                    ])
-                  )
+                    ]),
+                  ),
                 ),
-              ])
-            )
+              ]),
+            ),
           );
         }
       } else {
@@ -295,12 +295,12 @@ module.exports = ({ types: t }) => {
               '!',
               t.callExpression(t.memberExpression(t.identifier('Array'), t.identifier('isArray')), [
                 depsIdentifier,
-              ])
+              ]),
             ),
             t.blockStatement([
               t.returnStatement(t.callExpression(t.identifier(REQUIRE), [depsIdentifier])),
-            ])
-          )
+            ]),
+          ),
         );
       }
     }
@@ -331,7 +331,7 @@ module.exports = ({ types: t }) => {
           t.binaryExpression(
             '!==',
             t.unaryExpression('typeof', factoryIdentifier),
-            t.stringLiteral('function')
+            t.stringLiteral('function'),
           ),
           t.blockStatement([
             ...(isDefineCall
@@ -348,12 +348,14 @@ module.exports = ({ types: t }) => {
                 t.functionExpression(
                   null,
                   [],
-                  t.blockStatement([...(isDefineCall ? [t.returnStatement(resultIdentifier)] : [])])
-                )
-              )
+                  t.blockStatement([
+                    ...(isDefineCall ? [t.returnStatement(resultIdentifier)] : []),
+                  ]),
+                ),
+              ),
             ),
-          ])
-        )
+          ]),
+        ),
       );
     }
   };
@@ -381,12 +383,12 @@ module.exports = ({ types: t }) => {
         t.callExpression(t.memberExpression(depsIdentifier, t.identifier('map')), [
           getAmdFactoryArgsMapper(),
         ]),
-      ]
+      ],
     );
     if (isDefineCall) {
       const resultCheckIdentifier = getUniqueIdentifier(path.scope, AMD_DEFINE_RESULT);
       blockStatements.push(
-        ...createModuleExportsResultCheck(factoryInvocation, resultCheckIdentifier)
+        ...createModuleExportsResultCheck(factoryInvocation, resultCheckIdentifier),
       );
     } else {
       blockStatements.push(t.expressionStatement(factoryInvocation));
@@ -406,10 +408,10 @@ module.exports = ({ types: t }) => {
 
     // Define block scoped variables 'maybeFunction' and 'amdDeps'.
     blockStatements.push(
-      t.variableDeclaration('var', [t.variableDeclarator(factoryIdentifier, factory)])
+      t.variableDeclaration('var', [t.variableDeclarator(factoryIdentifier, factory)]),
     );
     blockStatements.push(
-      t.variableDeclaration('var', [t.variableDeclarator(depsIdentifier, dependencyList)])
+      t.variableDeclaration('var', [t.variableDeclarator(depsIdentifier, dependencyList)]),
     );
 
     injectDepListTypeCheck({
@@ -442,11 +444,11 @@ module.exports = ({ types: t }) => {
     return t.callExpression(
       t.memberExpression(
         t.parenthesizedExpression(
-          t.functionExpression(null, [], t.blockStatement(blockStatements))
+          t.functionExpression(null, [], t.blockStatement(blockStatements)),
         ),
-        t.identifier('apply')
+        t.identifier('apply'),
       ),
-      [t.thisExpression()]
+      [t.thisExpression()],
     );
   };
 

@@ -217,7 +217,7 @@ describe('Plugin for require blocks', () => {
           frog.sayRibbit();
         })();
       `);
-    }
+    },
   );
 
   it.each([TRANSFORM_AMD_TO_COMMONJS_IGNORE, 'a really nice comment'])(
@@ -238,7 +238,7 @@ describe('Plugin for require blocks', () => {
           frog.sayRibbit();
         })();
       `);
-    }
+    },
   );
 
   it.each(['random comment', 'transform-amd-to-commonjs'])(
@@ -261,7 +261,7 @@ describe('Plugin for require blocks', () => {
           frog.sayRibbit();
         })();
       `);
-    }
+    },
   );
 
   it('transforms require with non-array dependency list', () => {
@@ -280,7 +280,7 @@ describe('Plugin for require blocks', () => {
         checkDeps: true,
         checkFactory: false,
         isDefineCall: false,
-      })
+      }),
     );
   });
 
@@ -294,7 +294,7 @@ describe('Plugin for require blocks', () => {
         checkDeps: true,
         checkFactory: true,
         isDefineCall: false,
-      })
+      }),
     );
   });
 
@@ -308,7 +308,7 @@ describe('Plugin for require blocks', () => {
         checkDeps: false,
         checkFactory: true,
         isDefineCall: false,
-      })
+      }),
     );
   });
 
@@ -322,7 +322,7 @@ describe('Plugin for require blocks', () => {
         checkDeps: false,
         checkFactory: true,
         isDefineCall: false,
-      })
+      }),
     );
   });
 
@@ -336,7 +336,7 @@ describe('Plugin for require blocks', () => {
         checkDeps: false,
         checkFactory: true,
         isDefineCall: false,
-      })
+      }),
     );
   });
 
@@ -350,7 +350,7 @@ describe('Plugin for require blocks', () => {
         checkDeps: false,
         checkFactory: true,
         isDefineCall: false,
-      })
+      }),
     );
   });
 
@@ -364,7 +364,7 @@ describe('Plugin for require blocks', () => {
         checkDeps: false,
         checkFactory: true,
         isDefineCall: false,
-      })
+      }),
     );
   });
 
@@ -378,7 +378,7 @@ describe('Plugin for require blocks', () => {
         checkDeps: false,
         checkFactory: true,
         isDefineCall: false,
-      })
+      }),
     );
   });
 
@@ -392,7 +392,7 @@ describe('Plugin for require blocks', () => {
         checkDeps: false,
         checkFactory: true,
         isDefineCall: false,
-      })
+      }),
     );
   });
 
@@ -406,7 +406,7 @@ describe('Plugin for require blocks', () => {
         checkDeps: false,
         checkFactory: true,
         isDefineCall: false,
-      })
+      }),
     );
   });
 
@@ -420,7 +420,7 @@ describe('Plugin for require blocks', () => {
         checkDeps: false,
         checkFactory: true,
         isDefineCall: false,
-      })
+      }),
     );
   });
 });
