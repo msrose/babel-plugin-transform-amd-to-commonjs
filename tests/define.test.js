@@ -201,7 +201,7 @@ describe('Plugin for define blocks', () => {
         function() {
           module.exports = { hey: 'boi' };
         }()
-      `)
+      `),
     );
   });
 
@@ -216,7 +216,7 @@ describe('Plugin for define blocks', () => {
           var abc = module;
           abc.exports.hey = 'boi';
         }()
-      `)
+      `),
     );
   });
 
@@ -230,7 +230,7 @@ describe('Plugin for define blocks', () => {
         function() {
           exports.hey = 'boi';
         }()
-      `)
+      `),
     );
   });
 
@@ -245,7 +245,7 @@ describe('Plugin for define blocks', () => {
           var abc = exports;
           abc.hey = 'boi';
         }()
-      `)
+      `),
     );
   });
 
@@ -261,7 +261,7 @@ describe('Plugin for define blocks', () => {
           var stuff = require('hi');
           exports.hey = stuff.boi;
         })(require, exports, module)
-      `)
+      `),
     );
     expect(`
       define(function(require, exports) {
@@ -274,7 +274,7 @@ describe('Plugin for define blocks', () => {
           var stuff = require('hi');
           exports.hey = stuff.boi;
         })(require, exports)
-      `)
+      `),
     );
     expect(`
       define(function(require) {
@@ -301,7 +301,7 @@ describe('Plugin for define blocks', () => {
           var stuff = llamas('hi');
           cows.hey = stuff.boi;
         })(require, exports, module)
-      `)
+      `),
     );
     expect(`
       define(function(llamas, cows) {
@@ -314,7 +314,7 @@ describe('Plugin for define blocks', () => {
           var stuff = llamas('hi');
           cows.hey = stuff.boi;
         })(require, exports)
-      `)
+      `),
     );
     expect(`
       define(function(donkeys) {
@@ -345,7 +345,7 @@ describe('Plugin for define blocks', () => {
             exports.hey = stuff.boi;
           })(require, exports, module)
         `,
-        `_${AMD_DEFINE_RESULT}`
+        `_${AMD_DEFINE_RESULT}`,
       )}
     `);
   });
@@ -406,7 +406,7 @@ describe('Plugin for define blocks', () => {
     expect(`
       define(['side-effect'], ['this', 'module', 'is', 'an', 'array']);
     `).toBeTransformedTo(
-      checkMaybeFunction("['this', 'module', 'is', 'an', 'array']", ['side-effect'])
+      checkMaybeFunction("['this', 'module', 'is', 'an', 'array']", ['side-effect']),
     );
   });
 
@@ -541,7 +541,7 @@ describe('Plugin for define blocks', () => {
           var rest = [require('dep2'), module, exports, require];
           dep.doStuff();
         })()
-      `)
+      `),
     );
   });
 
@@ -607,7 +607,7 @@ describe('Plugin for define blocks', () => {
           };
         }();
       `);
-    }
+    },
   );
 
   it.each([TRANSFORM_AMD_TO_COMMONJS_IGNORE, 'a really nice comment'])(
@@ -632,7 +632,7 @@ describe('Plugin for define blocks', () => {
           };
         }();
       `);
-    }
+    },
   );
 
   it.each(['random comment', 'transform-amd-to-commonjs'])(
@@ -659,7 +659,7 @@ describe('Plugin for define blocks', () => {
           };
         }();
       `);
-    }
+    },
   );
 
   it('transforms define call that use var args dependency list and factory', () => {
@@ -673,7 +673,7 @@ describe('Plugin for define blocks', () => {
         checkFactory: true,
         isDefineCall: true,
         checkForModuleName: true,
-      })
+      }),
     );
   });
 
@@ -687,7 +687,7 @@ describe('Plugin for define blocks', () => {
         checkDeps: true,
         checkFactory: true,
         isDefineCall: true,
-      })
+      }),
     );
   });
 
@@ -701,7 +701,7 @@ describe('Plugin for define blocks', () => {
         checkDeps: true,
         checkFactory: true,
         isDefineCall: true,
-      })
+      }),
     );
   });
 
@@ -722,7 +722,7 @@ describe('Plugin for define blocks', () => {
         checkFactory: false,
         isDefineCall: true,
         checkForModuleName: true,
-      })
+      }),
     );
   });
 });

@@ -105,14 +105,14 @@ module.exports = ({ types: t }) => {
           factory,
           isDefineCall,
           arity: node.expression.arguments.length,
-        })
+        }),
       );
       return;
     }
     if (isDependencyArray) {
       const dependencyParameterPairs = zip(
         dependencyList.elements,
-        isFunctionFactory ? factory.params : []
+        isFunctionFactory ? factory.params : [],
       );
 
       if (isFunctionFactory) {
@@ -125,7 +125,7 @@ module.exports = ({ types: t }) => {
           dependencyParameterPairs.splice(
             factoryArity - 1,
             dependencyParameterPairs.length - factoryArity + 1,
-            [restDependencyInjections, lastFactoryParam.argument]
+            [restDependencyInjections, lastFactoryParam.argument],
           );
         }
       }
@@ -133,7 +133,7 @@ module.exports = ({ types: t }) => {
       const dependencyInjectionExpressions = dependencyParameterPairs.map(
         ([dependency, paramName]) => {
           return createDependencyInjectionExpression(dependency, paramName);
-        }
+        },
       );
 
       dependencyInjections.push(...dependencyInjectionExpressions);
@@ -145,7 +145,7 @@ module.exports = ({ types: t }) => {
       const factoryArity = factory.params.length;
       let replacementFuncExpr = createFactoryReplacementExpression(
         factory,
-        explicitDependencyInjections
+        explicitDependencyInjections,
       );
       let replacementCallExprParams = [];
 
@@ -168,7 +168,7 @@ module.exports = ({ types: t }) => {
         } else {
           const resultCheckIdentifier = getUniqueIdentifier(path.scope, AMD_DEFINE_RESULT);
           path.replaceWithMultiple(
-            createModuleExportsResultCheck(factoryReplacement, resultCheckIdentifier)
+            createModuleExportsResultCheck(factoryReplacement, resultCheckIdentifier),
           );
         }
       } else {
@@ -179,7 +179,7 @@ module.exports = ({ types: t }) => {
         factory,
         getUniqueIdentifier(path.scope, MAYBE_FUNCTION),
         getUniqueIdentifier(path.scope, AMD_DEFINE_RESULT),
-        dependencyInjections
+        dependencyInjections,
       );
       path.replaceWithMultiple(functionCheckNodes);
     } else {
