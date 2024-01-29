@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [14.x, 16.x, 18.x]
+        node-version: [16.x, 18.x, 20.x]
 
     steps:
     - uses: actions/checkout@v1
@@ -37,7 +37,7 @@ jobs:
         npm test && npm run build # test with HEAD version
         cd -
     - name: upload coverage
-      if: matrix['node-version'] == '16.x'
+      if: matrix['node-version'] == '20.x'
       run: bash <(curl -s https://codecov.io/bash)
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
