@@ -218,7 +218,7 @@ describe('Plugin for require blocks with arrow function callbacks', () => {
           frog.sayRibbit();
         })();
       `);
-    }
+    },
   );
 
   it.each([TRANSFORM_AMD_TO_COMMONJS_IGNORE, 'a really nice comment'])(
@@ -239,7 +239,7 @@ describe('Plugin for require blocks with arrow function callbacks', () => {
           frog.sayRibbit();
         })();
       `);
-    }
+    },
   );
 
   it.each(['random comment', 'transform-amd-to-commonjs'])(
@@ -262,6 +262,6 @@ describe('Plugin for require blocks with arrow function callbacks', () => {
           frog.sayRibbit();
         })();
       `);
-    }
+    },
   );
 });
