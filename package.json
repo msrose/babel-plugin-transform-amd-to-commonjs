@@ -43,7 +43,7 @@
     "all-contributors-cli": "^6.26.1",
     "babel-core": "^7.0.0-bridge.0",
     "babel-jest": "^29.5.0",
-    "eslint": "^8.57.0",
+    "eslint": "^9.23.0",
     "eslint-config-msrose": "^1.0.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-jest": "^28.11.0",
